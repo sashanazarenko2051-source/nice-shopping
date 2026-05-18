@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="uk" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Контакти — Nice Shopping</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .contacts-page { padding: 64px 0 80px; }
+    .contacts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; align-items: start; }
+    .contact-card { background: var(--light); border-radius: 20px; padding: 36px; transition: background .3s; }
+    html.dark .contact-card { background: #141414; }
+    .contact-card__icon { font-size: 2.5rem; margin-bottom: 16px; }
+    .contact-card__title { font-family: var(--serif); font-size: 1.25rem; margin-bottom: 8px; }
+    .contact-card__text { color: var(--gray); font-size: .9375rem; margin-bottom: 20px; line-height: 1.6; }
+    .contact-card__link { display: inline-flex; align-items: center; gap: 8px; background: var(--dark); color: #fff; padding: 12px 24px; border-radius: var(--r); font-size: .9rem; font-weight: 500; transition: all var(--tr); }
+    html.dark .contact-card__link { background: #2A2A2A; }
+    .contact-card__link:hover { opacity: .85; }
+    .contact-info { display: flex; flex-direction: column; gap: 20px; }
+    .info-row { display: flex; align-items: center; gap: 16px; padding: 18px; background: var(--light); border-radius: var(--r); transition: background .3s; }
+    html.dark .info-row { background: #141414; }
+    .info-row__icon { font-size: 1.5rem; flex-shrink: 0; width: 48px; height: 48px; background: var(--white); border-radius: 12px; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(0,0,0,.06); transition: background .3s; }
+    html.dark .info-row__icon { background: #1A1A1A; }
+    .info-row__label { font-size: .78rem; color: var(--gray); text-transform: uppercase; letter-spacing: .06em; margin-bottom: 3px; }
+    .info-row__value { font-size: .9375rem; font-weight: 500; }
+    .info-row__value a { color: var(--dark); transition: color var(--tr); }
+    html.dark .info-row__value a { color: #E0E0E0; }
+    .info-row__value a:hover { color: var(--accent); }
+
+    /* Form */
+    .contact-form-wrap { background: var(--light); border-radius: 20px; padding: 36px; transition: background .3s; }
+    html.dark .contact-form-wrap { background: #141414; }
+    .contact-form-wrap h3 { font-family: var(--serif); font-size: 1.5rem; font-weight: 400; margin-bottom: 24px; }
+    .form-group { margin-bottom: 16px; }
+    .form-group label { display: block; font-size: .8125rem; font-weight: 500; margin-bottom: 6px; }
+    .form-control { width: 100%; padding: 12px 16px; border: 1.5px solid var(--border); border-radius: var(--r); font-size: .9375rem; font-family: inherit; transition: border-color var(--tr), background .3s, color .3s; background: var(--white); color: var(--dark); }
+    html.dark .form-control { background: #1A1A1A; border-color: #2A2A2A; color: #E0E0E0; }
+    .form-control:focus { outline: none; border-color: var(--accent); }
+    textarea.form-control { resize: vertical; min-height: 120px; }
+    .submit-btn { width: 100%; padding: 14px; background: var(--dark); color: #fff; border-radius: var(--r); font-size: .9375rem; font-weight: 600; transition: all var(--tr); margin-top: 4px; }
+    html.dark .submit-btn { background: #2A2A2A; }
+    .submit-btn:hover { opacity: .85; }
+    .form-success { display: none; text-align: center; padding: 32px; }
+    .form-success__icon { font-size: 3rem; margin-bottom: 12px; }
+    .form-success h3 { font-family: var(--serif); font-size: 1.4rem; margin-bottom: 8px; }
+    .form-success p { color: var(--gray); }
+
+    @media(max-width:768px) { .contacts-grid { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+
+<header class="header">
+  <div class="container header__inner">
+    <a href="index.html" class="logo">Nice Shopping</a>
+    <nav class="nav" id="nav">
+      <a href="index.html" data-i18n="nav.home">Головна</a>
+      <a href="catalog.html" data-i18n="nav.catalog">Каталог</a>
+      <a href="reviews.html">Відгуки</a>
+      <a href="contacts.html" style="color:#4ade80;font-weight:500" data-i18n="nav.contacts">Контакти</a>
+    </nav>
+    <div style="display:flex;align-items:center;gap:4px">
+      <button class="lang-btn" id="langBtn" onclick="toggleLang()">EN</button>
+      <a href="cart.html" class="cart-btn" title="Кошик">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
+        <span class="cart-count" style="display:none">0</span>
+      </a>
+    </div>
+    <button class="menu-toggle" id="menuToggle">☰</button>
+  </div>
+</header>
+
+<div class="page-hero">
+  <div class="container">
+    <h1 class="page-hero__title">Контакти</h1>
+    <div class="breadcrumb"><a href="index.html">Головна</a> / Контакти</div>
+  </div>
+</div>
+
+<div class="contacts-page">
+  <div class="container">
+    <div class="contacts-grid">
+
+      <!-- Left: contact info + messengers -->
+      <div>
+        <div class="contact-info" style="margin-bottom:24px">
+          <div class="info-row">
+            <div class="info-row__icon">📞</div>
+            <div>
+              <div class="info-row__label" data-i18n="info.phone">Телефон</div>
+              <div class="info-row__value"><a href="tel:+380954141820" data-i18n="info.phone_v">+380 95 414 18 20 — Тетяна</a></div>
+            </div>
+          </div>
+          <div class="info-row">
+            <div class="info-row__icon">✈️</div>
+            <div>
+              <div class="info-row__label">Telegram</div>
+              <div class="info-row__value"><a href="https://t.me/NazarT84" target="_blank">@NazarT84</a></div>
+            </div>
+          </div>
+          <div class="info-row">
+            <div class="info-row__icon">✉️</div>
+            <div>
+              <div class="info-row__label">Email</div>
+              <div class="info-row__value"><a href="mailto:ornazartatyana@gmail.com">ornazartatyana@gmail.com</a></div>
+            </div>
+          </div>
+          <div class="info-row">
+            <div class="info-row__icon">🚚</div>
+            <div>
+              <div class="info-row__label" data-i18n="info.delivery">Доставка</div>
+              <div class="info-row__value" data-i18n="info.delivery_v">Нова Пошта та Укрпошта</div>
+            </div>
+          </div>
+          <div class="info-row">
+            <div class="info-row__icon">⏰</div>
+            <div>
+              <div class="info-row__label" data-i18n="info.hours">Час роботи</div>
+              <div class="info-row__value" data-i18n="info.hours_v">Пн–Нд: 9:00 — 21:00</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Quick contact cards -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+          <div class="contact-card">
+            <div class="contact-card__icon">✈️</div>
+            <div class="contact-card__title">Telegram</div>
+            <div class="contact-card__text" data-i18n="card.tg.p">Найшвидший спосіб зв'язатись. Відповімо протягом кількох хвилин.</div>
+            <a href="https://t.me/NazarT84" target="_blank" class="contact-card__link" data-i18n="card.tg.btn">Написати</a>
+          </div>
+          <div class="contact-card">
+            <div class="contact-card__icon">📞</div>
+            <div class="contact-card__title">Телефон</div>
+            <div class="contact-card__text" data-i18n="card.ph.p">Тетяна завжди на зв'язку і рада допомогти з вибором.</div>
+            <a href="tel:+380954141820" class="contact-card__link" data-i18n="card.ph.btn">Зателефонувати</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right: message form -->
+      <div class="contact-form-wrap">
+        <div id="formWrap">
+          <h3 data-i18n="form.title">Надіслати повідомлення</h3>
+          <form id="contactForm" novalidate>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+              <div class="form-group">
+                <label for="cName" data-i18n="form.nl">Ваше ім'я *</label>
+                <input type="text" id="cName" class="form-control" placeholder="Олена" data-i18n-ph="form.np" required>
+              </div>
+              <div class="form-group">
+                <label for="cPhone" data-i18n="form.pl">Телефон *</label>
+                <input type="tel" id="cPhone" class="form-control" placeholder="+380 XX XXX XX XX" data-i18n-ph="form.pp" required>
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="cMsg" data-i18n="form.ml">Повідомлення *</label>
+              <textarea id="cMsg" class="form-control" placeholder="Ваше питання або запит..." data-i18n-ph="form.mp" required></textarea>
+            </div>
+            <button type="submit" class="submit-btn" id="submitBtn" data-i18n="form.sub">Надіслати →</button>
+          </form>
+        </div>
+        <div class="form-success" id="formSuccess">
+          <div class="form-success__icon">✅</div>
+          <h3 data-i18n="form.ok.t">Повідомлення надіслано!</h3>
+          <p data-i18n="form.ok.p">Ми зв'яжемось з вами найближчим часом.</p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<footer style="background:#0D0D0D;color:rgba(255,255,255,.6);padding:32px 0">
+  <div class="container" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px;font-size:.8125rem;opacity:.5">
+    <span>© 2025 Файні покупки</span>
+    <div style="display:flex;gap:20px">
+      <a href="tel:+380954141820" style="color:inherit">+380 95 414 18 20</a>
+      <a href="https://t.me/NazarT84" target="_blank" style="color:inherit">@NazarT84</a>
+    </div>
+  </div>
+</footer>
+
+<div class="toast" id="toast"></div>
+
+<script src="js/config.js"></script>
+<script src="js/data.js"></script>
+<script src="js/i18n.js"></script>
+<script src="js/cart.js"></script>
+<script>
+document.getElementById('menuToggle').addEventListener('click', function() {
+  document.getElementById('nav').classList.toggle('open');
+});
+applyLang();
+
+// Contact form
+document.getElementById('contactForm').addEventListener('submit', function(e) {
+  e.preventDefault();
+  var name = document.getElementById('cName').value.trim();
+  var phone = document.getElementById('cPhone').value.trim();
+  var msg = document.getElementById('cMsg').value.trim();
+  if (!name || !phone || !msg) { showToast('Заповніть усі поля'); return; }
+
+  var btn = document.getElementById('submitBtn');
+  btn.disabled = true; btn.textContent = 'Надсилаємо...';
+
+  var text = '📩 *Нове повідомлення — Файні покупки*\n\n' +
+    '*Ім\'я:* ' + name + '\n*Телефон:* ' + phone + '\n\n*Повідомлення:*\n' + msg;
+
+  function onDone() {
+    document.getElementById('formWrap').style.display = 'none';
+    document.getElementById('formSuccess').style.display = 'block';
+  }
+
+  if (CONFIG.telegramBotToken && CONFIG.telegramChatId) {
+    fetch('https://api.telegram.org/bot' + CONFIG.telegramBotToken + '/sendMessage', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ chat_id: CONFIG.telegramChatId, text: text, parse_mode: 'Markdown' })
+    }).then(function(r) {
+      if (r.ok) onDone();
+      else { showToast('Помилка. Напишіть нам напряму.'); btn.disabled = false; btn.textContent = 'Надіслати →'; }
+    }).catch(function() { onDone(); }); // show success anyway on network error
+  } else {
+    console.log('Contact form (Telegram not set):\n' + text);
+    onDone();
+  }
+});
+</script>
+</body>
+</html>

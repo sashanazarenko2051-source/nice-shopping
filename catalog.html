@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="uk" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Каталог — Nice Shopping</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .catalog-page { padding: 40px 0 80px; }
+    .catalog-grid { display: grid; grid-template-columns: 256px 1fr; gap: 40px; align-items: start; }
+
+    /* Sidebar */
+    .filters { position: sticky; top: calc(var(--hh) + 20px); background: #fff; border-radius: 20px; padding: 24px; border: 1.5px solid #e5e7eb; box-shadow: 0 2px 16px rgba(0,0,0,.05); }
+    .filter-group { margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px solid var(--border); }
+    .filter-group:last-child { margin-bottom: 0; padding-bottom: 0; border-bottom: none; }
+    .filter-group__title { font-size: .75rem; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; margin-bottom: 12px; color: #9CA3AF; }
+
+    /* Filter tags */
+    .filter-tags { display: flex; flex-direction: column; gap: 4px; }
+    .filter-tag { display: flex; align-items: center; gap: 8px; padding: 8px 12px; border: none; border-radius: 10px; font-size: .875rem; cursor: pointer; transition: all var(--tr); background: transparent; color: var(--dark); text-align: left; width: 100%; }
+    .filter-tag:hover { background: #F3F4F6; }
+    .filter-tag.active { background: #111; color: #fff; font-weight: 500; }
+    .filter-tag::before { content: ''; width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; background: #D1D5DB; transition: background var(--tr); }
+    .filter-tag[data-cat="all"]::before { display: none; }
+    .filter-tag[data-cat="socks"][data-gender="women"]::before { background: #ec4899; }
+    .filter-tag[data-cat="socks"][data-gender="men"]::before { background: #3b82f6; }
+    .filter-tag[data-cat="lingerie"][data-gender="women"]::before { background: #8b5cf6; }
+    .filter-tag[data-cat="lingerie"][data-gender="men"]::before { background: #10b981; }
+    .filter-tag[data-cat="bras"]::before { background: #f43f5e; }
+    .filter-tag.active::before { background: rgba(255,255,255,.6); }
+
+    /* Sort & count */
+    .catalog-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; }
+    .catalog-count { color: var(--gray); font-size: .875rem; }
+    .catalog-sort { padding: 9px 14px; border: 1.5px solid var(--border); border-radius: var(--r); font-size: .875rem; cursor: pointer; background: var(--white); color: var(--dark); transition: border-color var(--tr); }
+    .catalog-sort:focus { outline: none; border-color: #111; }
+
+    /* Grid */
+    .catalog .products__grid { grid-template-columns: repeat(3, 1fr); }
+
+    /* Empty state */
+    .catalog-empty { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 80px 24px; text-align: center; color: var(--gray); grid-column: 1/-1; }
+    .catalog-empty__icon { font-size: 3.5rem; margin-bottom: 16px; opacity: .5; }
+    .catalog-empty__title { font-size: 1.1rem; font-weight: 600; color: var(--dark); margin-bottom: 8px; }
+    .catalog-empty__sub { font-size: .9rem; line-height: 1.6; }
+
+    /* Dark mode */
+    html.dark .filters { background: #161616; border-color: #2A2A2A; box-shadow: 0 2px 16px rgba(0,0,0,.4); }
+    html.dark .filter-group__title { color: #555; }
+    html.dark .filter-tag { color: #C0C0C0; }
+    html.dark .filter-tag:hover { background: #222; }
+    html.dark .filter-tag.active { background: #E0E0E0; color: #0D0D0D; }
+    html.dark .filter-tag.active::before { background: rgba(0,0,0,.4); }
+    html.dark .catalog-sort { background: #161616; border-color: #2A2A2A; color: #E0E0E0; }
+    html.dark .catalog-sort:focus { border-color: #E0E0E0; }
+
+    @media(max-width:1024px) { .catalog-grid { grid-template-columns: 1fr; } .filters { position: static; } .filter-tags { flex-direction: row; flex-wrap: wrap; } .filter-tag { width: auto; } }
+    @media(max-width:640px) { .catalog .products__grid { grid-template-columns: repeat(2,1fr); } }
+  </style>
+</head>
+<body>
+
+<header class="header">
+  <div class="container header__inner">
+    <a href="index.html" class="logo">Nice Shopping</a>
+    <nav class="nav" id="nav">
+      <a href="index.html" data-i18n="nav.home">Головна</a>
+      <a href="catalog.html" style="color:#4ade80;font-weight:500" data-i18n="nav.catalog">Каталог</a>
+      <a href="reviews.html">Відгуки</a>
+      <a href="contacts.html" data-i18n="nav.contacts">Контакти</a>
+    </nav>
+    <div style="display:flex;align-items:center;gap:4px">
+      <button class="lang-btn" id="langBtn" onclick="toggleLang()">EN</button>
+      <a href="cart.html" class="cart-btn" title="Кошик">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
+        <span class="cart-count" style="display:none">0</span>
+      </a>
+    </div>
+    <button class="menu-toggle" id="menuToggle">☰</button>
+  </div>
+</header>
+
+<div class="page-hero">
+  <div class="container">
+    <h1 class="page-hero__title" id="pageTitle">Каталог</h1>
+    <div class="breadcrumb"><a href="index.html">Головна</a> / <span id="crumbCat">Каталог</span></div>
+  </div>
+</div>
+
+<div class="catalog-page">
+  <div class="container">
+    <div class="catalog-grid">
+      <aside class="filters">
+        <div class="filter-group">
+          <div class="filter-group__title" data-i18n="filter.cat">Категорія</div>
+          <div class="filter-tags">
+            <button class="filter-tag active" data-cat="all" data-gender="" data-i18n="filter.all">Всі</button>
+            <button class="filter-tag" data-cat="socks" data-gender="women" data-i18n="filter.ws">Жіночі шкарпетки</button>
+            <button class="filter-tag" data-cat="socks" data-gender="men" data-i18n="filter.ms">Чоловічі шкарпетки</button>
+            <button class="filter-tag" data-cat="lingerie" data-gender="women" data-i18n="filter.wl">Жіноча нижня білизна</button>
+            <button class="filter-tag" data-cat="lingerie" data-gender="men" data-i18n="filter.ml">Чоловіча нижня білизна</button>
+            <button class="filter-tag" data-cat="bras" data-gender="" data-i18n="filter.br">Бюстгальтери</button>
+          </div>
+        </div>
+        <div class="filter-group">
+          <div class="filter-group__title" data-i18n="filter.size">Розмір</div>
+          <div class="filter-tags" id="sizeFilters"></div>
+        </div>
+      </aside>
+
+      <div>
+        <div class="catalog-top">
+          <div class="catalog-count" id="count">0 товарів</div>
+          <select class="catalog-sort" id="sortSelect">
+            <option value="default" data-i18n="sort.default">Сортування</option>
+            <option value="price-asc" data-i18n="sort.asc">Ціна: від дешевих</option>
+            <option value="price-desc" data-i18n="sort.desc">Ціна: від дорогих</option>
+            <option value="rating" data-i18n="sort.rating">За рейтингом</option>
+            <option value="discount" data-i18n="sort.discount">Зі знижкою</option>
+          </select>
+        </div>
+        <div class="products__grid catalog" id="grid"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer class="footer">
+  <div class="container">
+    <div class="footer__bottom" style="border-top:1px solid rgba(255,255,255,.1);padding-top:20px">
+      <span>© 2025 Файні покупки</span>
+      <div style="display:flex;gap:16px;font-size:.8125rem;opacity:.45">
+        <a href="tel:+380954141820">+380 95 414 18 20</a>
+        <a href="https://t.me/NazarT84" target="_blank">@NazarT84</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<div class="toast" id="toast"></div>
+
+<script src="js/config.js"></script>
+<script src="js/data.js"></script>
+<script src="js/i18n.js"></script>
+<script src="js/cart.js"></script>
+<script>
+var activeCat = 'all';
+var activeGender = '';
+var activePrice = 'all';
+var activeSize = '';
+var activeSort = 'default';
+
+var catNames = {
+  'socks:women':'Жіночі шкарпетки', 'socks:men':'Чоловічі шкарпетки',
+  'lingerie:women':'Жіноча нижня білизна', 'lingerie:men':'Чоловіча нижня білизна',
+  'bras:':'Бюстгальтери'
+};
+
+var urlParams = new URLSearchParams(location.search);
+var urlCat = urlParams.get('cat') || '';
+var urlGender = urlParams.get('gender') || '';
+if (urlCat) {
+  activeCat = urlCat; activeGender = urlGender;
+  var key = urlCat + ':' + urlGender;
+  var label = catNames[key] || urlCat;
+  document.getElementById('pageTitle').textContent = label;
+  document.getElementById('crumbCat').textContent = label;
+  var matchBtn = document.querySelector('[data-cat="' + urlCat + '"][data-gender="' + urlGender + '"]');
+  if (matchBtn) { matchBtn.classList.add('active'); document.querySelector('[data-cat="all"]').classList.remove('active'); }
+}
+
+// Sizes per category
+var SIZE_MAP = {
+  'socks:women':   ['35-38', '38-40', '40-42'],
+  'socks:men':     ['39-41', '41-43', '43-45', '45-47'],
+  'lingerie:women':['XS', 'S', 'M', 'L', 'XL', 'XXL'],
+  'lingerie:men':  ['S', 'M', 'L', 'XL', 'XXL'],
+  'bras:':         ['70A', '70B', '70C', '75A', '75B', '75C', '80B', '80C', '85C', '80D', '85D'],
+  'all:':          ['XS', 'S', 'M', 'L', 'XL', '35-38', '38-40', '39-41', '43-45', '45-47', '70B', '75C', '80C']
+};
+var sizeEl = document.getElementById('sizeFilters');
+
+function renderSizes(cat, gender) {
+  var key = (cat === 'all') ? 'all:' : (cat + ':' + (gender || ''));
+  var sizes = SIZE_MAP[key] || [];
+  activeSize = '';
+  sizeEl.innerHTML = sizes.map(function(s) {
+    return '<button class="filter-tag" data-size="' + s + '">' + s + '</button>';
+  }).join('');
+}
+renderSizes(activeCat, activeGender);
+
+function fmtCount(n) {
+  return n + (n===1?' товар':n<5?' товари':' товарів');
+}
+
+function render() {
+  var products = PRODUCTS.filter(function(p) {
+    if (activeCat !== 'all' && p.category !== activeCat) return false;
+    if (activeGender && p.gender !== activeGender) return false;
+    if (activeSize && p.sizes.indexOf(activeSize) === -1) return false;
+    if (activePrice !== 'all') {
+      var parts = activePrice.split('-'), mn = +parts[0], mx = +parts[1];
+      if (p.price < mn || p.price > mx) return false;
+    }
+    return true;
+  });
+  if (activeSort === 'price-asc') products.sort(function(a,b){return a.price-b.price;});
+  else if (activeSort === 'price-desc') products.sort(function(a,b){return b.price-a.price;});
+  else if (activeSort === 'rating') products.sort(function(a,b){return b.rating-a.rating;});
+  else if (activeSort === 'discount') products = products.filter(function(p){return p.oldPrice;}).concat(products.filter(function(p){return !p.oldPrice;}));
+  document.getElementById('count').textContent = fmtCount(products.length);
+  if (products.length === 0) {
+    document.getElementById('grid').innerHTML =
+      '<div class="catalog-empty">' +
+        '<div class="catalog-empty__icon">🛍️</div>' +
+        '<div class="catalog-empty__title">Товарів поки немає</div>' +
+        '<div class="catalog-empty__sub">Незабаром тут з\'являться нові позиції.<br>Напишіть нам, і ми підберемо потрібне.</div>' +
+      '</div>';
+    return;
+  }
+  document.getElementById('grid').innerHTML = products.map(renderProductCard).join('');
+}
+
+document.querySelectorAll('[data-cat]').forEach(function(btn) {
+  btn.addEventListener('click', function() {
+    document.querySelectorAll('[data-cat]').forEach(function(b){b.classList.remove('active');});
+    btn.classList.add('active');
+    activeCat = btn.dataset.cat;
+    activeGender = btn.dataset.gender || '';
+    renderSizes(activeCat, activeGender);
+    render();
+  });
+});
+document.querySelectorAll('[data-price]').forEach(function(btn) {
+  btn.addEventListener('click', function() {
+    document.querySelectorAll('[data-price]').forEach(function(b){b.classList.remove('active');});
+    btn.classList.add('active'); activePrice = btn.dataset.price; render();
+  });
+});
+sizeEl.addEventListener('click', function(e) {
+  var btn = e.target.closest('[data-size]'); if (!btn) return;
+  if (btn.classList.contains('active')) { btn.classList.remove('active'); activeSize = ''; }
+  else { document.querySelectorAll('[data-size]').forEach(function(b){b.classList.remove('active');}); btn.classList.add('active'); activeSize = btn.dataset.size; }
+  render();
+});
+document.getElementById('sortSelect').addEventListener('change', function() { activeSort = this.value; render(); });
+render();
+
+document.getElementById('menuToggle').addEventListener('click', function() {
+  document.getElementById('nav').classList.toggle('open');
+});
+applyLang();
+</script>
+</body>
+</html>

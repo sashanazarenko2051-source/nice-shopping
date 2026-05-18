@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="uk" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Товар — Файні покупки</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <script>if(localStorage.getItem('fp_theme')==='dark')document.documentElement.classList.add('dark')</script>
+</head>
+<body>
+
+<header class="header">
+  <div class="container header__inner">
+    <a href="index.html" class="logo">Nice Shopping</a>
+    <nav class="nav" id="nav">
+      <a href="index.html" data-i18n="nav.home">Головна</a>
+      <a href="catalog.html" data-i18n="nav.catalog">Каталог</a>
+      <a href="reviews.html">Відгуки</a>
+      <a href="contacts.html" data-i18n="nav.contacts">Контакти</a>
+    </nav>
+    <div style="display:flex;align-items:center;gap:4px">
+      <button class="lang-btn" id="langBtn" onclick="toggleLang()">EN</button>
+      <a href="cart.html" class="cart-btn" title="Кошик">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
+        <span class="cart-count" style="display:none">0</span>
+      </a>
+    </div>
+    <button class="menu-toggle" id="menuToggle">☰</button>
+  </div>
+</header>
+
+<div class="product-detail">
+  <div class="container">
+    <div class="breadcrumb" style="margin-bottom:28px">
+      <a href="index.html">Головна</a> / <a href="catalog.html">Каталог</a> / <span id="pdBreadcrumb">Товар</span>
+    </div>
+    <div class="pd-layout" id="pdLayout">
+      <p style="color:var(--gray)">Товар не знайдено.</p>
+    </div>
+
+    <!-- Related -->
+    <div style="margin-top:64px">
+      <h2 class="section__title" style="text-align:left">Схожі товари</h2>
+      <div class="products__grid" id="related"></div>
+    </div>
+  </div>
+</div>
+
+<footer class="footer">
+  <div class="container">
+    <div class="footer__bottom" style="border-top:1px solid rgba(255,255,255,.1);padding-top:20px">
+      <span>© 2025 Файні покупки</span>
+      <a href="mailto:ornazartatyana@gmail.com" style="opacity:.45;font-size:.8125rem">ornazartatyana@gmail.com</a>
+    </div>
+  </div>
+</footer>
+
+<div class="toast" id="toast"></div>
+
+<script src="js/config.js"></script>
+<script src="js/data.js"></script>
+<script src="js/i18n.js"></script>
+<script src="js/cart.js"></script>
+<script>
+var productId = parseInt(new URLSearchParams(location.search).get('id'));
+var product = PRODUCTS.find(function(p) { return p.id === productId; });
+
+if (product) {
+  document.title = product.name + ' — Файні покупки';
+  document.getElementById('pdBreadcrumb').textContent = product.name;
+
+  var catNames = { sets:'Комплекти', bras:'Бюстгальтери', panties:'Трусики', bodysuits:'Боді' };
+  var discount = product.oldPrice ? Math.round((1 - product.price / product.oldPrice) * 100) : null;
+  var fullStars = Math.round(product.rating);
+  var stars = '★'.repeat(fullStars) + '☆'.repeat(5 - fullStars);
+  var selectedSize = '';
+  var qty = 1;
+
+  var sizeBtns = product.sizes.map(function(s) {
+    return '<button class="size-btn" data-size="' + s + '">' + s + '</button>';
+  }).join('');
+
+  document.getElementById('pdLayout').innerHTML =
+    '<div class="pd-gallery">' +
+      '<div class="pd-main-img" style="background:linear-gradient(135deg,' + product.c1 + ',' + product.c2 + ')"></div>' +
+      '<div class="pd-thumbs">' +
+        ['135deg','160deg','110deg','180deg'].map(function(deg) {
+          return '<div class="pd-thumb" style="background:linear-gradient(' + deg + ',' + product.c1 + ',' + product.c2 + ')"></div>';
+        }).join('') +
+      '</div>' +
+    '</div>' +
+    '<div class="pd-info">' +
+      '<div class="pd-category">' + catNames[product.category] + '</div>' +
+      '<h1 class="pd-name">' + product.name + '</h1>' +
+      '<div class="pd-rating"><span class="stars">' + stars + '</span> ' + product.rating + ' <span style="color:var(--gray)">(' + product.reviews + ' відгуків)</span></div>' +
+      '<div class="pd-price">' + CONFIG.currency + product.price + (discount ? ' <span style="background:var(--sale);color:#fff;font-size:.75rem;padding:3px 8px;border-radius:4px;font-family:var(--font)">-' + discount + '%</span>' : '') + '</div>' +
+      (product.oldPrice ? '<div class="pd-old-price">' + CONFIG.currency + product.oldPrice + '</div>' : '<div style="height:22px"></div>') +
+      '<div class="pd-label">Розмір</div>' +
+      '<div class="sizes-grid" id="sizes">' + sizeBtns + '</div>' +
+      '<div class="pd-add-row">' +
+        '<div class="qty">' +
+          '<button class="qty-btn" id="qtyMinus">−</button>' +
+          '<span class="qty-val" id="qtyVal">1</span>' +
+          '<button class="qty-btn" id="qtyPlus">+</button>' +
+        '</div>' +
+        '<button class="btn btn--dark" style="flex:1" id="addBtn">Додати до кошика</button>' +
+      '</div>' +
+      '<div class="pd-label">Опис</div>' +
+      '<div class="pd-desc">' + product.description + '</div>' +
+      '<div class="pd-label">Характеристики</div>' +
+      '<ul class="pd-details">' + product.details.map(function(d) { return '<li>' + d + '</li>'; }).join('') + '</ul>' +
+    '</div>';
+
+  // Size selection
+  document.getElementById('sizes').addEventListener('click', function(e) {
+    var btn = e.target.closest('.size-btn');
+    if (!btn) return;
+    document.querySelectorAll('.size-btn').forEach(function(b) { b.classList.remove('active'); });
+    btn.classList.add('active');
+    selectedSize = btn.dataset.size;
+  });
+
+  // Qty
+  document.getElementById('qtyMinus').addEventListener('click', function() {
+    if (qty > 1) { qty--; document.getElementById('qtyVal').textContent = qty; }
+  });
+  document.getElementById('qtyPlus').addEventListener('click', function() {
+    qty++;
+    document.getElementById('qtyVal').textContent = qty;
+  });
+
+  // Add to cart
+  document.getElementById('addBtn').addEventListener('click', function() {
+    if (!selectedSize) {
+      showToast('Оберіть розмір');
+      return;
+    }
+    addToCart(product.id, selectedSize, qty);
+  });
+
+  // Related products
+  var related = PRODUCTS.filter(function(p) { return p.category === product.category && p.id !== product.id; }).slice(0, 4);
+  var relEl = document.getElementById('related');
+  related.forEach(function(p) { relEl.innerHTML += renderProductCard(p); });
+}
+
+document.getElementById('menuToggle').addEventListener('click', function() {
+  document.getElementById('nav').classList.toggle('open');
+});
+applyLang();
+</script>
+</body>
+</html>

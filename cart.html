@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="uk" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Кошик — Nice Shopping</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<header class="header">
+  <div class="container header__inner">
+    <a href="index.html" class="logo">Nice Shopping</a>
+    <nav class="nav" id="nav">
+      <a href="index.html" data-i18n="nav.home">Головна</a>
+      <a href="catalog.html" data-i18n="nav.catalog">Каталог</a>
+      <a href="reviews.html">Відгуки</a>
+      <a href="contacts.html" data-i18n="nav.contacts">Контакти</a>
+    </nav>
+    <div style="display:flex;align-items:center;gap:4px">
+      <button class="lang-btn" id="langBtn" onclick="toggleLang()">EN</button>
+      <a href="cart.html" class="cart-btn" title="Кошик">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
+        <span class="cart-count" style="display:none">0</span>
+      </a>
+    </div>
+    <button class="menu-toggle" id="menuToggle">☰</button>
+  </div>
+</header>
+
+<div class="page-hero">
+  <div class="container">
+    <h1 class="page-hero__title">Кошик</h1>
+    <div class="breadcrumb"><a href="index.html">Головна</a> / Кошик</div>
+  </div>
+</div>
+
+<div class="cart-page">
+  <div class="container">
+    <div id="cartContent"></div>
+  </div>
+</div>
+
+<footer class="footer">
+  <div class="container">
+    <div class="footer__bottom" style="border-top:1px solid rgba(255,255,255,.1);padding-top:20px">
+      <span>© 2025 Файні покупки</span>
+      <a href="mailto:ornazartatyana@gmail.com" style="opacity:.45;font-size:.8125rem">ornazartatyana@gmail.com</a>
+    </div>
+  </div>
+</footer>
+
+<div class="toast" id="toast"></div>
+
+<script src="js/config.js"></script>
+<script src="js/data.js"></script>
+<script src="js/i18n.js"></script>
+<script src="js/cart.js"></script>
+<script>
+function renderCart() {
+  var cart = getCart();
+  var el = document.getElementById('cartContent');
+
+  if (cart.length === 0) {
+    el.innerHTML =
+      '<div class="cart-empty">' +
+        '<div class="cart-empty__icon">🛍️</div>' +
+        '<h2 class="cart-empty__title">Кошик порожній</h2>' +
+        '<p class="cart-empty__sub">Додайте товари, які вам сподобались</p>' +
+        '<a href="catalog.html" class="btn btn--dark">До каталогу</a>' +
+      '</div>';
+    return;
+  }
+
+  var total = getCartTotal();
+  var delivery = total >= 1000 ? 0 : 70;
+  var itemsHtml = cart.map(function(item) {
+    var p = PRODUCTS.find(function(x) { return x.id === item.productId; });
+    if (!p) return '';
+    return '<div class="cart-item" data-key="' + item.key + '">' +
+      '<div class="cart-item__img" style="background:linear-gradient(135deg,' + p.c1 + ',' + p.c2 + ')"></div>' +
+      '<div>' +
+        '<div class="cart-item__name">' + p.name + '</div>' +
+        '<div class="cart-item__size">Розмір: ' + item.size + '</div>' +
+        '<div class="cart-item__row">' +
+          '<div class="qty">' +
+            '<button class="qty-btn" onclick="changeQty(\'' + item.key + '\',-1)">−</button>' +
+            '<span class="qty-val">' + item.qty + '</span>' +
+            '<button class="qty-btn" onclick="changeQty(\'' + item.key + '\',1)">+</button>' +
+          '</div>' +
+          '<button class="cart-item__remove" onclick="removeItem(\'' + item.key + '\')">Видалити</button>' +
+          '<span class="cart-item__price">' + CONFIG.currency + (p.price * item.qty) + '</span>' +
+        '</div>' +
+      '</div>' +
+    '</div>';
+  }).join('');
+
+  el.innerHTML =
+    '<div class="cart-layout">' +
+      '<div>' +
+        itemsHtml +
+        '<div style="margin-top:20px">' +
+          '<a href="catalog.html" style="color:var(--gray);font-size:.875rem;border-bottom:1px solid currentColor">← Продовжити покупки</a>' +
+        '</div>' +
+      '</div>' +
+      '<div>' +
+        '<div class="order-summary">' +
+          '<div class="order-summary__title">Підсумок замовлення</div>' +
+          '<div class="sum-row"><span>Товари (' + cart.reduce(function(s,i){return s+i.qty;},0) + ')</span><span>' + CONFIG.currency + total + '</span></div>' +
+          '<div class="sum-row"><span>Доставка</span><span>' + (delivery === 0 ? 'Безкоштовно' : CONFIG.currency + delivery) + '</span></div>' +
+          '<div class="sum-row total"><span>Разом</span><span>' + CONFIG.currency + (total + delivery) + '</span></div>' +
+          '<a href="checkout.html" class="btn btn--dark btn--full" style="margin-top:16px">Оформити замовлення</a>' +
+          (delivery > 0 ? '<p style="font-size:.8125rem;color:var(--gray);text-align:center;margin-top:10px">Ще ' + CONFIG.currency + (1000 - total) + ' до безкоштовної доставки</p>' : '<p style="font-size:.8125rem;color:var(--success);text-align:center;margin-top:10px">✓ Безкоштовна доставка</p>') +
+        '</div>' +
+      '</div>' +
+    '</div>';
+}
+
+function changeQty(key, delta) {
+  var cart = getCart();
+  var item = cart.find(function(i) { return i.key === key; });
+  if (item) {
+    updateQty(key, item.qty + delta);
+    renderCart();
+  }
+}
+
+function removeItem(key) {
+  removeFromCart(key);
+  renderCart();
+}
+
+renderCart();
+applyLang();
+
+document.getElementById('menuToggle').addEventListener('click', function() {
+  document.getElementById('nav').classList.toggle('open');
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="uk" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Оформлення замовлення — Файні покупки</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .success-page { display:none; text-align:center; padding:80px 0; }
+    .success-page__icon { font-size:4rem; margin-bottom:16px; }
+    .success-page__title { font-family:var(--serif); font-size:2rem; margin-bottom:10px; }
+    .success-page__sub { color:var(--gray); margin-bottom:24px; max-width:400px; margin-left:auto; margin-right:auto; }
+  </style>
+</head>
+<body>
+
+<header class="header">
+  <div class="container header__inner">
+    <a href="index.html" class="logo">Nice Shopping</a>
+    <nav class="nav" id="nav">
+      <a href="index.html" data-i18n="nav.home">Головна</a>
+      <a href="catalog.html" data-i18n="nav.catalog">Каталог</a>
+      <a href="reviews.html">Відгуки</a>
+      <a href="contacts.html" data-i18n="nav.contacts">Контакти</a>
+    </nav>
+    <div style="display:flex;align-items:center;gap:4px">
+      <button class="lang-btn" id="langBtn" onclick="toggleLang()">EN</button>
+      <a href="cart.html" class="cart-btn" title="Кошик">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
+        <span class="cart-count" style="display:none">0</span>
+      </a>
+    </div>
+    <button class="menu-toggle" id="menuToggle">☰</button>
+  </div>
+</header>
+
+<div class="page-hero">
+  <div class="container">
+    <h1 class="page-hero__title">Оформлення замовлення</h1>
+    <div class="breadcrumb"><a href="index.html">Головна</a> / <a href="cart.html">Кошик</a> / Оформлення</div>
+  </div>
+</div>
+
+<div class="checkout-page" id="checkoutPage">
+  <div class="container">
+    <div class="checkout-layout">
+      <!-- Form -->
+      <form class="checkout-form" id="checkoutForm" novalidate>
+        <!-- Contact -->
+        <div class="cf-section">
+          <div class="cf-section__title">Контактні дані</div>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="firstName">Ім'я *</label>
+              <input type="text" id="firstName" class="form-control" placeholder="Олена" required>
+            </div>
+            <div class="form-group">
+              <label for="lastName">Прізвище *</label>
+              <input type="text" id="lastName" class="form-control" placeholder="Іваненко" required>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="phone">Телефон *</label>
+            <input type="tel" id="phone" class="form-control" placeholder="+380954141820" required>
+          </div>
+          <div class="form-group">
+            <label for="email">Email</label>
+            <input type="email" id="email" class="form-control" placeholder="email@example.com">
+          </div>
+        </div>
+
+        <!-- Delivery -->
+        <div class="cf-section">
+          <div class="cf-section__title">Доставка (Нова Пошта)</div>
+          <div class="form-group">
+            <label for="city">Місто *</label>
+            <input type="text" id="city" class="form-control" placeholder="Київ" required>
+          </div>
+          <div class="form-group">
+            <label for="branch">Відділення або адреса доставки *</label>
+            <input type="text" id="branch" class="form-control" placeholder="Відділення №1 або вул. Хрещатик, 1" required>
+          </div>
+          <div class="form-group">
+            <label for="comment">Коментар до замовлення</label>
+            <textarea id="comment" class="form-control" rows="3" placeholder="Побажання, уточнення..."></textarea>
+          </div>
+        </div>
+
+        <!-- Payment -->
+        <div class="cf-section">
+          <div class="cf-section__title">Оплата</div>
+          <div class="payment-opts">
+            <label class="payment-opt">
+              <input type="radio" name="payment" value="cod" checked>
+              <div>
+                <div class="payment-opt__name">💵 Накладений платіж</div>
+                <div class="payment-opt__desc">Оплата при отриманні + комісія Нової Пошти</div>
+              </div>
+            </label>
+            <label class="payment-opt">
+              <input type="radio" name="payment" value="prepay">
+              <div>
+                <div class="payment-opt__name">💳 Передоплата на картку</div>
+                <div class="payment-opt__desc">Реквізити надішлемо після підтвердження</div>
+              </div>
+            </label>
+          </div>
+        </div>
+
+        <button type="submit" class="btn btn--dark btn--full" style="font-size:1rem;padding:16px">Оформити замовлення →</button>
+        <p style="font-size:.8125rem;color:var(--gray);text-align:center;margin-top:10px">Натискаючи кнопку, ви погоджуєтеся з умовами магазину</p>
+      </form>
+
+      <!-- Order Summary -->
+      <div>
+        <div class="checkout-items">
+          <div class="checkout-items__title">Ваше замовлення</div>
+          <div id="orderItems"></div>
+        </div>
+        <div class="order-summary">
+          <div class="sum-row"><span>Товари</span><span id="sumGoods">₴0</span></div>
+          <div class="sum-row"><span>Доставка</span><span id="sumDelivery">₴70</span></div>
+          <div class="sum-row total"><span>Разом</span><span id="sumTotal">₴0</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Success -->
+<div class="success-page container" id="successPage">
+  <div class="success-page__icon">🎉</div>
+  <h2 class="success-page__title">Замовлення прийнято!</h2>
+  <p class="success-page__sub">Дякуємо за покупку! Ми зв'яжемось з вами найближчим часом для підтвердження замовлення.</p>
+  <a href="catalog.html" class="btn btn--dark">Продовжити покупки</a>
+</div>
+
+<footer class="footer" style="margin-top:48px">
+  <div class="container">
+    <div class="footer__bottom" style="border-top:1px solid rgba(255,255,255,.1);padding-top:20px">
+      <span>© 2025 Файні покупки</span>
+      <a href="mailto:ornazartatyana@gmail.com" style="opacity:.45;font-size:.8125rem">ornazartatyana@gmail.com</a>
+    </div>
+  </div>
+</footer>
+
+<div class="toast" id="toast"></div>
+
+<script src="js/config.js"></script>
+<script src="js/data.js"></script>
+<script src="js/i18n.js"></script>
+<script src="js/cart.js"></script>
+<script>
+// Render order items
+(function() {
+  var cart = getCart();
+  var total = getCartTotal();
+  var delivery = total >= 1000 ? 0 : 70;
+  var itemsEl = document.getElementById('orderItems');
+  cart.forEach(function(item) {
+    var p = PRODUCTS.find(function(x) { return x.id === item.productId; });
+    if (!p) return;
+    itemsEl.innerHTML += '<div class="co-item">' +
+      '<div><div class="co-item__name">' + p.name + '</div><div class="co-item__meta">Розмір: ' + item.size + ' × ' + item.qty + '</div></div>' +
+      '<div>' + CONFIG.currency + (p.price * item.qty) + '</div>' +
+    '</div>';
+  });
+  document.getElementById('sumGoods').textContent = CONFIG.currency + total;
+  document.getElementById('sumDelivery').textContent = delivery === 0 ? 'Безкоштовно' : CONFIG.currency + delivery;
+  document.getElementById('sumTotal').textContent = CONFIG.currency + (total + delivery);
+})();
+
+// Form submit
+document.getElementById('checkoutForm').addEventListener('submit', function(e) {
+  e.preventDefault();
+
+  var firstName = document.getElementById('firstName').value.trim();
+  var lastName = document.getElementById('lastName').value.trim();
+  var phone = document.getElementById('phone').value.trim();
+  var city = document.getElementById('city').value.trim();
+  var branch = document.getElementById('branch').value.trim();
+  var comment = document.getElementById('comment').value.trim();
+  var payment = document.querySelector('input[name="payment"]:checked').value;
+
+  var errors = false;
+  [['firstName', firstName], ['lastName', lastName], ['phone', phone], ['city', city], ['branch', branch]].forEach(function(pair) {
+    var el = document.getElementById(pair[0]);
+    if (!pair[1]) { el.classList.add('error'); errors = true; }
+    else el.classList.remove('error');
+  });
+  if (errors) { showToast('Заповніть усі обов\'язкові поля'); return; }
+
+  var cart = getCart();
+  var total = getCartTotal();
+  var delivery = total >= 1000 ? 0 : 70;
+  var paymentText = payment === 'cod' ? 'Накладений платіж' : 'Передоплата на картку';
+
+  var itemsText = cart.map(function(item) {
+    var p = PRODUCTS.find(function(x) { return x.id === item.productId; });
+    return p ? '• ' + p.name + ' (' + item.size + ') × ' + item.qty + ' = ' + CONFIG.currency + (p.price * item.qty) : '';
+  }).filter(Boolean).join('\n');
+
+  var message = '🛍 *Нове замовлення — Файні покупки*\n\n' +
+    '*Клієнт:* ' + firstName + ' ' + lastName + '\n' +
+    '*Телефон:* ' + phone + '\n\n' +
+    '*Місто:* ' + city + '\n' +
+    '*Відділення/Адреса:* ' + branch + '\n' +
+    '*Оплата:* ' + paymentText + '\n\n' +
+    '*Товари:*\n' + itemsText + '\n\n' +
+    '*Доставка:* ' + (delivery === 0 ? 'Безкоштовно' : CONFIG.currency + delivery) + '\n' +
+    '*Разом:* ' + CONFIG.currency + (total + delivery) +
+    (comment ? '\n\n*Коментар:* ' + comment : '');
+
+  var btn = e.target.querySelector('[type="submit"]');
+  btn.disabled = true;
+  btn.textContent = 'Відправляємо...';
+
+  function onSuccess() {
+    clearCart();
+    document.getElementById('checkoutPage').style.display = 'none';
+    var sp = document.getElementById('successPage');
+    sp.style.display = 'block';
+    window.scrollTo(0, 0);
+  }
+
+  if (CONFIG.telegramBotToken && CONFIG.telegramChatId) {
+    fetch('https://api.telegram.org/bot' + CONFIG.telegramBotToken + '/sendMessage', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ chat_id: CONFIG.telegramChatId, text: message, parse_mode: 'Markdown' })
+    }).then(function(r) {
+      if (r.ok) { onSuccess(); }
+      else { showToast('Помилка відправки. Зателефонуйте нам.'); btn.disabled = false; btn.textContent = 'Оформити замовлення →'; }
+    }).catch(function() {
+      showToast('Помилка мережі. Зателефонуйте нам.');
+      btn.disabled = false;
+      btn.textContent = 'Оформити замовлення →';
+    });
+  } else {
+    // Telegram not configured — show success anyway (for testing)
+    console.log('Order message (Telegram not configured):\n' + message);
+    onSuccess();
+  }
+});
+
+document.getElementById('menuToggle').addEventListener('click', function() {
+  document.getElementById('nav').classList.toggle('open');
+});
+applyLang();
+</script>
+</body>
+</html>
