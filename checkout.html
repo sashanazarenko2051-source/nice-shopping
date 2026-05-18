@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="uk" class="dark">
 <head>
   <meta charset="UTF-8">
@@ -153,6 +153,7 @@
 <script src="js/data.js"></script>
 <script src="js/i18n.js"></script>
 <script src="js/cart.js"></script>
+<script src="js/analytics.js"></script>
 <script>
 // Render order items
 (function() {
@@ -219,6 +220,22 @@ document.getElementById('checkoutForm').addEventListener('submit', function(e) {
   btn.textContent = 'Відправляємо...';
 
   function onSuccess() {
+    // Save order to localStorage for admin panel
+    var order = {
+      id: Date.now(),
+      date: new Date().toLocaleDateString('uk-UA'),
+      firstName: firstName, lastName: lastName, phone: phone,
+      city: city, branch: branch, payment: payment, comment: comment,
+      items: cart.map(function(item) {
+        var p = PRODUCTS.find(function(x) { return x.id === item.productId; });
+        return { name: p ? p.name : '?', size: item.size, qty: item.qty, price: p ? p.price : 0 };
+      }),
+      subtotal: total, delivery: delivery, total: total + delivery
+    };
+    var orders = [];
+    try { orders = JSON.parse(localStorage.getItem('ns_orders')) || []; } catch(e) {}
+    orders.unshift(order);
+    localStorage.setItem('ns_orders', JSON.stringify(orders));
     clearCart();
     document.getElementById('checkoutPage').style.display = 'none';
     var sp = document.getElementById('successPage');

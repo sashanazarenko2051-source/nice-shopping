@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Адмін — Nice Shopping</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;1,400&display=swap" rel="stylesheet">
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{--bg:#020d04;--bg2:#0a1a0c;--bg3:#030f05;--green:#4ade80;--gl:#86efac;--gb:rgba(74,222,128,.1);--gbd:rgba(74,222,128,.14);--text:#E0E0E0;--dim:rgba(224,224,224,.55);--serif:'Playfair Display',serif;--font:'Inter',sans-serif;--r:10px;--tr:.2s ease}
+    body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:1.5;-webkit-font-smoothing:antialiased;min-height:100vh}
+    a{text-decoration:none;color:inherit}
+    button{cursor:pointer;border:none;font-family:inherit}
+    input,select,textarea{font-family:inherit}
+
+    /* ── LOGIN ── */
+    .login-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#010a03 0%,#051a0a 60%,#020810 100%)}
+    .login-card{background:var(--bg2);border:1px solid var(--gbd);border-radius:20px;padding:48px 40px;width:360px;text-align:center}
+    .login-logo{font-family:var(--serif);font-size:1.8rem;color:var(--green);margin-bottom:6px}
+    .login-sub{font-size:.85rem;color:var(--dim);margin-bottom:32px}
+    .login-input{width:100%;padding:13px 16px;background:#061008;border:1.5px solid #1f3522;border-radius:var(--r);color:var(--text);font-size:1rem;margin-bottom:12px;transition:border-color var(--tr)}
+    .login-input:focus{outline:none;border-color:var(--green)}
+    .login-btn{width:100%;padding:13px;background:var(--green);color:#020d04;border-radius:var(--r);font-size:.95rem;font-weight:700;transition:all var(--tr)}
+    .login-btn:hover{background:var(--gl)}
+    .login-error{color:#f87171;font-size:.82rem;margin-top:10px}
+
+    /* ── LAYOUT ── */
+    .admin-app{display:flex;min-height:100vh}
+
+    /* ── SIDEBAR ── */
+    .sidebar{width:220px;background:var(--bg3);border-right:1px solid var(--gbd);display:flex;flex-direction:column;position:sticky;top:0;height:100vh;flex-shrink:0}
+    .sb-logo{padding:24px 20px 20px;border-bottom:1px solid var(--gbd)}
+    .sb-logo-main{font-family:var(--serif);font-size:1.2rem;color:var(--green);display:block}
+    .sb-logo-sub{font-size:.72rem;color:var(--dim);letter-spacing:.06em;text-transform:uppercase}
+    .sb-nav{flex:1;padding:12px 10px}
+    .sb-item{width:100%;display:flex;align-items:center;gap:10px;padding:11px 12px;border-radius:var(--r);font-size:.88rem;color:var(--dim);transition:all var(--tr);margin-bottom:2px;background:none;text-align:left}
+    .sb-item:hover{background:var(--gb);color:var(--text)}
+    .sb-item.active{background:rgba(74,222,128,.15);color:var(--green);font-weight:600}
+    .sb-ico{font-size:1.1rem;width:22px;text-align:center}
+    .sb-bottom{padding:16px 10px;border-top:1px solid var(--gbd)}
+    .sb-site-link{display:flex;align-items:center;gap:8px;padding:9px 12px;border-radius:var(--r);font-size:.82rem;color:var(--dim);margin-bottom:6px;transition:all var(--tr)}
+    .sb-site-link:hover{color:var(--green)}
+    .sb-logout{width:100%;padding:10px;border-radius:var(--r);font-size:.82rem;color:#f87171;background:rgba(248,113,113,.08);border:1px solid rgba(248,113,113,.15);transition:all var(--tr)}
+    .sb-logout:hover{background:rgba(248,113,113,.15)}
+
+    /* ── MAIN ── */
+    .main-area{flex:1;overflow-y:auto;background:var(--bg)}
+    .topbar{padding:20px 32px;border-bottom:1px solid var(--gbd);display:flex;align-items:center;justify-content:space-between;background:var(--bg)}
+    .topbar h1{font-family:var(--serif);font-size:1.5rem;font-weight:400}
+    .tab-content{padding:28px 32px}
+
+    /* ── STAT CARDS ── */
+    .stat-cards{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:28px}
+    .stat-card{background:var(--bg2);border:1px solid var(--gbd);border-radius:16px;padding:22px 20px;transition:all var(--tr)}
+    .stat-card:hover{border-color:rgba(74,222,128,.3);box-shadow:0 4px 20px rgba(74,222,128,.08)}
+    .stat-card__ico{font-size:1.6rem;margin-bottom:10px}
+    .stat-card__val{font-family:var(--serif);font-size:1.9rem;color:var(--green);line-height:1;margin-bottom:4px}
+    .stat-card__lbl{font-size:.78rem;color:var(--dim);text-transform:uppercase;letter-spacing:.05em}
+
+    /* ── CHART ── */
+    .section-box{background:var(--bg2);border:1px solid var(--gbd);border-radius:16px;padding:22px 24px;margin-bottom:20px}
+    .section-box h2{font-size:1rem;font-weight:600;margin-bottom:18px;color:var(--text)}
+    .chart{display:flex;align-items:flex-end;gap:10px;height:120px}
+    .bar-col{display:flex;flex-direction:column;align-items:center;gap:4px;flex:1}
+    .bar-val{font-size:.72rem;color:var(--dim);min-height:14px}
+    .bar-wrap{flex:1;width:100%;display:flex;align-items:flex-end}
+    .bar{width:100%;background:linear-gradient(180deg,var(--green),rgba(74,222,128,.4));border-radius:4px 4px 0 0;min-height:4px;transition:height .4s ease}
+    .bar-lbl{font-size:.7rem;color:var(--dim)}
+
+    /* ── TABLES ── */
+    .data-table{width:100%;border-collapse:collapse;font-size:.875rem}
+    .data-table th{text-align:left;padding:10px 14px;font-size:.72rem;font-weight:600;color:var(--dim);text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid var(--gbd)}
+    .data-table td{padding:12px 14px;border-bottom:1px solid rgba(74,222,128,.05);vertical-align:middle}
+    .data-table tr:last-child td{border-bottom:none}
+    .data-table tr:hover td{background:rgba(74,222,128,.03)}
+
+    /* ── PRODUCTS ── */
+    .page-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:22px}
+    .page-hdr h1{font-family:var(--serif);font-size:1.5rem;font-weight:400}
+    .btn-add{background:var(--green);color:#020d04;padding:10px 20px;border-radius:var(--r);font-size:.875rem;font-weight:700;transition:all var(--tr)}
+    .btn-add:hover{background:var(--gl)}
+    .btn-edit{background:rgba(59,130,246,.12);border:1px solid rgba(59,130,246,.2);color:#60a5fa;padding:5px 12px;border-radius:6px;font-size:.78rem;transition:all var(--tr)}
+    .btn-edit:hover{background:rgba(59,130,246,.22)}
+    .btn-del{background:rgba(248,113,113,.1);border:1px solid rgba(248,113,113,.2);color:#f87171;padding:5px 12px;border-radius:6px;font-size:.78rem;transition:all var(--tr)}
+    .btn-del:hover{background:rgba(248,113,113,.2)}
+    .prod-img{width:46px;height:46px;border-radius:8px;object-fit:cover;display:block}
+    .prod-color-box{width:46px;height:46px;border-radius:8px}
+    .badge-cat{display:inline-block;padding:2px 8px;border-radius:20px;font-size:.72rem;font-weight:600}
+    .badge-socks{background:rgba(59,130,246,.15);color:#60a5fa}
+    .badge-lingerie{background:rgba(139,92,246,.15);color:#a78bfa}
+    .badge-bras{background:rgba(244,63,94,.15);color:#fb7185}
+
+    /* ── EMPTY STATE ── */
+    .empty-state{text-align:center;padding:60px 20px;color:var(--dim)}
+    .empty-state__ico{font-size:3rem;margin-bottom:14px}
+    .empty-state p{font-size:.9rem;margin-bottom:20px}
+
+    /* ── PRODUCT FORM OVERLAY ── */
+    .overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:200;display:flex;justify-content:flex-end}
+    .overlay-panel{width:520px;background:var(--bg2);border-left:1px solid var(--gbd);display:flex;flex-direction:column;height:100vh;overflow:hidden}
+    .overlay-hdr{padding:20px 24px;border-bottom:1px solid var(--gbd);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+    .overlay-hdr h2{font-family:var(--serif);font-size:1.25rem;font-weight:400}
+    .overlay-close{width:32px;height:32px;border-radius:50%;background:var(--gb);color:var(--dim);font-size:1rem;display:flex;align-items:center;justify-content:center;transition:all var(--tr)}
+    .overlay-close:hover{background:rgba(248,113,113,.15);color:#f87171}
+    .overlay-body{flex:1;overflow-y:auto;padding:24px}
+    .overlay-footer{padding:16px 24px;border-top:1px solid var(--gbd);display:flex;gap:10px;flex-shrink:0}
+    .btn-cancel{flex:1;padding:11px;border-radius:var(--r);font-size:.875rem;color:var(--dim);background:var(--gb);border:1px solid var(--gbd);transition:all var(--tr)}
+    .btn-cancel:hover{color:var(--text)}
+    .btn-save{flex:2;padding:11px;border-radius:var(--r);font-size:.875rem;font-weight:700;background:var(--green);color:#020d04;transition:all var(--tr)}
+    .btn-save:hover{background:var(--gl)}
+
+    /* ── FORM FIELDS ── */
+    .fgroup{margin-bottom:16px}
+    .fgroup label{display:block;font-size:.78rem;font-weight:600;color:var(--dim);margin-bottom:6px;text-transform:uppercase;letter-spacing:.04em}
+    .finput{width:100%;padding:10px 14px;background:#061008;border:1.5px solid #1f3522;border-radius:var(--r);color:var(--text);font-size:.9rem;transition:border-color var(--tr)}
+    .finput:focus{outline:none;border-color:var(--green)}
+    .finput::placeholder{color:rgba(224,224,224,.25)}
+    textarea.finput{resize:vertical;min-height:80px}
+    .frow{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    .frow3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+    .color-preview{height:56px;border-radius:var(--r);margin-bottom:8px;border:1px solid var(--gbd);transition:background .3s}
+    .fsection{font-size:.72rem;font-weight:700;color:var(--green);letter-spacing:.1em;text-transform:uppercase;margin:20px 0 12px;padding-bottom:6px;border-bottom:1px solid var(--gbd)}
+
+    /* ── TOAST ── */
+    .admin-toast{position:fixed;bottom:24px;right:24px;background:#1A1A1A;color:#fff;padding:12px 20px;border-radius:10px;font-size:.875rem;z-index:999;transform:translateY(60px);opacity:0;transition:all .3s ease;pointer-events:none}
+    .admin-toast.show{transform:translateY(0);opacity:1}
+
+    /* ── STATUS BADGES ── */
+    .order-new{background:rgba(74,222,128,.12);color:var(--green);padding:2px 10px;border-radius:20px;font-size:.72rem;font-weight:600}
+
+    @media(max-width:900px){
+      .stat-cards{grid-template-columns:1fr 1fr}
+      .overlay-panel{width:100%}
+      .sidebar{width:180px}
+    }
+  </style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="loginScreen">
+  <div class="login-card">
+    <div class="login-logo">Nice Shopping</div>
+    <div class="login-sub">Адміністративна панель</div>
+    <input type="password" id="loginPass" class="login-input" placeholder="Введіть пароль">
+    <button class="login-btn" onclick="doLogin()">Увійти →</button>
+    <div id="loginErr" class="login-error" style="display:none">Невірний пароль</div>
+  </div>
+</div>
+
+<!-- ADMIN APP -->
+<div id="adminApp" class="admin-app" style="display:none">
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sb-logo">
+      <span class="sb-logo-main">Nice Shopping</span>
+      <span class="sb-logo-sub">Адмін панель</span>
+    </div>
+    <nav class="sb-nav">
+      <button class="sb-item active" id="btn-stats" onclick="showTab('stats')">
+        <span class="sb-ico">📊</span> Статистика
+      </button>
+      <button class="sb-item" id="btn-products" onclick="showTab('products')">
+        <span class="sb-ico">📦</span> Товари
+      </button>
+      <button class="sb-item" id="btn-orders" onclick="showTab('orders')">
+        <span class="sb-ico">📋</span> Замовлення
+      </button>
+    </nav>
+    <div class="sb-bottom">
+      <a href="index.html" target="_blank" class="sb-site-link">↗ Перейти на сайт</a>
+      <button class="sb-logout" onclick="doLogout()">Вийти</button>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <div class="main-area">
+
+    <!-- STATISTICS -->
+    <div id="tab-stats">
+      <div class="topbar"><h1>Статистика</h1></div>
+      <div class="tab-content">
+        <div class="stat-cards">
+          <div class="stat-card">
+            <div class="stat-card__ico">👁</div>
+            <div class="stat-card__val" id="sVisits">0</div>
+            <div class="stat-card__lbl">Відвідувачів</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-card__ico">📋</div>
+            <div class="stat-card__val" id="sOrders">0</div>
+            <div class="stat-card__lbl">Замовлень</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-card__ico">💰</div>
+            <div class="stat-card__val" id="sRevenue">₴0</div>
+            <div class="stat-card__lbl">Виручка</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-card__ico">📦</div>
+            <div class="stat-card__val" id="sProducts">0</div>
+            <div class="stat-card__lbl">Товарів</div>
+          </div>
+        </div>
+
+        <div class="section-box">
+          <h2>Відвідування за останні 7 днів</h2>
+          <div class="chart" id="visitsChart"></div>
+        </div>
+
+        <div class="section-box">
+          <h2>Останні замовлення</h2>
+          <div id="recentOrders"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PRODUCTS -->
+    <div id="tab-products" style="display:none">
+      <div class="topbar">
+        <h1>Товари</h1>
+        <button class="btn-add" onclick="openForm()">+ Додати товар</button>
+      </div>
+      <div class="tab-content">
+        <div id="productsList"></div>
+      </div>
+    </div>
+
+    <!-- ORDERS -->
+    <div id="tab-orders" style="display:none">
+      <div class="topbar"><h1>Замовлення</h1></div>
+      <div class="tab-content">
+        <div class="section-box">
+          <div id="ordersList"></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- PRODUCT FORM OVERLAY -->
+<div id="overlay" class="overlay" style="display:none" onclick="overlayBgClick(event)">
+  <div class="overlay-panel" onclick="event.stopPropagation()">
+    <div class="overlay-hdr">
+      <h2 id="formTitle">Новий товар</h2>
+      <button class="overlay-close" onclick="closeForm()">✕</button>
+    </div>
+    <div class="overlay-body">
+
+      <div class="fsection">Основна інформація</div>
+      <div class="fgroup">
+        <label>Назва товару *</label>
+        <input type="text" id="pName" class="finput" placeholder="Наприклад: Комплект White Rose">
+      </div>
+      <div class="frow">
+        <div class="fgroup">
+          <label>Категорія *</label>
+          <select id="pCategory" class="finput" onchange="onCatChange()">
+            <option value="socks">Шкарпетки</option>
+            <option value="lingerie">Нижня білизна</option>
+            <option value="bras">Бюстгальтери</option>
+          </select>
+        </div>
+        <div class="fgroup" id="genderGroup">
+          <label>Стать</label>
+          <select id="pGender" class="finput">
+            <option value="women">Жіноче</option>
+            <option value="men">Чоловіче</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="fsection">Ціна</div>
+      <div class="frow">
+        <div class="fgroup">
+          <label>Ціна (₴) *</label>
+          <input type="number" id="pPrice" class="finput" placeholder="450">
+        </div>
+        <div class="fgroup">
+          <label>Стара ціна (₴)</label>
+          <input type="number" id="pOldPrice" class="finput" placeholder="600 (необов'язково)">
+        </div>
+      </div>
+
+      <div class="fsection">Розміри та опис</div>
+      <div class="fgroup">
+        <label>Розміри (через кому)</label>
+        <input type="text" id="pSizes" class="finput" placeholder="XS, S, M, L, XL">
+      </div>
+      <div class="fgroup">
+        <label>Опис товару</label>
+        <textarea id="pDesc" class="finput" placeholder="Короткий опис товару..."></textarea>
+      </div>
+      <div class="fgroup">
+        <label>Характеристики (кожна з нового рядка)</label>
+        <textarea id="pDetails" class="finput" placeholder="Матеріал: бавовна 95%&#10;Колір: білий&#10;Догляд: ручне прання"></textarea>
+      </div>
+
+      <div class="fsection">Фото товару</div>
+      <div class="fgroup">
+        <label>Посилання на фото (URL)</label>
+        <input type="url" id="pImageUrl" class="finput" placeholder="https://..." oninput="updatePreview()">
+        <div style="font-size:.72rem;color:var(--dim);margin-top:6px">Завантажте фото на imgbb.com або catbox.moe і вставте посилання</div>
+      </div>
+
+      <div class="fsection">Колір фону (якщо немає фото)</div>
+      <div id="colorPreview" class="color-preview"></div>
+      <div class="frow">
+        <div class="fgroup">
+          <label>Колір 1</label>
+          <input type="color" id="pC1" class="finput" style="height:42px;padding:4px 8px;cursor:pointer" oninput="updateColorPreview()">
+        </div>
+        <div class="fgroup">
+          <label>Колір 2</label>
+          <input type="color" id="pC2" class="finput" style="height:42px;padding:4px 8px;cursor:pointer" oninput="updateColorPreview()">
+        </div>
+      </div>
+
+    </div>
+    <div class="overlay-footer">
+      <button class="btn-cancel" onclick="closeForm()">Скасувати</button>
+      <button class="btn-save" onclick="saveProduct()">💾 Зберегти товар</button>
+    </div>
+  </div>
+</div>
+
+<div class="admin-toast" id="toast"></div>
+
+<script src="js/config.js"></script>
+<script>
+var PASS = 'admin2025'; // ← змініть пароль тут
+var editingId = null;
+
+/* ── AUTH ── */
+function doLogin() {
+  var val = document.getElementById('loginPass').value;
+  if (val === PASS) {
+    localStorage.setItem('ns_admin_ok', '1');
+    document.getElementById('loginErr').style.display = 'none';
+    showAdmin();
+  } else {
+    document.getElementById('loginErr').style.display = 'block';
+  }
+}
+
+function doLogout() {
+  localStorage.removeItem('ns_admin_ok');
+  location.reload();
+}
+
+function showAdmin() {
+  document.getElementById('loginScreen').style.display = 'none';
+  document.getElementById('adminApp').style.display = 'flex';
+  loadStats();
+}
+
+/* ── TABS ── */
+function showTab(name) {
+  ['stats','products','orders'].forEach(function(t) {
+    document.getElementById('tab-' + t).style.display = t === name ? 'block' : 'none';
+    document.getElementById('btn-' + t).classList.toggle('active', t === name);
+  });
+  if (name === 'stats')    loadStats();
+  if (name === 'products') renderProducts();
+  if (name === 'orders')   renderOrders();
+}
+
+/* ── DATA ── */
+function getProducts() {
+  try { return JSON.parse(localStorage.getItem('ns_products')) || []; } catch(e) { return []; }
+}
+function setProducts(arr) { localStorage.setItem('ns_products', JSON.stringify(arr)); }
+function getOrders() {
+  try { return JSON.parse(localStorage.getItem('ns_orders')) || []; } catch(e) { return []; }
+}
+function getVisits() {
+  try { return JSON.parse(localStorage.getItem('ns_visits')) || {}; } catch(e) { return {}; }
+}
+
+/* ── STATS ── */
+function loadStats() {
+  var visits = getVisits();
+  var totalV = Object.values(visits).reduce(function(a,b){return a+b;},0);
+  var orders = getOrders();
+  var revenue = orders.reduce(function(s,o){return s+(o.total||0);},0);
+  var products = getProducts();
+
+  document.getElementById('sVisits').textContent = totalV;
+  document.getElementById('sOrders').textContent = orders.length;
+  document.getElementById('sRevenue').textContent = '₴' + revenue.toLocaleString('uk-UA');
+  document.getElementById('sProducts').textContent = products.length;
+
+  renderChart(visits);
+  renderRecentOrders(orders.slice(0,5));
+}
+
+function renderChart(visits) {
+  var days = [];
+  for (var i = 6; i >= 0; i--) {
+    var d = new Date(); d.setDate(d.getDate() - i);
+    var key = d.toISOString().split('T')[0];
+    days.push({ lbl: d.getDate() + '.' + String(d.getMonth()+1).padStart(2,'0'), count: visits[key] || 0 });
+  }
+  var max = Math.max.apply(null, days.map(function(d){return d.count;})) || 1;
+  document.getElementById('visitsChart').innerHTML = days.map(function(d) {
+    var pct = Math.round((d.count / max) * 100);
+    return '<div class="bar-col">' +
+      '<div class="bar-val">' + (d.count || '') + '</div>' +
+      '<div class="bar-wrap"><div class="bar" style="height:' + pct + '%"></div></div>' +
+      '<div class="bar-lbl">' + d.lbl + '</div>' +
+    '</div>';
+  }).join('');
+}
+
+function renderRecentOrders(orders) {
+  var el = document.getElementById('recentOrders');
+  if (!orders.length) { el.innerHTML = '<div class="empty-state" style="padding:30px 0"><div class="empty-state__ico">📋</div><p>Замовлень ще немає</p></div>'; return; }
+  el.innerHTML = '<table class="data-table">' +
+    '<thead><tr><th>Дата</th><th>Клієнт</th><th>Телефон</th><th>Сума</th></tr></thead><tbody>' +
+    orders.map(function(o) {
+      return '<tr><td>' + (o.date||'-') + '</td><td>' + (o.firstName||'') + ' ' + (o.lastName||'') + '</td><td>' + (o.phone||'-') + '</td><td style="color:var(--green);font-weight:600">₴' + (o.total||0) + '</td></tr>';
+    }).join('') + '</tbody></table>';
+}
+
+/* ── PRODUCTS ── */
+function renderProducts() {
+  var list = getProducts();
+  var el = document.getElementById('productsList');
+  if (!list.length) {
+    el.innerHTML = '<div class="section-box"><div class="empty-state"><div class="empty-state__ico">📦</div><p>Товарів ще немає. Додайте перший!</p><button class="btn-add" onclick="openForm()">+ Додати товар</button></div></div>';
+    return;
+  }
+  var catN = {socks:'Шкарпетки', lingerie:'Білизна', bras:'Бюстгальтери'};
+  var genN = {women:'Жін.', men:'Чол.', '':''};
+  el.innerHTML = '<div class="section-box" style="padding:0;overflow:hidden"><table class="data-table">' +
+    '<thead><tr><th>Фото</th><th>Назва</th><th>Категорія</th><th>Ціна</th><th>Дії</th></tr></thead><tbody>' +
+    list.map(function(p) {
+      var img = p.imageUrl
+        ? '<img src="' + p.imageUrl + '" class="prod-img" onerror="this.style.display=\'none\';this.nextSibling.style.display=\'block\'">' +
+          '<div class="prod-color-box" style="display:none;background:linear-gradient(135deg,' + (p.c1||'#4ade80') + ',' + (p.c2||'#166534') + ')"></div>'
+        : '<div class="prod-color-box" style="background:linear-gradient(135deg,' + (p.c1||'#4ade80') + ',' + (p.c2||'#166534') + ')"></div>';
+      var catClass = {socks:'badge-socks', lingerie:'badge-lingerie', bras:'badge-bras'}[p.category] || '';
+      return '<tr>' +
+        '<td>' + img + '</td>' +
+        '<td style="font-weight:500">' + p.name + '</td>' +
+        '<td><span class="badge-cat ' + catClass + '">' + (catN[p.category]||p.category) + '</span> <span style="color:var(--dim);font-size:.75rem">' + (genN[p.gender]||'') + '</span></td>' +
+        '<td style="color:var(--green);font-weight:600">₴' + p.price + (p.oldPrice ? ' <span style="color:var(--dim);text-decoration:line-through;font-size:.8rem;font-weight:400">₴' + p.oldPrice + '</span>' : '') + '</td>' +
+        '<td style="white-space:nowrap"><button class="btn-edit" onclick="openForm(' + p.id + ')">✏️ Змінити</button> <button class="btn-del" onclick="deleteProduct(' + p.id + ')">🗑 Видалити</button></td>' +
+      '</tr>';
+    }).join('') + '</tbody></table></div>';
+}
+
+function deleteProduct(id) {
+  if (!confirm('Видалити цей товар?')) return;
+  setProducts(getProducts().filter(function(p){ return p.id !== id; }));
+  renderProducts();
+  toast('Товар видалено');
+}
+
+/* ── PRODUCT FORM ── */
+function openForm(id) {
+  editingId = id || null;
+  document.getElementById('formTitle').textContent = id ? 'Редагувати товар' : 'Новий товар';
+  var form = ['pName','pPrice','pOldPrice','pSizes','pDesc','pDetails','pImageUrl'];
+  form.forEach(function(f){ document.getElementById(f).value = ''; });
+  document.getElementById('pCategory').value = 'socks';
+  document.getElementById('pGender').value = 'women';
+  document.getElementById('pC1').value = '#4ade80';
+  document.getElementById('pC2').value = '#166534';
+  document.getElementById('genderGroup').style.display = 'block';
+
+  if (id) {
+    var p = getProducts().find(function(x){ return x.id === id; });
+    if (p) {
+      document.getElementById('pName').value = p.name || '';
+      document.getElementById('pCategory').value = p.category || 'socks';
+      document.getElementById('pGender').value = p.gender || 'women';
+      document.getElementById('pPrice').value = p.price || '';
+      document.getElementById('pOldPrice').value = p.oldPrice || '';
+      document.getElementById('pSizes').value = (p.sizes||[]).join(', ');
+      document.getElementById('pDesc').value = p.description || '';
+      document.getElementById('pDetails').value = (p.details||[]).join('\n');
+      document.getElementById('pC1').value = p.c1 || '#4ade80';
+      document.getElementById('pC2').value = p.c2 || '#166534';
+      document.getElementById('pImageUrl').value = p.imageUrl || '';
+      if (p.category === 'bras') document.getElementById('genderGroup').style.display = 'none';
+    }
+  }
+  updateColorPreview();
+  document.getElementById('overlay').style.display = 'flex';
+}
+
+function closeForm() {
+  document.getElementById('overlay').style.display = 'none';
+  editingId = null;
+}
+
+function overlayBgClick(e) {
+  if (e.target === document.getElementById('overlay')) closeForm();
+}
+
+function onCatChange() {
+  var cat = document.getElementById('pCategory').value;
+  document.getElementById('genderGroup').style.display = cat === 'bras' ? 'none' : 'block';
+}
+
+function updateColorPreview() {
+  var c1 = document.getElementById('pC1').value;
+  var c2 = document.getElementById('pC2').value;
+  document.getElementById('colorPreview').style.background = 'linear-gradient(135deg,' + c1 + ',' + c2 + ')';
+}
+
+function updatePreview() {
+  // image url changed — could add live preview here
+}
+
+function saveProduct() {
+  var name = document.getElementById('pName').value.trim();
+  var price = parseFloat(document.getElementById('pPrice').value);
+  if (!name) { toast('Введіть назву товару'); return; }
+  if (!price) { toast('Введіть ціну'); return; }
+
+  var p = {
+    id: editingId || Date.now(),
+    name: name,
+    category: document.getElementById('pCategory').value,
+    gender: document.getElementById('pGender').value,
+    price: price,
+    oldPrice: parseFloat(document.getElementById('pOldPrice').value) || null,
+    rating: 5.0, reviews: 0,
+    sizes: document.getElementById('pSizes').value.split(',').map(function(s){return s.trim();}).filter(Boolean),
+    description: document.getElementById('pDesc').value.trim(),
+    details: document.getElementById('pDetails').value.split('\n').map(function(s){return s.trim();}).filter(Boolean),
+    c1: document.getElementById('pC1').value,
+    c2: document.getElementById('pC2').value,
+    imageUrl: document.getElementById('pImageUrl').value.trim()
+  };
+
+  var list = getProducts();
+  if (editingId) {
+    var idx = list.findIndex(function(x){ return x.id === editingId; });
+    if (idx >= 0) list[idx] = p; else list.push(p);
+  } else {
+    list.push(p);
+  }
+  setProducts(list);
+  closeForm();
+  renderProducts();
+  toast('✅ Товар збережено!');
+}
+
+/* ── ORDERS ── */
+function renderOrders() {
+  var orders = getOrders();
+  var el = document.getElementById('ordersList');
+  if (!orders.length) {
+    el.innerHTML = '<div class="empty-state" style="padding:40px 0"><div class="empty-state__ico">📋</div><p>Замовлень ще немає</p></div>';
+    return;
+  }
+  var payN = {cod:'Накладений платіж', prepay:'Передоплата'};
+  el.innerHTML = '<table class="data-table">' +
+    '<thead><tr><th>Дата</th><th>Клієнт</th><th>Телефон</th><th>Місто</th><th>Оплата</th><th>Товари</th><th>Сума</th></tr></thead><tbody>' +
+    orders.map(function(o) {
+      var itemsText = (o.items||[]).map(function(i){ return i.name + ' ×' + i.qty; }).join(', ');
+      return '<tr>' +
+        '<td style="white-space:nowrap">' + (o.date||'-') + '</td>' +
+        '<td style="font-weight:500">' + (o.firstName||'') + ' ' + (o.lastName||'') + '</td>' +
+        '<td>' + (o.phone||'-') + '</td>' +
+        '<td>' + (o.city||'-') + '</td>' +
+        '<td>' + (payN[o.payment]||o.payment||'-') + '</td>' +
+        '<td style="font-size:.78rem;color:var(--dim);max-width:200px">' + (itemsText||'-') + '</td>' +
+        '<td style="color:var(--green);font-weight:700">₴' + (o.total||0) + '</td>' +
+      '</tr>';
+    }).join('') + '</tbody></table>';
+}
+
+/* ── TOAST ── */
+function toast(msg) {
+  var t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(function(){ t.classList.remove('show'); }, 2500);
+}
+
+/* ── INIT ── */
+document.getElementById('loginPass').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') doLogin();
+});
+if (localStorage.getItem('ns_admin_ok') === '1') showAdmin();
+</script>
+</body>
+</html>
