@@ -7,133 +7,200 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;1,400&display=swap" rel="stylesheet">
   <style>
     *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-    html,body{width:100%;height:100%}
-    :root{--bg:#020d04;--bg2:#0a1a0c;--bg3:#030f05;--green:#4ade80;--gl:#86efac;--gb:rgba(74,222,128,.1);--gbd:rgba(74,222,128,.14);--text:#E0E0E0;--dim:rgba(224,224,224,.55);--serif:'Playfair Display',serif;--font:'Inter',sans-serif;--r:10px;--tr:.2s ease}
-    body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:1.5;-webkit-font-smoothing:antialiased;min-height:100vh}
+    html,body{height:100%;width:100%}
+    :root{--bg:#020d04;--bg2:#0a1a0c;--bg3:#030f05;--green:#4ade80;--gl:#86efac;--gb:rgba(74,222,128,.1);--gbd:rgba(74,222,128,.14);--text:#E0E0E0;--dim:rgba(224,224,224,.55);--red:#f87171;--blue:#60a5fa;--serif:'Playfair Display',serif;--font:'Inter',sans-serif;--r:10px;--tr:.2s ease}
+    body{font-family:var(--font);background:var(--bg);color:var(--text);-webkit-font-smoothing:antialiased}
     a{text-decoration:none;color:inherit}
     button{cursor:pointer;border:none;font-family:inherit}
     input,select,textarea{font-family:inherit}
 
     /* ── LOGIN ── */
-    .login-screen{position:fixed;top:0;left:0;right:0;bottom:0;background:linear-gradient(135deg,#010a03 0%,#051a0a 60%,#020810 100%);z-index:10}
-    .login-card{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:var(--bg2);border:1px solid var(--gbd);border-radius:20px;padding:48px 40px;width:360px;text-align:center}
-    .login-logo{font-family:var(--serif);font-size:1.8rem;color:var(--green);margin-bottom:6px}
+    .login-screen{position:fixed;top:0;left:0;right:0;bottom:0;background:linear-gradient(135deg,#010a03 0%,#051a0a 60%,#020810 100%);z-index:100}
+    .login-card{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:var(--bg2);border:1px solid var(--gbd);border-radius:20px;padding:48px 40px;width:380px;text-align:center}
+    .login-logo{font-family:var(--serif);font-size:1.9rem;color:var(--green);margin-bottom:6px}
     .login-sub{font-size:.85rem;color:var(--dim);margin-bottom:32px}
-    .login-input{width:100%;padding:13px 16px;background:#061008;border:1.5px solid #1f3522;border-radius:var(--r);color:var(--text);font-size:1rem;margin-bottom:12px;transition:border-color var(--tr)}
+    .login-input{width:100%;padding:13px 16px;background:#061008;border:1.5px solid #1f3522;border-radius:var(--r);color:var(--text);font-size:1rem;margin-bottom:12px;transition:border-color var(--tr);text-align:center}
     .login-input:focus{outline:none;border-color:var(--green)}
     .login-btn{width:100%;padding:13px;background:var(--green);color:#020d04;border-radius:var(--r);font-size:.95rem;font-weight:700;transition:all var(--tr)}
-    .login-btn:hover{background:var(--gl)}
-    .login-error{color:#f87171;font-size:.82rem;margin-top:10px}
+    .login-btn:hover{background:var(--gl);transform:translateY(-1px)}
+    .login-error{color:var(--red);font-size:.82rem;margin-top:10px}
 
-    /* ── LAYOUT ── */
-    .admin-app{display:flex;min-height:100vh}
+    /* ── APP LAYOUT ── */
+    .admin-app{display:flex;height:100vh;overflow:hidden}
 
     /* ── SIDEBAR ── */
-    .sidebar{width:220px;background:var(--bg3);border-right:1px solid var(--gbd);display:flex;flex-direction:column;position:sticky;top:0;height:100vh;flex-shrink:0}
-    .sb-logo{padding:24px 20px 20px;border-bottom:1px solid var(--gbd)}
+    .sidebar{width:230px;background:var(--bg3);border-right:1px solid var(--gbd);display:flex;flex-direction:column;flex-shrink:0;height:100vh;overflow:hidden}
+    .sb-logo{padding:22px 20px 18px;border-bottom:1px solid var(--gbd)}
     .sb-logo-main{font-family:var(--serif);font-size:1.2rem;color:var(--green);display:block}
-    .sb-logo-sub{font-size:.72rem;color:var(--dim);letter-spacing:.06em;text-transform:uppercase}
-    .sb-nav{flex:1;padding:12px 10px}
-    .sb-item{width:100%;display:flex;align-items:center;gap:10px;padding:11px 12px;border-radius:var(--r);font-size:.88rem;color:var(--dim);transition:all var(--tr);margin-bottom:2px;background:none;text-align:left}
+    .sb-logo-sub{font-size:.7rem;color:var(--dim);letter-spacing:.07em;text-transform:uppercase}
+    .sb-nav{flex:1;padding:10px 8px;overflow-y:auto}
+    .sb-item{width:100%;display:flex;align-items:center;gap:10px;padding:11px 12px;border-radius:var(--r);font-size:.875rem;color:var(--dim);transition:all var(--tr);margin-bottom:2px;background:none;text-align:left}
     .sb-item:hover{background:var(--gb);color:var(--text)}
     .sb-item.active{background:rgba(74,222,128,.15);color:var(--green);font-weight:600}
-    .sb-ico{font-size:1.1rem;width:22px;text-align:center}
-    .sb-bottom{padding:16px 10px;border-top:1px solid var(--gbd)}
-    .sb-site-link{display:flex;align-items:center;gap:8px;padding:9px 12px;border-radius:var(--r);font-size:.82rem;color:var(--dim);margin-bottom:6px;transition:all var(--tr)}
-    .sb-site-link:hover{color:var(--green)}
-    .sb-logout{width:100%;padding:10px;border-radius:var(--r);font-size:.82rem;color:#f87171;background:rgba(248,113,113,.08);border:1px solid rgba(248,113,113,.15);transition:all var(--tr)}
-    .sb-logout:hover{background:rgba(248,113,113,.15)}
+    .sb-ico{font-size:1.1rem;width:22px;text-align:center;flex-shrink:0}
+    .sb-badge{margin-left:auto;background:var(--green);color:#020d04;border-radius:10px;font-size:.65rem;font-weight:700;padding:2px 7px;min-width:20px;text-align:center}
+    .sb-bottom{padding:14px 8px;border-top:1px solid var(--gbd)}
+    .sb-site-link{display:flex;align-items:center;gap:8px;padding:9px 12px;border-radius:var(--r);font-size:.82rem;color:var(--dim);margin-bottom:4px;transition:all var(--tr)}
+    .sb-site-link:hover{color:var(--green);background:var(--gb)}
+    .sb-logout{width:100%;padding:9px 12px;border-radius:var(--r);font-size:.82rem;color:var(--red);background:rgba(248,113,113,.07);border:1px solid rgba(248,113,113,.14);transition:all var(--tr);text-align:left}
+    .sb-logout:hover{background:rgba(248,113,113,.14)}
 
-    /* ── MAIN ── */
-    .main-area{flex:1;overflow-y:auto;background:var(--bg)}
-    .topbar{padding:20px 32px;border-bottom:1px solid var(--gbd);display:flex;align-items:center;justify-content:space-between;background:var(--bg)}
-    .topbar h1{font-family:var(--serif);font-size:1.5rem;font-weight:400}
-    .tab-content{padding:28px 32px}
+    /* ── MAIN AREA ── */
+    .main-area{flex:1;display:flex;flex-direction:column;overflow:hidden}
+    .topbar{padding:16px 28px;border-bottom:1px solid var(--gbd);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;background:var(--bg)}
+    .topbar h1{font-family:var(--serif);font-size:1.4rem;font-weight:400}
+    .topbar-actions{display:flex;gap:8px;align-items:center}
+    .tab-scroll{flex:1;overflow-y:auto;padding:24px 28px}
 
     /* ── STAT CARDS ── */
-    .stat-cards{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:28px}
-    .stat-card{background:var(--bg2);border:1px solid var(--gbd);border-radius:16px;padding:22px 20px;transition:all var(--tr)}
-    .stat-card:hover{border-color:rgba(74,222,128,.3);box-shadow:0 4px 20px rgba(74,222,128,.08)}
-    .stat-card__ico{font-size:1.6rem;margin-bottom:10px}
-    .stat-card__val{font-family:var(--serif);font-size:1.9rem;color:var(--green);line-height:1;margin-bottom:4px}
-    .stat-card__lbl{font-size:.78rem;color:var(--dim);text-transform:uppercase;letter-spacing:.05em}
+    .stat-cards{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:22px}
+    .stat-card{background:var(--bg2);border:1px solid var(--gbd);border-radius:14px;padding:20px 18px}
+    .stat-card__ico{font-size:1.5rem;margin-bottom:8px}
+    .stat-card__val{font-family:var(--serif);font-size:1.8rem;color:var(--green);line-height:1;margin-bottom:4px}
+    .stat-card__lbl{font-size:.75rem;color:var(--dim);text-transform:uppercase;letter-spacing:.05em}
 
     /* ── CHART ── */
-    .section-box{background:var(--bg2);border:1px solid var(--gbd);border-radius:16px;padding:22px 24px;margin-bottom:20px}
-    .section-box h2{font-size:1rem;font-weight:600;margin-bottom:18px;color:var(--text)}
-    .chart{display:flex;align-items:flex-end;gap:10px;height:120px}
-    .bar-col{display:flex;flex-direction:column;align-items:center;gap:4px;flex:1}
-    .bar-val{font-size:.72rem;color:var(--dim);min-height:14px}
+    .box{background:var(--bg2);border:1px solid var(--gbd);border-radius:14px;padding:20px 22px;margin-bottom:18px}
+    .box h2{font-size:.95rem;font-weight:600;margin-bottom:16px}
+    .chart{display:flex;align-items:flex-end;gap:8px;height:110px}
+    .bar-col{display:flex;flex-direction:column;align-items:center;gap:3px;flex:1}
+    .bar-val{font-size:.68rem;color:var(--dim);min-height:12px}
     .bar-wrap{flex:1;width:100%;display:flex;align-items:flex-end}
-    .bar{width:100%;background:linear-gradient(180deg,var(--green),rgba(74,222,128,.4));border-radius:4px 4px 0 0;min-height:4px;transition:height .4s ease}
-    .bar-lbl{font-size:.7rem;color:var(--dim)}
+    .bar{width:100%;background:linear-gradient(180deg,var(--green),rgba(74,222,128,.35));border-radius:4px 4px 0 0;min-height:3px}
+    .bar-lbl{font-size:.67rem;color:var(--dim)}
 
     /* ── TABLES ── */
-    .data-table{width:100%;border-collapse:collapse;font-size:.875rem}
-    .data-table th{text-align:left;padding:10px 14px;font-size:.72rem;font-weight:600;color:var(--dim);text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid var(--gbd)}
-    .data-table td{padding:12px 14px;border-bottom:1px solid rgba(74,222,128,.05);vertical-align:middle}
+    .tbl-wrap{overflow-x:auto}
+    .data-table{width:100%;border-collapse:collapse;font-size:.855rem}
+    .data-table th{text-align:left;padding:9px 12px;font-size:.7rem;font-weight:600;color:var(--dim);text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid var(--gbd);white-space:nowrap}
+    .data-table td{padding:11px 12px;border-bottom:1px solid rgba(74,222,128,.05);vertical-align:middle}
     .data-table tr:last-child td{border-bottom:none}
     .data-table tr:hover td{background:rgba(74,222,128,.03)}
 
-    /* ── PRODUCTS ── */
-    .page-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:22px}
-    .page-hdr h1{font-family:var(--serif);font-size:1.5rem;font-weight:400}
-    .btn-add{background:var(--green);color:#020d04;padding:10px 20px;border-radius:var(--r);font-size:.875rem;font-weight:700;transition:all var(--tr)}
-    .btn-add:hover{background:var(--gl)}
-    .btn-edit{background:rgba(59,130,246,.12);border:1px solid rgba(59,130,246,.2);color:#60a5fa;padding:5px 12px;border-radius:6px;font-size:.78rem;transition:all var(--tr)}
-    .btn-edit:hover{background:rgba(59,130,246,.22)}
-    .btn-del{background:rgba(248,113,113,.1);border:1px solid rgba(248,113,113,.2);color:#f87171;padding:5px 12px;border-radius:6px;font-size:.78rem;transition:all var(--tr)}
+    /* ── BUTTONS ── */
+    .btn-green{background:var(--green);color:#020d04;padding:9px 18px;border-radius:var(--r);font-size:.855rem;font-weight:700;transition:all var(--tr)}
+    .btn-green:hover{background:var(--gl);transform:translateY(-1px)}
+    .btn-outline{background:var(--gb);border:1px solid var(--gbd);color:var(--text);padding:8px 16px;border-radius:var(--r);font-size:.82rem;transition:all var(--tr)}
+    .btn-outline:hover{border-color:var(--green);color:var(--green)}
+    .btn-icon{background:none;border:none;padding:6px 10px;border-radius:6px;font-size:.8rem;transition:all var(--tr);white-space:nowrap}
+    .btn-edit{background:rgba(96,165,250,.1);color:var(--blue);border:1px solid rgba(96,165,250,.2)}
+    .btn-edit:hover{background:rgba(96,165,250,.2)}
+    .btn-del{background:rgba(248,113,113,.1);color:var(--red);border:1px solid rgba(248,113,113,.2)}
     .btn-del:hover{background:rgba(248,113,113,.2)}
-    .prod-img{width:46px;height:46px;border-radius:8px;object-fit:cover;display:block}
-    .prod-color-box{width:46px;height:46px;border-radius:8px}
-    .badge-cat{display:inline-block;padding:2px 8px;border-radius:20px;font-size:.72rem;font-weight:600}
-    .badge-socks{background:rgba(59,130,246,.15);color:#60a5fa}
-    .badge-lingerie{background:rgba(139,92,246,.15);color:#a78bfa}
-    .badge-bras{background:rgba(244,63,94,.15);color:#fb7185}
+    .btn-move{background:rgba(139,92,246,.1);color:#a78bfa;border:1px solid rgba(139,92,246,.2)}
+    .btn-move:hover{background:rgba(139,92,246,.2)}
 
-    /* ── EMPTY STATE ── */
-    .empty-state{text-align:center;padding:60px 20px;color:var(--dim)}
-    .empty-state__ico{font-size:3rem;margin-bottom:14px}
-    .empty-state p{font-size:.9rem;margin-bottom:20px}
+    /* ── PAGE HEADER ── */
+    .page-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;gap:12px;flex-wrap:wrap}
+    .page-hdr h1{font-family:var(--serif);font-size:1.4rem;font-weight:400}
+    .hdr-tools{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
 
-    /* ── PRODUCT FORM OVERLAY ── */
+    /* ── PRODUCT THUMB ── */
+    .prod-thumb{width:44px;height:44px;border-radius:8px;object-fit:cover;display:block;flex-shrink:0}
+    .prod-thumb-grad{width:44px;height:44px;border-radius:8px;flex-shrink:0}
+
+    /* ── BADGES ── */
+    .badge{display:inline-block;padding:2px 9px;border-radius:20px;font-size:.7rem;font-weight:600}
+    .badge-socks{background:rgba(59,130,246,.14);color:#60a5fa}
+    .badge-lingerie{background:rgba(139,92,246,.14);color:#a78bfa}
+    .badge-bras{background:rgba(244,63,94,.14);color:#fb7185}
+    .badge-custom{background:rgba(74,222,128,.12);color:var(--green)}
+
+    /* ── VIEW TOGGLE ── */
+    .view-toggle{display:flex;background:var(--bg2);border:1px solid var(--gbd);border-radius:8px;overflow:hidden}
+    .view-btn{padding:6px 12px;font-size:.82rem;color:var(--dim);transition:all var(--tr);background:none}
+    .view-btn.active{background:var(--gb);color:var(--green)}
+
+    /* ── PRODUCT GRID VIEW ── */
+    .prod-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:14px}
+    .prod-grid-card{background:var(--bg2);border:1px solid var(--gbd);border-radius:14px;overflow:hidden;transition:all var(--tr)}
+    .prod-grid-card:hover{border-color:rgba(74,222,128,.3);box-shadow:0 6px 24px rgba(74,222,128,.1)}
+    .pgc-img{height:130px;position:relative;display:flex;align-items:center;justify-content:center;font-size:2rem}
+    .pgc-img img{width:100%;height:100%;object-fit:cover;position:absolute;inset:0}
+    .pgc-new{position:absolute;top:8px;left:8px;background:var(--green);color:#020d04;font-size:.6rem;font-weight:700;padding:2px 7px;border-radius:4px}
+    .pgc-body{padding:12px}
+    .pgc-name{font-size:.82rem;font-weight:600;color:var(--text);margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .pgc-price{color:var(--green);font-weight:700;font-size:.9rem}
+    .pgc-old{color:var(--dim);text-decoration:line-through;font-size:.75rem;margin-left:4px}
+    .pgc-actions{display:flex;gap:4px;padding:8px 12px;border-top:1px solid var(--gbd)}
+    .pgc-actions button{flex:1;padding:5px;font-size:.72rem;border-radius:6px}
+
+    /* ── CATALOG TAB ── */
+    .cat-cards-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px}
+    .cat-admin-card{background:var(--bg2);border:1px solid var(--gbd);border-radius:14px;padding:18px 16px;cursor:pointer;transition:all var(--tr);position:relative}
+    .cat-admin-card:hover{border-color:rgba(74,222,128,.3);box-shadow:0 4px 20px rgba(74,222,128,.08);transform:translateY(-2px)}
+    .cac-ico{font-size:1.8rem;margin-bottom:10px}
+    .cac-name{font-weight:600;font-size:.9rem;color:var(--text);margin-bottom:4px}
+    .cac-count{font-size:.78rem;color:var(--dim)}
+    .cac-del{position:absolute;top:10px;right:10px;background:none;border:none;color:var(--dim);font-size:.85rem;padding:4px;border-radius:4px;transition:color var(--tr)}
+    .cac-del:hover{color:var(--red)}
+    .cac-filter-btn{position:absolute;bottom:12px;right:12px;background:var(--gb);border:1px solid var(--gbd);color:var(--green);font-size:.7rem;padding:4px 8px;border-radius:6px;transition:all var(--tr)}
+    .cac-filter-btn:hover{background:rgba(74,222,128,.2)}
+
+    /* ── MOVE MODAL ── */
+    .modal{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:300;display:flex;align-items:center;justify-content:center}
+    .modal-box{background:var(--bg2);border:1px solid var(--gbd);border-radius:16px;padding:28px;width:380px;max-width:95vw}
+    .modal-box h3{font-family:var(--serif);font-size:1.2rem;margin-bottom:18px}
+    .modal-cats{display:flex;flex-direction:column;gap:6px;max-height:300px;overflow-y:auto}
+    .modal-cat-btn{display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:var(--r);background:var(--bg3);border:1px solid var(--gbd);color:var(--text);font-size:.875rem;transition:all var(--tr);text-align:left}
+    .modal-cat-btn:hover{border-color:var(--green);color:var(--green);background:var(--gb)}
+    .modal-footer{display:flex;justify-content:flex-end;margin-top:16px}
+
+    /* ── OVERLAY (PRODUCT FORM) ── */
     .overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:200;display:flex;justify-content:flex-end}
-    .overlay-panel{width:520px;background:var(--bg2);border-left:1px solid var(--gbd);display:flex;flex-direction:column;height:100vh;overflow:hidden}
-    .overlay-hdr{padding:20px 24px;border-bottom:1px solid var(--gbd);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
-    .overlay-hdr h2{font-family:var(--serif);font-size:1.25rem;font-weight:400}
-    .overlay-close{width:32px;height:32px;border-radius:50%;background:var(--gb);color:var(--dim);font-size:1rem;display:flex;align-items:center;justify-content:center;transition:all var(--tr)}
-    .overlay-close:hover{background:rgba(248,113,113,.15);color:#f87171}
-    .overlay-body{flex:1;overflow-y:auto;padding:24px}
-    .overlay-footer{padding:16px 24px;border-top:1px solid var(--gbd);display:flex;gap:10px;flex-shrink:0}
-    .btn-cancel{flex:1;padding:11px;border-radius:var(--r);font-size:.875rem;color:var(--dim);background:var(--gb);border:1px solid var(--gbd);transition:all var(--tr)}
+    .overlay-panel{width:560px;background:var(--bg2);border-left:1px solid var(--gbd);display:flex;flex-direction:column;height:100vh}
+    .overlay-hdr{padding:18px 22px;border-bottom:1px solid var(--gbd);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+    .overlay-hdr h2{font-family:var(--serif);font-size:1.2rem;font-weight:400}
+    .overlay-close{width:30px;height:30px;border-radius:50%;background:var(--gb);color:var(--dim);font-size:.9rem;display:flex;align-items:center;justify-content:center;transition:all var(--tr)}
+    .overlay-close:hover{background:rgba(248,113,113,.15);color:var(--red)}
+    .overlay-body{flex:1;overflow-y:auto;padding:20px 22px}
+    .overlay-footer{padding:14px 22px;border-top:1px solid var(--gbd);display:flex;gap:8px;flex-shrink:0}
+    .btn-cancel{flex:1;padding:10px;border-radius:var(--r);font-size:.855rem;color:var(--dim);background:var(--gb);border:1px solid var(--gbd);transition:all var(--tr)}
     .btn-cancel:hover{color:var(--text)}
-    .btn-save{flex:2;padding:11px;border-radius:var(--r);font-size:.875rem;font-weight:700;background:var(--green);color:#020d04;transition:all var(--tr)}
+    .btn-save{flex:2;padding:10px;border-radius:var(--r);font-size:.855rem;font-weight:700;background:var(--green);color:#020d04;transition:all var(--tr)}
     .btn-save:hover{background:var(--gl)}
 
     /* ── FORM FIELDS ── */
-    .fgroup{margin-bottom:16px}
-    .fgroup label{display:block;font-size:.78rem;font-weight:600;color:var(--dim);margin-bottom:6px;text-transform:uppercase;letter-spacing:.04em}
-    .finput{width:100%;padding:10px 14px;background:#061008;border:1.5px solid #1f3522;border-radius:var(--r);color:var(--text);font-size:.9rem;transition:border-color var(--tr)}
-    .finput:focus{outline:none;border-color:var(--green)}
-    .finput::placeholder{color:rgba(224,224,224,.25)}
-    textarea.finput{resize:vertical;min-height:80px}
-    .frow{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-    .frow3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
-    .color-preview{height:56px;border-radius:var(--r);margin-bottom:8px;border:1px solid var(--gbd);transition:background .3s}
-    .fsection{font-size:.72rem;font-weight:700;color:var(--green);letter-spacing:.1em;text-transform:uppercase;margin:20px 0 12px;padding-bottom:6px;border-bottom:1px solid var(--gbd)}
+    .fg{margin-bottom:14px}
+    .fg label{display:block;font-size:.72rem;font-weight:600;color:var(--dim);margin-bottom:5px;text-transform:uppercase;letter-spacing:.05em}
+    .fi{width:100%;padding:9px 13px;background:#061008;border:1.5px solid #1f3522;border-radius:var(--r);color:var(--text);font-size:.875rem;transition:border-color var(--tr)}
+    .fi:focus{outline:none;border-color:var(--green)}
+    .fi::placeholder{color:rgba(224,224,224,.22)}
+    textarea.fi{resize:vertical;min-height:76px}
+    .fr2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    .fsep{font-size:.68rem;font-weight:700;color:var(--green);letter-spacing:.1em;text-transform:uppercase;margin:16px 0 10px;padding-bottom:5px;border-bottom:1px solid var(--gbd)}
+    .img-preview{width:100%;height:140px;border-radius:var(--r);border:1.5px dashed #1f3522;display:flex;align-items:center;justify-content:center;color:var(--dim);font-size:.8rem;margin-bottom:8px;overflow:hidden;background:#061008;position:relative}
+    .img-preview img{width:100%;height:100%;object-fit:cover;position:absolute;inset:0}
+    .color-preview{height:50px;border-radius:var(--r);margin-bottom:8px;border:1px solid var(--gbd)}
+
+    /* ── EMPTY STATE ── */
+    .empty{text-align:center;padding:50px 20px;color:var(--dim)}
+    .empty-ico{font-size:2.8rem;margin-bottom:12px}
+    .empty p{font-size:.875rem;margin-bottom:16px}
+
+    /* ── INLINE EDIT ── */
+    .inline-price{background:#061008;border:1px solid var(--gbd);border-radius:6px;color:var(--green);font-weight:700;font-size:.855rem;padding:4px 8px;width:80px;text-align:center}
+    .inline-price:focus{outline:none;border-color:var(--green)}
+
+    /* ── CAT FORM MODAL ── */
+    .cat-modal{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:300;display:flex;align-items:center;justify-content:center}
+    .cat-modal-box{background:var(--bg2);border:1px solid var(--gbd);border-radius:16px;padding:30px;width:400px;max-width:95vw}
+    .cat-modal-box h3{font-family:var(--serif);font-size:1.2rem;margin-bottom:20px}
 
     /* ── TOAST ── */
-    .admin-toast{position:fixed;bottom:24px;right:24px;background:#1A1A1A;color:#fff;padding:12px 20px;border-radius:10px;font-size:.875rem;z-index:999;transform:translateY(60px);opacity:0;transition:all .3s ease;pointer-events:none}
-    .admin-toast.show{transform:translateY(0);opacity:1}
+    .toast{position:fixed;bottom:20px;right:20px;background:#1a1a1a;color:#fff;padding:11px 18px;border-radius:10px;font-size:.855rem;z-index:999;transform:translateY(60px);opacity:0;transition:all .3s;pointer-events:none}
+    .toast.show{transform:translateY(0);opacity:1}
 
-    /* ── STATUS BADGES ── */
-    .order-new{background:rgba(74,222,128,.12);color:var(--green);padding:2px 10px;border-radius:20px;font-size:.72rem;font-weight:600}
+    /* ── FILTER BAR ── */
+    .filter-bar{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px}
+    .filter-pill{padding:5px 12px;border-radius:20px;font-size:.78rem;border:1px solid var(--gbd);color:var(--dim);background:none;transition:all var(--tr);cursor:pointer}
+    .filter-pill:hover{border-color:var(--green);color:var(--green)}
+    .filter-pill.active{background:rgba(74,222,128,.15);border-color:rgba(74,222,128,.4);color:var(--green);font-weight:600}
 
-    @media(max-width:900px){
-      .stat-cards{grid-template-columns:1fr 1fr}
-      .overlay-panel{width:100%}
-      .sidebar{width:180px}
-    }
+    /* ── ICON PICKER ── */
+    .icon-grid{display:grid;grid-template-columns:repeat(8,1fr);gap:4px;margin-bottom:8px}
+    .icon-opt{font-size:1.3rem;padding:6px;border-radius:6px;background:var(--bg3);border:1.5px solid transparent;cursor:pointer;text-align:center;transition:all var(--tr)}
+    .icon-opt:hover,.icon-opt.selected{border-color:var(--green);background:var(--gb)}
   </style>
 </head>
 <body>
@@ -159,19 +226,15 @@
       <span class="sb-logo-sub">Адмін панель</span>
     </div>
     <nav class="sb-nav">
-      <button class="sb-item active" id="btn-stats" onclick="showTab('stats')">
-        <span class="sb-ico">📊</span> Статистика
-      </button>
-      <button class="sb-item" id="btn-products" onclick="showTab('products')">
-        <span class="sb-ico">📦</span> Товари
-      </button>
-      <button class="sb-item" id="btn-orders" onclick="showTab('orders')">
-        <span class="sb-ico">📋</span> Замовлення
-      </button>
+      <button class="sb-item active" id="btn-stats"    onclick="showTab('stats')">   <span class="sb-ico">📊</span> Статистика</button>
+      <button class="sb-item"        id="btn-products" onclick="showTab('products')"><span class="sb-ico">📦</span> Товари <span class="sb-badge" id="sbProdCount">0</span></button>
+      <button class="sb-item"        id="btn-catalogs" onclick="showTab('catalogs')"><span class="sb-ico">🗂</span> Каталоги</button>
+      <button class="sb-item"        id="btn-orders"   onclick="showTab('orders')">  <span class="sb-ico">📋</span> Замовлення <span class="sb-badge" id="sbOrdCount" style="display:none">0</span></button>
     </nav>
     <div class="sb-bottom">
-      <a href="index.html" target="_blank" class="sb-site-link">↗ Перейти на сайт</a>
-      <button class="sb-logout" onclick="doLogout()">Вийти</button>
+      <a href="index.html" target="_blank" class="sb-site-link">↗ Відкрити сайт</a>
+      <a href="catalog.html" target="_blank" class="sb-site-link">↗ Переглянути каталог</a>
+      <button class="sb-logout" onclick="doLogout()">Вийти з панелі</button>
     </div>
   </aside>
 
@@ -179,144 +242,103 @@
   <div class="main-area">
 
     <!-- STATISTICS -->
-    <div id="tab-stats">
-      <div class="topbar"><h1>Статистика</h1></div>
-      <div class="tab-content">
-        <div class="stat-cards">
-          <div class="stat-card">
-            <div class="stat-card__ico">👁</div>
-            <div class="stat-card__val" id="sVisits">0</div>
-            <div class="stat-card__lbl">Відвідувачів</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-card__ico">📋</div>
-            <div class="stat-card__val" id="sOrders">0</div>
-            <div class="stat-card__lbl">Замовлень</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-card__ico">💰</div>
-            <div class="stat-card__val" id="sRevenue">₴0</div>
-            <div class="stat-card__lbl">Виручка</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-card__ico">📦</div>
-            <div class="stat-card__val" id="sProducts">0</div>
-            <div class="stat-card__lbl">Товарів</div>
-          </div>
-        </div>
-
-        <div class="section-box">
-          <h2>Відвідування за останні 7 днів</h2>
-          <div class="chart" id="visitsChart"></div>
-        </div>
-
-        <div class="section-box">
-          <h2>Останні замовлення</h2>
-          <div id="recentOrders"></div>
-        </div>
+    <div id="tab-stats" class="tab-scroll">
+      <div class="page-hdr"><h1>Статистика</h1></div>
+      <div class="stat-cards">
+        <div class="stat-card"><div class="stat-card__ico">👁</div><div class="stat-card__val" id="sVisits">0</div><div class="stat-card__lbl">Відвідувачів</div></div>
+        <div class="stat-card"><div class="stat-card__ico">📋</div><div class="stat-card__val" id="sOrders">0</div><div class="stat-card__lbl">Замовлень</div></div>
+        <div class="stat-card"><div class="stat-card__ico">💰</div><div class="stat-card__val" id="sRevenue">₴0</div><div class="stat-card__lbl">Виручка</div></div>
+        <div class="stat-card"><div class="stat-card__ico">📦</div><div class="stat-card__val" id="sProducts">0</div><div class="stat-card__lbl">Товарів</div></div>
       </div>
+      <div class="box"><h2>Відвідування за 7 днів</h2><div class="chart" id="visitsChart"></div></div>
+      <div class="box"><h2>Останні замовлення</h2><div id="recentOrders"></div></div>
     </div>
 
     <!-- PRODUCTS -->
-    <div id="tab-products" style="display:none">
+    <div id="tab-products" style="display:none;display:none">
       <div class="topbar">
         <h1>Товари</h1>
-        <button class="btn-add" onclick="openForm()">+ Додати товар</button>
+        <div class="topbar-actions">
+          <div class="view-toggle">
+            <button class="view-btn active" id="vList" onclick="setView('list')">☰ Список</button>
+            <button class="view-btn" id="vGrid" onclick="setView('grid')">⊞ Каталог</button>
+          </div>
+          <button class="btn-green" onclick="openForm()">+ Додати товар</button>
+        </div>
       </div>
-      <div class="tab-content">
+      <div class="tab-scroll" style="padding-top:16px">
+        <div class="filter-bar" id="prodFilterBar"></div>
         <div id="productsList"></div>
+      </div>
+    </div>
+
+    <!-- CATALOGS -->
+    <div id="tab-catalogs" style="display:none">
+      <div class="topbar"><h1>Каталоги</h1><div class="topbar-actions"><button class="btn-green" onclick="openCatForm()">+ Створити каталог</button></div></div>
+      <div class="tab-scroll">
+        <div id="catalogsList"></div>
       </div>
     </div>
 
     <!-- ORDERS -->
     <div id="tab-orders" style="display:none">
       <div class="topbar"><h1>Замовлення</h1></div>
-      <div class="tab-content">
-        <div class="section-box">
-          <div id="ordersList"></div>
-        </div>
+      <div class="tab-scroll">
+        <div class="box"><div id="ordersList"></div></div>
       </div>
     </div>
 
   </div>
 </div>
 
-<!-- PRODUCT FORM OVERLAY -->
-<div id="overlay" class="overlay" style="display:none" onclick="overlayBgClick(event)">
-  <div class="overlay-panel" onclick="event.stopPropagation()">
+<!-- PRODUCT FORM -->
+<div id="overlay" class="overlay" style="display:none" onclick="if(event.target===this)closeForm()">
+  <div class="overlay-panel">
     <div class="overlay-hdr">
       <h2 id="formTitle">Новий товар</h2>
       <button class="overlay-close" onclick="closeForm()">✕</button>
     </div>
     <div class="overlay-body">
 
-      <div class="fsection">Основна інформація</div>
-      <div class="fgroup">
-        <label>Назва товару *</label>
-        <input type="text" id="pName" class="finput" placeholder="Наприклад: Комплект White Rose">
-      </div>
-      <div class="frow">
-        <div class="fgroup">
-          <label>Категорія *</label>
-          <select id="pCategory" class="finput" onchange="onCatChange()">
-            <option value="socks">Шкарпетки</option>
-            <option value="lingerie">Нижня білизна</option>
-            <option value="bras">Бюстгальтери</option>
-          </select>
+      <div class="fsep">Основна інформація</div>
+      <div class="fg"><label>Назва товару *</label><input type="text" id="pName" class="fi" placeholder="Наприклад: Комплект White Rose"></div>
+      <div class="fr2">
+        <div class="fg"><label>Категорія *</label>
+          <select id="pCatId" class="fi" onchange="onCatChange()"></select>
         </div>
-        <div class="fgroup" id="genderGroup">
-          <label>Стать</label>
-          <select id="pGender" class="finput">
+        <div class="fg"><label>Стать</label>
+          <select id="pGender" class="fi">
             <option value="women">Жіноче</option>
             <option value="men">Чоловіче</option>
+            <option value="">Унісекс</option>
           </select>
         </div>
       </div>
 
-      <div class="fsection">Ціна</div>
-      <div class="frow">
-        <div class="fgroup">
-          <label>Ціна (₴) *</label>
-          <input type="number" id="pPrice" class="finput" placeholder="450">
-        </div>
-        <div class="fgroup">
-          <label>Стара ціна (₴)</label>
-          <input type="number" id="pOldPrice" class="finput" placeholder="600 (необов'язково)">
-        </div>
+      <div class="fsep">Ціна</div>
+      <div class="fr2">
+        <div class="fg"><label>Ціна (₴) *</label><input type="number" id="pPrice" class="fi" placeholder="450"></div>
+        <div class="fg"><label>Стара ціна (₴)</label><input type="number" id="pOldPrice" class="fi" placeholder="600"></div>
       </div>
 
-      <div class="fsection">Розміри та опис</div>
-      <div class="fgroup">
-        <label>Розміри (через кому)</label>
-        <input type="text" id="pSizes" class="finput" placeholder="XS, S, M, L, XL">
-      </div>
-      <div class="fgroup">
-        <label>Опис товару</label>
-        <textarea id="pDesc" class="finput" placeholder="Короткий опис товару..."></textarea>
-      </div>
-      <div class="fgroup">
-        <label>Характеристики (кожна з нового рядка)</label>
-        <textarea id="pDetails" class="finput" placeholder="Матеріал: бавовна 95%&#10;Колір: білий&#10;Догляд: ручне прання"></textarea>
-      </div>
+      <div class="fsep">Розміри та опис</div>
+      <div class="fg"><label>Розміри (через кому)</label><input type="text" id="pSizes" class="fi" placeholder="XS, S, M, L, XL"></div>
+      <div class="fg"><label>Опис товару</label><textarea id="pDesc" class="fi" placeholder="Короткий опис..."></textarea></div>
+      <div class="fg"><label>Характеристики (кожна з нового рядка)</label><textarea id="pDetails" class="fi" placeholder="Матеріал: бавовна 95%&#10;Колір: білий&#10;Догляд: ручне прання"></textarea></div>
 
-      <div class="fsection">Фото товару</div>
-      <div class="fgroup">
+      <div class="fsep">Фото товару</div>
+      <div class="img-preview" id="imgPreview"><span id="imgPreviewText">Немає фото</span></div>
+      <div class="fg">
         <label>Посилання на фото (URL)</label>
-        <input type="url" id="pImageUrl" class="finput" placeholder="https://..." oninput="updatePreview()">
-        <div style="font-size:.72rem;color:var(--dim);margin-top:6px">Завантажте фото на imgbb.com або catbox.moe і вставте посилання</div>
+        <input type="url" id="pImageUrl" class="fi" placeholder="https://..." oninput="updateImgPreview()">
+        <div style="font-size:.72rem;color:var(--dim);margin-top:5px">Завантажте фото на <a href="https://imgbb.com" target="_blank" style="color:var(--green)">imgbb.com</a> і вставте посилання</div>
       </div>
 
-      <div class="fsection">Колір фону (якщо немає фото)</div>
-      <div id="colorPreview" class="color-preview"></div>
-      <div class="frow">
-        <div class="fgroup">
-          <label>Колір 1</label>
-          <input type="color" id="pC1" class="finput" style="height:42px;padding:4px 8px;cursor:pointer" oninput="updateColorPreview()">
-        </div>
-        <div class="fgroup">
-          <label>Колір 2</label>
-          <input type="color" id="pC2" class="finput" style="height:42px;padding:4px 8px;cursor:pointer" oninput="updateColorPreview()">
-        </div>
+      <div class="fsep">Колір фону (якщо немає фото)</div>
+      <div class="color-preview" id="colorPreview"></div>
+      <div class="fr2">
+        <div class="fg"><label>Колір 1</label><input type="color" id="pC1" class="fi" style="height:40px;padding:4px 8px;cursor:pointer" oninput="updateColorPreview()"></div>
+        <div class="fg"><label>Колір 2</label><input type="color" id="pC2" class="fi" style="height:40px;padding:4px 8px;cursor:pointer" oninput="updateColorPreview()"></div>
       </div>
 
     </div>
@@ -327,269 +349,449 @@
   </div>
 </div>
 
-<div class="admin-toast" id="toast"></div>
+<!-- MOVE MODAL -->
+<div id="moveModal" class="modal" style="display:none">
+  <div class="modal-box">
+    <h3>Перемістити товар до...</h3>
+    <div class="modal-cats" id="moveCatList"></div>
+    <div class="modal-footer"><button class="btn-outline" onclick="closeMoveModal()">Скасувати</button></div>
+  </div>
+</div>
+
+<!-- CATALOG FORM MODAL -->
+<div id="catFormModal" class="cat-modal" style="display:none">
+  <div class="cat-modal-box">
+    <h3>Новий каталог</h3>
+    <div class="fg"><label>Іконка</label>
+      <div class="icon-grid" id="iconGrid"></div>
+      <input type="hidden" id="catIcon" value="🏷️">
+    </div>
+    <div class="fg"><label>Назва каталогу *</label><input type="text" id="catName" class="fi" placeholder="Наприклад: Термо шкарпетки"></div>
+    <div class="fg"><label>Ключ (латиницею, без пробілів) *</label><input type="text" id="catKey" class="fi" placeholder="thermo-socks"></div>
+    <div class="fg"><label>Стать</label>
+      <select id="catGender" class="fi">
+        <option value="women">Жіноче</option>
+        <option value="men">Чоловіче</option>
+        <option value="">Унісекс</option>
+      </select>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:4px">
+      <button class="btn-cancel" style="flex:1;padding:10px;border-radius:var(--r);font-size:.855rem;background:var(--gb);border:1px solid var(--gbd);color:var(--dim)" onclick="closeCatForm()">Скасувати</button>
+      <button class="btn-save"   style="flex:2;padding:10px;border-radius:var(--r);font-size:.855rem;font-weight:700;background:var(--green);color:#020d04" onclick="saveCat()">Створити каталог</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
 
 <script src="js/config.js"></script>
 <script>
-var PASS = 'admin2025'; // ← змініть пароль тут
-var editingId = null;
+/* ─────────── CONFIG ─────────── */
+var PASS = 'admin2025'; // ← змініть пароль
 
-/* ── AUTH ── */
-function doLogin() {
-  var val = document.getElementById('loginPass').value;
-  if (val === PASS) {
-    localStorage.setItem('ns_admin_ok', '1');
-    document.getElementById('loginErr').style.display = 'none';
+/* ─────────── STATE ─────────── */
+var S = { view:'list', filter:'all', editingId:null, movingId:null };
+
+/* ─────────── DEFAULT CATEGORIES ─────────── */
+var DEF_CATS = [
+  {id:'socks-women',    key:'socks',    gender:'women', label:'Жіночі шкарпетки',      icon:'🧦', editable:false},
+  {id:'socks-men',      key:'socks',    gender:'men',   label:'Чоловічі шкарпетки',    icon:'🧦', editable:false},
+  {id:'lingerie-women', key:'lingerie', gender:'women', label:'Жіноча нижня білизна',  icon:'👙', editable:false},
+  {id:'lingerie-men',   key:'lingerie', gender:'men',   label:'Чоловіча нижня білизна',icon:'🩲', editable:false},
+  {id:'bras',           key:'bras',     gender:'',      label:'Бюстгальтери',           icon:'✨', editable:false},
+];
+var ICONS = ['🧦','👙','🩲','✨','🧣','🧤','🩱','🩳','👗','👔','💎','🎀','💍','🌸','🌺','⭐'];
+
+/* ─────────── DATA HELPERS ─────────── */
+function getCustomCats(){ try{ return JSON.parse(localStorage.getItem('ns_categories'))||[]; }catch(e){ return []; } }
+function setCustomCats(a){ localStorage.setItem('ns_categories',JSON.stringify(a)); }
+function getAllCats(){ return DEF_CATS.concat(getCustomCats()); }
+function catById(id){ return getAllCats().find(function(c){ return c.id===id; }); }
+function productCatId(p){
+  var all = getAllCats();
+  var found = all.find(function(c){ return c.key===p.category && (c.gender===p.gender||c.gender===''); });
+  return found ? found.id : '';
+}
+function getProducts(){ try{ return JSON.parse(localStorage.getItem('ns_products'))||[]; }catch(e){ return []; } }
+function setProducts(a){ localStorage.setItem('ns_products',JSON.stringify(a)); }
+function getOrders(){ try{ return JSON.parse(localStorage.getItem('ns_orders'))||[]; }catch(e){ return []; } }
+function getVisits(){ try{ return JSON.parse(localStorage.getItem('ns_visits'))||{}; }catch(e){ return {}; } }
+
+/* ─────────── AUTH ─────────── */
+function doLogin(){
+  if(document.getElementById('loginPass').value===PASS){
+    localStorage.setItem('ns_admin_ok','1');
+    document.getElementById('loginErr').style.display='none';
     showAdmin();
-  } else {
-    document.getElementById('loginErr').style.display = 'block';
-  }
+  } else { document.getElementById('loginErr').style.display='block'; }
 }
-
-function doLogout() {
-  localStorage.removeItem('ns_admin_ok');
-  location.reload();
-}
-
-function showAdmin() {
-  document.getElementById('loginScreen').style.display = 'none';
-  document.getElementById('adminApp').style.display = 'flex';
+function doLogout(){ localStorage.removeItem('ns_admin_ok'); location.reload(); }
+function showAdmin(){
+  document.getElementById('loginScreen').style.display='none';
+  document.getElementById('adminApp').style.display='flex';
+  updateSideBadges();
   loadStats();
 }
 
-/* ── TABS ── */
-function showTab(name) {
-  ['stats','products','orders'].forEach(function(t) {
-    document.getElementById('tab-' + t).style.display = t === name ? 'block' : 'none';
-    document.getElementById('btn-' + t).classList.toggle('active', t === name);
+/* ─────────── TABS ─────────── */
+var TABS = ['stats','products','catalogs','orders'];
+function showTab(name){
+  TABS.forEach(function(t){
+    var el = document.getElementById('tab-'+t);
+    el.style.display = t===name ? (t==='products'?'flex':'block') : 'none';
+    if(t==='products') el.style.flexDirection = 'column';
+    document.getElementById('btn-'+t).classList.toggle('active', t===name);
   });
-  if (name === 'stats')    loadStats();
-  if (name === 'products') renderProducts();
-  if (name === 'orders')   renderOrders();
+  if(name==='stats')    loadStats();
+  if(name==='products'){ buildFilterBar(); renderProducts(); }
+  if(name==='catalogs') renderCatalogs();
+  if(name==='orders')   renderOrders();
 }
 
-/* ── DATA ── */
-function getProducts() {
-  try { return JSON.parse(localStorage.getItem('ns_products')) || []; } catch(e) { return []; }
-}
-function setProducts(arr) { localStorage.setItem('ns_products', JSON.stringify(arr)); }
-function getOrders() {
-  try { return JSON.parse(localStorage.getItem('ns_orders')) || []; } catch(e) { return []; }
-}
-function getVisits() {
-  try { return JSON.parse(localStorage.getItem('ns_visits')) || {}; } catch(e) { return {}; }
+/* ─────────── BADGES ─────────── */
+function updateSideBadges(){
+  var p = getProducts(); var o = getOrders();
+  document.getElementById('sbProdCount').textContent = p.length;
+  var ob = document.getElementById('sbOrdCount');
+  ob.textContent = o.length; ob.style.display = o.length ? 'inline-block' : 'none';
 }
 
-/* ── STATS ── */
-function loadStats() {
+/* ─────────── STATS ─────────── */
+function loadStats(){
   var visits = getVisits();
   var totalV = Object.values(visits).reduce(function(a,b){return a+b;},0);
   var orders = getOrders();
   var revenue = orders.reduce(function(s,o){return s+(o.total||0);},0);
   var products = getProducts();
-
-  document.getElementById('sVisits').textContent = totalV;
-  document.getElementById('sOrders').textContent = orders.length;
-  document.getElementById('sRevenue').textContent = '₴' + revenue.toLocaleString('uk-UA');
+  document.getElementById('sVisits').textContent   = totalV;
+  document.getElementById('sOrders').textContent   = orders.length;
+  document.getElementById('sRevenue').textContent  = '₴'+revenue.toLocaleString('uk-UA');
   document.getElementById('sProducts').textContent = products.length;
-
   renderChart(visits);
   renderRecentOrders(orders.slice(0,5));
 }
-
-function renderChart(visits) {
-  var days = [];
-  for (var i = 6; i >= 0; i--) {
-    var d = new Date(); d.setDate(d.getDate() - i);
-    var key = d.toISOString().split('T')[0];
-    days.push({ lbl: d.getDate() + '.' + String(d.getMonth()+1).padStart(2,'0'), count: visits[key] || 0 });
+function renderChart(visits){
+  var days=[];
+  for(var i=6;i>=0;i--){
+    var d=new Date(); d.setDate(d.getDate()-i);
+    var key=d.toISOString().split('T')[0];
+    days.push({lbl:d.getDate()+'.'+(d.getMonth()+1),count:visits[key]||0});
   }
-  var max = Math.max.apply(null, days.map(function(d){return d.count;})) || 1;
-  document.getElementById('visitsChart').innerHTML = days.map(function(d) {
-    var pct = Math.round((d.count / max) * 100);
-    return '<div class="bar-col">' +
-      '<div class="bar-val">' + (d.count || '') + '</div>' +
-      '<div class="bar-wrap"><div class="bar" style="height:' + pct + '%"></div></div>' +
-      '<div class="bar-lbl">' + d.lbl + '</div>' +
-    '</div>';
+  var max=Math.max.apply(null,days.map(function(d){return d.count;}))||1;
+  document.getElementById('visitsChart').innerHTML = days.map(function(d){
+    var pct=Math.round((d.count/max)*100);
+    return '<div class="bar-col"><div class="bar-val">'+(d.count||'')+'</div><div class="bar-wrap"><div class="bar" style="height:'+pct+'%"></div></div><div class="bar-lbl">'+d.lbl+'</div></div>';
   }).join('');
 }
-
-function renderRecentOrders(orders) {
-  var el = document.getElementById('recentOrders');
-  if (!orders.length) { el.innerHTML = '<div class="empty-state" style="padding:30px 0"><div class="empty-state__ico">📋</div><p>Замовлень ще немає</p></div>'; return; }
-  el.innerHTML = '<table class="data-table">' +
-    '<thead><tr><th>Дата</th><th>Клієнт</th><th>Телефон</th><th>Сума</th></tr></thead><tbody>' +
-    orders.map(function(o) {
-      return '<tr><td>' + (o.date||'-') + '</td><td>' + (o.firstName||'') + ' ' + (o.lastName||'') + '</td><td>' + (o.phone||'-') + '</td><td style="color:var(--green);font-weight:600">₴' + (o.total||0) + '</td></tr>';
-    }).join('') + '</tbody></table>';
+function renderRecentOrders(orders){
+  var el=document.getElementById('recentOrders');
+  if(!orders.length){ el.innerHTML='<div class="empty" style="padding:20px 0"><div class="empty-ico">📋</div><p>Замовлень ще немає</p></div>'; return; }
+  el.innerHTML='<div class="tbl-wrap"><table class="data-table"><thead><tr><th>Дата</th><th>Клієнт</th><th>Телефон</th><th>Сума</th></tr></thead><tbody>'+
+    orders.map(function(o){
+      return '<tr><td>'+( o.date||'-')+'</td><td>'+(o.firstName||'')+' '+(o.lastName||'')+'</td><td>'+(o.phone||'-')+'</td><td style="color:var(--green);font-weight:600">₴'+(o.total||0)+'</td></tr>';
+    }).join('')+'</tbody></table></div>';
 }
 
-/* ── PRODUCTS ── */
-function renderProducts() {
-  var list = getProducts();
-  var el = document.getElementById('productsList');
-  if (!list.length) {
-    el.innerHTML = '<div class="section-box"><div class="empty-state"><div class="empty-state__ico">📦</div><p>Товарів ще немає. Додайте перший!</p><button class="btn-add" onclick="openForm()">+ Додати товар</button></div></div>';
+/* ─────────── PRODUCTS: FILTER BAR ─────────── */
+function buildFilterBar(){
+  var cats=getAllCats();
+  var counts={all:getProducts().length};
+  getProducts().forEach(function(p){ var id=productCatId(p); counts[id]=(counts[id]||0)+1; });
+  var html='<button class="filter-pill'+(S.filter==='all'?' active':'')+'" onclick="setFilter(\'all\')">Всі ('+counts.all+')</button>';
+  cats.forEach(function(c){
+    var n=counts[c.id]||0;
+    html+='<button class="filter-pill'+(S.filter===c.id?' active':'')+'" onclick="setFilter(\''+c.id+'\')">'+ c.icon+' '+c.label+' ('+n+')</button>';
+  });
+  document.getElementById('prodFilterBar').innerHTML=html;
+}
+function setFilter(id){ S.filter=id; buildFilterBar(); renderProducts(); }
+function setView(v){ S.view=v; document.getElementById('vList').classList.toggle('active',v==='list'); document.getElementById('vGrid').classList.toggle('active',v==='grid'); renderProducts(); }
+
+/* ─────────── PRODUCTS: RENDER ─────────── */
+function filteredProducts(){
+  var list=getProducts();
+  if(S.filter==='all') return list;
+  return list.filter(function(p){ return productCatId(p)===S.filter; });
+}
+function renderProducts(){
+  var list=filteredProducts();
+  var el=document.getElementById('productsList');
+  if(!list.length){
+    el.innerHTML='<div class="empty"><div class="empty-ico">📦</div><p>Товарів у цьому каталозі немає</p><button class="btn-green" onclick="openForm()">+ Додати товар</button></div>';
     return;
   }
-  var catN = {socks:'Шкарпетки', lingerie:'Білизна', bras:'Бюстгальтери'};
-  var genN = {women:'Жін.', men:'Чол.', '':''};
-  el.innerHTML = '<div class="section-box" style="padding:0;overflow:hidden"><table class="data-table">' +
-    '<thead><tr><th>Фото</th><th>Назва</th><th>Категорія</th><th>Ціна</th><th>Дії</th></tr></thead><tbody>' +
-    list.map(function(p) {
-      var img = p.imageUrl
-        ? '<img src="' + p.imageUrl + '" class="prod-img" onerror="this.style.display=\'none\';this.nextSibling.style.display=\'block\'">' +
-          '<div class="prod-color-box" style="display:none;background:linear-gradient(135deg,' + (p.c1||'#4ade80') + ',' + (p.c2||'#166534') + ')"></div>'
-        : '<div class="prod-color-box" style="background:linear-gradient(135deg,' + (p.c1||'#4ade80') + ',' + (p.c2||'#166534') + ')"></div>';
-      var catClass = {socks:'badge-socks', lingerie:'badge-lingerie', bras:'badge-bras'}[p.category] || '';
-      return '<tr>' +
-        '<td>' + img + '</td>' +
-        '<td style="font-weight:500">' + p.name + '</td>' +
-        '<td><span class="badge-cat ' + catClass + '">' + (catN[p.category]||p.category) + '</span> <span style="color:var(--dim);font-size:.75rem">' + (genN[p.gender]||'') + '</span></td>' +
-        '<td style="color:var(--green);font-weight:600">₴' + p.price + (p.oldPrice ? ' <span style="color:var(--dim);text-decoration:line-through;font-size:.8rem;font-weight:400">₴' + p.oldPrice + '</span>' : '') + '</td>' +
-        '<td style="white-space:nowrap"><button class="btn-edit" onclick="openForm(' + p.id + ')">✏️ Змінити</button> <button class="btn-del" onclick="deleteProduct(' + p.id + ')">🗑 Видалити</button></td>' +
+  if(S.view==='grid'){ renderGrid(list,el); } else { renderList(list,el); }
+  updateSideBadges();
+}
+function thumb(p){
+  return p.imageUrl
+    ? '<img src="'+p.imageUrl+'" class="prod-thumb" onerror="this.style.display=\'none\'">'
+    : '<div class="prod-thumb-grad" style="background:linear-gradient(135deg,'+(p.c1||'#4ade80')+','+(p.c2||'#166534')+')"></div>';
+}
+function renderList(list,el){
+  var catN={socks:'Шкарпетки',lingerie:'Білизна',bras:'Бюстгальтери'};
+  el.innerHTML='<div class="box" style="padding:0;overflow:hidden"><div class="tbl-wrap"><table class="data-table"><thead><tr><th>Фото</th><th>Назва</th><th>Каталог</th><th>Ціна ₴</th><th>Дії</th></tr></thead><tbody>'+
+    list.map(function(p){
+      var cat=catById(productCatId(p));
+      var catLabel=cat?(cat.icon+' '+cat.label):(p.category||'-');
+      var priceCell='<input class="inline-price" type="number" value="'+p.price+'" onchange="quickPrice('+p.id+',this.value)" title="Змінити ціну">';
+      return '<tr>'+
+        '<td style="width:56px">'+thumb(p)+'</td>'+
+        '<td style="font-weight:500;max-width:200px"><div style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+p.name+'</div>'+(p.oldPrice?'<div style="font-size:.72rem;color:var(--dim);text-decoration:line-through">₴'+p.oldPrice+'</div>':'')+'</td>'+
+        '<td><span class="badge badge-'+(p.category||'custom')+'">'+catLabel+'</span></td>'+
+        '<td>'+priceCell+'</td>'+
+        '<td style="white-space:nowrap">'+
+          '<button class="btn-icon btn-edit" onclick="openForm('+p.id+')">✏️ Змінити</button> '+
+          '<button class="btn-icon btn-move" onclick="openMoveModal('+p.id+')">↔ Перемістити</button> '+
+          '<button class="btn-icon btn-del"  onclick="delProduct('+p.id+')">🗑</button>'+
+        '</td>'+
       '</tr>';
-    }).join('') + '</tbody></table></div>';
+    }).join('')+'</tbody></table></div></div>';
+}
+function renderGrid(list,el){
+  el.innerHTML='<div class="prod-grid">'+list.map(function(p){
+    var bg=p.imageUrl?'':'background:linear-gradient(135deg,'+(p.c1||'#4ade80')+','+(p.c2||'#166534')+')';
+    var imgInner=p.imageUrl?'<img src="'+p.imageUrl+'" style="width:100%;height:100%;object-fit:cover;position:absolute;inset:0">':'<span style="font-size:2.2rem;position:relative;z-index:1">'+getCatIcon(p)+'</span>';
+    return '<div class="prod-grid-card">'+
+      '<div class="pgc-img" style="'+bg+'">'+imgInner+(p.oldPrice?'<div class="pgc-new">SALE</div>':'')+'</div>'+
+      '<div class="pgc-body">'+
+        '<div class="pgc-name">'+p.name+'</div>'+
+        '<div><span class="pgc-price">₴'+p.price+'</span>'+(p.oldPrice?'<span class="pgc-old">₴'+p.oldPrice+'</span>':'')+'</div>'+
+      '</div>'+
+      '<div class="pgc-actions">'+
+        '<button class="btn-icon btn-edit" onclick="openForm('+p.id+')" style="flex:1;padding:5px;font-size:.72rem">✏️</button>'+
+        '<button class="btn-icon btn-move" onclick="openMoveModal('+p.id+')" style="flex:1;padding:5px;font-size:.72rem">↔</button>'+
+        '<button class="btn-icon btn-del"  onclick="delProduct('+p.id+')"   style="flex:1;padding:5px;font-size:.72rem">🗑</button>'+
+      '</div>'+
+    '</div>';
+  }).join('')+'</div>';
+}
+function getCatIcon(p){
+  var cat=catById(productCatId(p)); return cat?cat.icon:'📦';
+}
+function quickPrice(id,val){
+  var list=getProducts();
+  var p=list.find(function(x){return x.id===id;});
+  if(p){ p.price=parseFloat(val)||p.price; setProducts(list); toast('Ціну оновлено'); }
 }
 
-function deleteProduct(id) {
-  if (!confirm('Видалити цей товар?')) return;
-  setProducts(getProducts().filter(function(p){ return p.id !== id; }));
-  renderProducts();
-  toast('Товар видалено');
+/* ─────────── PRODUCT FORM ─────────── */
+function buildCatSelect(selectedId){
+  var sel=document.getElementById('pCatId');
+  sel.innerHTML=getAllCats().map(function(c){
+    return '<option value="'+c.id+'"'+(c.id===selectedId?' selected':'')+'>'+c.icon+' '+c.label+'</option>';
+  }).join('');
 }
+function onCatChange(){
+  var c=catById(document.getElementById('pCatId').value);
+  // auto-set gender if category has one
+  if(c&&c.gender) document.getElementById('pGender').value=c.gender;
+}
+function openForm(id){
+  S.editingId=id||null;
+  document.getElementById('formTitle').textContent=id?'Редагувати товар':'Новий товар';
+  var fields=['pName','pPrice','pOldPrice','pSizes','pDesc','pDetails','pImageUrl'];
+  fields.forEach(function(f){document.getElementById(f).value='';});
+  document.getElementById('pC1').value='#4ade80';
+  document.getElementById('pC2').value='#166534';
+  document.getElementById('pGender').value='women';
+  buildCatSelect(null);
+  updateColorPreview();
+  updateImgPreview();
 
-/* ── PRODUCT FORM ── */
-function openForm(id) {
-  editingId = id || null;
-  document.getElementById('formTitle').textContent = id ? 'Редагувати товар' : 'Новий товар';
-  var form = ['pName','pPrice','pOldPrice','pSizes','pDesc','pDetails','pImageUrl'];
-  form.forEach(function(f){ document.getElementById(f).value = ''; });
-  document.getElementById('pCategory').value = 'socks';
-  document.getElementById('pGender').value = 'women';
-  document.getElementById('pC1').value = '#4ade80';
-  document.getElementById('pC2').value = '#166534';
-  document.getElementById('genderGroup').style.display = 'block';
-
-  if (id) {
-    var p = getProducts().find(function(x){ return x.id === id; });
-    if (p) {
-      document.getElementById('pName').value = p.name || '';
-      document.getElementById('pCategory').value = p.category || 'socks';
-      document.getElementById('pGender').value = p.gender || 'women';
-      document.getElementById('pPrice').value = p.price || '';
-      document.getElementById('pOldPrice').value = p.oldPrice || '';
-      document.getElementById('pSizes').value = (p.sizes||[]).join(', ');
-      document.getElementById('pDesc').value = p.description || '';
-      document.getElementById('pDetails').value = (p.details||[]).join('\n');
-      document.getElementById('pC1').value = p.c1 || '#4ade80';
-      document.getElementById('pC2').value = p.c2 || '#166534';
-      document.getElementById('pImageUrl').value = p.imageUrl || '';
-      if (p.category === 'bras') document.getElementById('genderGroup').style.display = 'none';
+  if(id){
+    var p=getProducts().find(function(x){return x.id===id;});
+    if(p){
+      document.getElementById('pName').value=p.name||'';
+      document.getElementById('pPrice').value=p.price||'';
+      document.getElementById('pOldPrice').value=p.oldPrice||'';
+      document.getElementById('pSizes').value=(p.sizes||[]).join(', ');
+      document.getElementById('pDesc').value=p.description||'';
+      document.getElementById('pDetails').value=(p.details||[]).join('\n');
+      document.getElementById('pC1').value=p.c1||'#4ade80';
+      document.getElementById('pC2').value=p.c2||'#166534';
+      document.getElementById('pImageUrl').value=p.imageUrl||'';
+      document.getElementById('pGender').value=p.gender||'women';
+      buildCatSelect(productCatId(p));
+      updateColorPreview();
+      updateImgPreview();
     }
   }
-  updateColorPreview();
-  document.getElementById('overlay').style.display = 'flex';
+  document.getElementById('overlay').style.display='flex';
 }
-
-function closeForm() {
-  document.getElementById('overlay').style.display = 'none';
-  editingId = null;
+function closeForm(){ document.getElementById('overlay').style.display='none'; S.editingId=null; }
+function updateColorPreview(){
+  document.getElementById('colorPreview').style.background='linear-gradient(135deg,'+document.getElementById('pC1').value+','+document.getElementById('pC2').value+')';
 }
-
-function overlayBgClick(e) {
-  if (e.target === document.getElementById('overlay')) closeForm();
+function updateImgPreview(){
+  var url=document.getElementById('pImageUrl').value.trim();
+  var prev=document.getElementById('imgPreview');
+  var txt=document.getElementById('imgPreviewText');
+  var existing=prev.querySelector('img');
+  if(existing) existing.remove();
+  if(url){
+    txt.style.display='none';
+    var img=document.createElement('img');
+    img.src=url;
+    img.onerror=function(){txt.style.display='block';img.remove();};
+    prev.appendChild(img);
+  } else { txt.style.display='block'; }
 }
-
-function onCatChange() {
-  var cat = document.getElementById('pCategory').value;
-  document.getElementById('genderGroup').style.display = cat === 'bras' ? 'none' : 'block';
-}
-
-function updateColorPreview() {
-  var c1 = document.getElementById('pC1').value;
-  var c2 = document.getElementById('pC2').value;
-  document.getElementById('colorPreview').style.background = 'linear-gradient(135deg,' + c1 + ',' + c2 + ')';
-}
-
-function updatePreview() {
-  // image url changed — could add live preview here
-}
-
-function saveProduct() {
-  var name = document.getElementById('pName').value.trim();
-  var price = parseFloat(document.getElementById('pPrice').value);
-  if (!name) { toast('Введіть назву товару'); return; }
-  if (!price) { toast('Введіть ціну'); return; }
-
-  var p = {
-    id: editingId || Date.now(),
-    name: name,
-    category: document.getElementById('pCategory').value,
-    gender: document.getElementById('pGender').value,
-    price: price,
-    oldPrice: parseFloat(document.getElementById('pOldPrice').value) || null,
-    rating: 5.0, reviews: 0,
-    sizes: document.getElementById('pSizes').value.split(',').map(function(s){return s.trim();}).filter(Boolean),
-    description: document.getElementById('pDesc').value.trim(),
-    details: document.getElementById('pDetails').value.split('\n').map(function(s){return s.trim();}).filter(Boolean),
-    c1: document.getElementById('pC1').value,
-    c2: document.getElementById('pC2').value,
-    imageUrl: document.getElementById('pImageUrl').value.trim()
+function saveProduct(){
+  var name=document.getElementById('pName').value.trim();
+  var price=parseFloat(document.getElementById('pPrice').value);
+  if(!name){toast('Введіть назву товару');return;}
+  if(!price){toast('Введіть ціну');return;}
+  var catId=document.getElementById('pCatId').value;
+  var cat=catById(catId)||{key:'socks',gender:'women'};
+  var p={
+    id:S.editingId||Date.now(),
+    name:name,
+    category:cat.key,
+    gender:document.getElementById('pGender').value,
+    price:price,
+    oldPrice:parseFloat(document.getElementById('pOldPrice').value)||null,
+    rating:5.0, reviews:0,
+    sizes:document.getElementById('pSizes').value.split(',').map(function(s){return s.trim();}).filter(Boolean),
+    description:document.getElementById('pDesc').value.trim(),
+    details:document.getElementById('pDetails').value.split('\n').map(function(s){return s.trim();}).filter(Boolean),
+    c1:document.getElementById('pC1').value,
+    c2:document.getElementById('pC2').value,
+    imageUrl:document.getElementById('pImageUrl').value.trim()
   };
-
-  var list = getProducts();
-  if (editingId) {
-    var idx = list.findIndex(function(x){ return x.id === editingId; });
-    if (idx >= 0) list[idx] = p; else list.push(p);
-  } else {
-    list.push(p);
-  }
+  var list=getProducts();
+  if(S.editingId){ var idx=list.findIndex(function(x){return x.id===S.editingId;}); if(idx>=0)list[idx]=p; else list.push(p); }
+  else list.push(p);
   setProducts(list);
   closeForm();
+  buildFilterBar();
   renderProducts();
   toast('✅ Товар збережено!');
 }
+function delProduct(id){
+  if(!confirm('Видалити цей товар?'))return;
+  setProducts(getProducts().filter(function(p){return p.id!==id;}));
+  buildFilterBar(); renderProducts(); toast('Товар видалено');
+}
 
-/* ── ORDERS ── */
-function renderOrders() {
-  var orders = getOrders();
-  var el = document.getElementById('ordersList');
-  if (!orders.length) {
-    el.innerHTML = '<div class="empty-state" style="padding:40px 0"><div class="empty-state__ico">📋</div><p>Замовлень ще немає</p></div>';
-    return;
+/* ─────────── MOVE MODAL ─────────── */
+function openMoveModal(id){
+  S.movingId=id;
+  var cats=getAllCats();
+  var p=getProducts().find(function(x){return x.id===id;});
+  var currentId=p?productCatId(p):'';
+  document.getElementById('moveCatList').innerHTML=cats.map(function(c){
+    var active=c.id===currentId?' style="border-color:var(--green);color:var(--green)"':'';
+    return '<button class="modal-cat-btn"'+active+' onclick="moveProduct(\''+c.id+'\')">'+c.icon+' '+c.label+(c.id===currentId?' ✓':'')+'</button>';
+  }).join('');
+  document.getElementById('moveModal').style.display='flex';
+}
+function closeMoveModal(){ document.getElementById('moveModal').style.display='none'; S.movingId=null; }
+function moveProduct(catId){
+  var cat=catById(catId);
+  if(!cat||!S.movingId)return;
+  var list=getProducts();
+  var p=list.find(function(x){return x.id===S.movingId;});
+  if(p){ p.category=cat.key; p.gender=cat.gender||p.gender; setProducts(list); }
+  closeMoveModal();
+  buildFilterBar(); renderProducts();
+  toast('Товар переміщено до «'+cat.label+'»');
+}
+
+/* ─────────── CATALOGS ─────────── */
+function renderCatalogs(){
+  var products=getProducts();
+  var all=getAllCats();
+  var counts={};
+  products.forEach(function(p){ var id=productCatId(p); counts[id]=(counts[id]||0)+1; });
+  var html='<div style="margin-bottom:12px;font-size:.8rem;color:var(--dim)">Усього каталогів: '+all.length+' · Клікніть на картку, щоб побачити товари</div>'+
+    '<div class="cat-cards-grid">'+
+    all.map(function(c){
+      var n=counts[c.id]||0;
+      var delBtn=c.editable!==false?'':(!c.editable&&c.id.indexOf('custom-')===0)?
+        '<button class="cac-del" onclick="event.stopPropagation();deleteCat(\''+c.id+'\')" title="Видалити">✕</button>':'';
+      // For custom categories, show delete
+      var showDel=getCustomCats().find(function(x){return x.id===c.id;});
+      var delHtml=showDel?'<button class="cac-del" onclick="event.stopPropagation();deleteCat(\''+c.id+'\')" title="Видалити">✕</button>':'';
+      return '<div class="cat-admin-card" onclick="goToProducts(\''+c.id+'\')" title="Переглянути товари">'+
+        delHtml+
+        '<div class="cac-ico">'+c.icon+'</div>'+
+        '<div class="cac-name">'+c.label+'</div>'+
+        '<div class="cac-count">'+n+' товарів</div>'+
+        '<button class="cac-filter-btn" onclick="event.stopPropagation();goToProducts(\''+c.id+'\')">Переглянути →</button>'+
+      '</div>';
+    }).join('')+
+    '</div>';
+  document.getElementById('catalogsList').innerHTML=html;
+}
+function goToProducts(catId){
+  S.filter=catId;
+  showTab('products');
+}
+function deleteCat(id){
+  if(!confirm('Видалити цей каталог? Товари залишаться.'))return;
+  setCustomCats(getCustomCats().filter(function(c){return c.id!==id;}));
+  renderCatalogs();
+  toast('Каталог видалено');
+}
+
+/* ─────────── CATALOG FORM ─────────── */
+var selectedIcon='🏷️';
+function openCatForm(){
+  selectedIcon='🏷️';
+  document.getElementById('catName').value='';
+  document.getElementById('catKey').value='';
+  document.getElementById('catGender').value='women';
+  var grid=document.getElementById('iconGrid');
+  grid.innerHTML=ICONS.map(function(ic){
+    return '<div class="icon-opt'+(ic===selectedIcon?' selected':'')+'" onclick="selectIcon(this,\''+ic+'\')">'+ic+'</div>';
+  }).join('');
+  document.getElementById('catFormModal').style.display='flex';
+}
+function closeCatForm(){ document.getElementById('catFormModal').style.display='none'; }
+function selectIcon(el,ic){
+  selectedIcon=ic;
+  document.querySelectorAll('.icon-opt').forEach(function(e){e.classList.remove('selected');});
+  el.classList.add('selected');
+}
+function saveCat(){
+  var name=document.getElementById('catName').value.trim();
+  var key=document.getElementById('catKey').value.trim().toLowerCase().replace(/\s+/g,'-');
+  if(!name||!key){toast('Заповніть назву та ключ');return;}
+  var custom=getCustomCats();
+  if(custom.find(function(c){return c.id==='custom-'+key;})||DEF_CATS.find(function(c){return c.id===key;})){
+    toast('Каталог з таким ключем вже існує');return;
   }
-  var payN = {cod:'Накладений платіж', prepay:'Передоплата'};
-  el.innerHTML = '<table class="data-table">' +
-    '<thead><tr><th>Дата</th><th>Клієнт</th><th>Телефон</th><th>Місто</th><th>Оплата</th><th>Товари</th><th>Сума</th></tr></thead><tbody>' +
-    orders.map(function(o) {
-      var itemsText = (o.items||[]).map(function(i){ return i.name + ' ×' + i.qty; }).join(', ');
-      return '<tr>' +
-        '<td style="white-space:nowrap">' + (o.date||'-') + '</td>' +
-        '<td style="font-weight:500">' + (o.firstName||'') + ' ' + (o.lastName||'') + '</td>' +
-        '<td>' + (o.phone||'-') + '</td>' +
-        '<td>' + (o.city||'-') + '</td>' +
-        '<td>' + (payN[o.payment]||o.payment||'-') + '</td>' +
-        '<td style="font-size:.78rem;color:var(--dim);max-width:200px">' + (itemsText||'-') + '</td>' +
-        '<td style="color:var(--green);font-weight:700">₴' + (o.total||0) + '</td>' +
-      '</tr>';
-    }).join('') + '</tbody></table>';
+  custom.push({id:'custom-'+key,key:key,gender:document.getElementById('catGender').value,label:name,icon:selectedIcon,editable:true});
+  setCustomCats(custom);
+  closeCatForm();
+  renderCatalogs();
+  toast('✅ Каталог «'+name+'» створено!');
 }
 
-/* ── TOAST ── */
-function toast(msg) {
-  var t = document.getElementById('toast');
-  t.textContent = msg;
-  t.classList.add('show');
-  setTimeout(function(){ t.classList.remove('show'); }, 2500);
+/* ─────────── ORDERS ─────────── */
+function renderOrders(){
+  var orders=getOrders();
+  var el=document.getElementById('ordersList');
+  if(!orders.length){ el.innerHTML='<div class="empty"><div class="empty-ico">📋</div><p>Замовлень ще немає</p></div>'; return; }
+  var payN={cod:'Накладений',prepay:'Передоплата'};
+  el.innerHTML='<div class="tbl-wrap"><table class="data-table"><thead><tr><th>Дата</th><th>Клієнт</th><th>Телефон</th><th>Місто</th><th>Оплата</th><th>Товари</th><th>Сума</th></tr></thead><tbody>'+
+    orders.map(function(o){
+      var items=(o.items||[]).map(function(i){return i.name+' ×'+i.qty;}).join(', ');
+      return '<tr><td style="white-space:nowrap">'+(o.date||'-')+'</td><td style="font-weight:500">'+(o.firstName||'')+' '+(o.lastName||'')+'</td><td>'+(o.phone||'-')+'</td><td>'+(o.city||'-')+'</td><td>'+(payN[o.payment]||o.payment||'-')+'</td><td style="font-size:.78rem;color:var(--dim);max-width:180px">'+(items||'-')+'</td><td style="color:var(--green);font-weight:700">₴'+(o.total||0)+'</td></tr>';
+    }).join('')+'</tbody></table></div>';
 }
 
-/* ── INIT ── */
-document.getElementById('loginPass').addEventListener('keydown', function(e) {
-  if (e.key === 'Enter') doLogin();
-});
-if (localStorage.getItem('ns_admin_ok') === '1') showAdmin();
+/* ─────────── TOAST ─────────── */
+function toast(msg){
+  var t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('show');
+  setTimeout(function(){t.classList.remove('show');},2500);
+}
+
+/* ─────────── INIT ─────────── */
+document.getElementById('loginPass').addEventListener('keydown',function(e){if(e.key==='Enter')doLogin();});
+if(localStorage.getItem('ns_admin_ok')==='1') showAdmin();
 </script>
 </body>
 </html>
