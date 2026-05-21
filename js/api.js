@@ -9,6 +9,12 @@ var API = (function() {
 
   function _req(url, opts) {
     return fetch(url, opts).then(function(r) {
+      if (r.status === 401) {
+        _token = '';
+        localStorage.removeItem('ns_admin_token');
+        if (window.location.pathname.indexOf('admin') !== -1) { window.location.reload(); }
+        throw new Error('Unauthorized');
+      }
       if (!r.ok) return r.json().then(function(e) { throw new Error(e.detail || r.status); });
       return r.json();
     });

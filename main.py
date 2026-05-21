@@ -28,10 +28,19 @@ def init_db():
         CREATE TABLE IF NOT EXISTS products (id INTEGER PRIMARY KEY, data TEXT NOT NULL);
         CREATE TABLE IF NOT EXISTS orders   (id INTEGER PRIMARY KEY AUTOINCREMENT, data TEXT NOT NULL);
         CREATE TABLE IF NOT EXISTS reviews  (id INTEGER PRIMARY KEY AUTOINCREMENT, data TEXT NOT NULL);
+        CREATE TABLE IF NOT EXISTS tokens   (token TEXT PRIMARY KEY, ts INTEGER NOT NULL);
     """)
     conn.commit(); conn.close()
 
+def _load_tokens():
+    conn = get_db()
+    rows = conn.execute("SELECT token FROM tokens").fetchall()
+    conn.close()
+    for r in rows:
+        _tokens.add(r["token"])
+
 init_db()
+_load_tokens()
 
 # ── Gist backup ───────────────────────────────────────────
 def _gist_headers():
@@ -103,6 +112,9 @@ async def admin_login(req: Request):
     if body.get("password") == ADMIN_PASS:
         token = secrets.token_urlsafe(32)
         _tokens.add(token)
+        conn = get_db()
+        conn.execute("INSERT OR REPLACE INTO tokens (token, ts) VALUES (?, ?)", (token, int(time.time())))
+        conn.commit(); conn.close()
         return {"token": token}
     raise HTTPException(status_code=401, detail="Invalid password")
 
