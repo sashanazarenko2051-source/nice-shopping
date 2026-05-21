@@ -87,7 +87,7 @@ select{font-family:inherit}
 .product-card__name a{color:var(--dark);transition:color var(--tr)}
 .product-card__name a:hover{color:var(--accent)}
 .product-card__prices{display:flex;align-items:center;gap:8px;margin-bottom:4px}
-.price{font-weight:700;font-size:1rem}
+.price{font-weight:700;font-size:.875rem}
 .price-old{color:var(--gray);text-decoration:line-through;font-size:.875rem}
 .product-card__rating{display:flex;align-items:center;gap:4px}
 .stars{color:#E8A000;font-size:.75rem}
@@ -115,8 +115,10 @@ select{font-family:inherit}
 .size-btn.active{background:var(--dark);color:#fff}
 .pd-add-row{display:flex;gap:12px;margin-bottom:22px}
 .qty{display:flex;align-items:center;border:1.5px solid var(--border);border-radius:var(--r);overflow:hidden}
-.qty-btn{width:40px;height:48px;display:flex;align-items:center;justify-content:center;font-size:1.25rem;transition:background var(--tr)}
+.qty-btn{width:40px;height:48px;display:flex;align-items:center;justify-content:center;font-size:1.25rem;transition:background var(--tr);background:transparent;color:var(--dark)}
 .qty-btn:hover{background:var(--light)}
+html.dark .qty-btn{color:#E0E0E0;background:transparent}
+html.dark .qty-btn:hover{background:#1A1A1A}
 .qty-val{width:44px;text-align:center;font-weight:500}
 .pd-desc{color:var(--gray);line-height:1.75;margin-bottom:22px}
 .pd-details{list-style:disc;padding-left:18px;color:var(--gray);font-size:.875rem;line-height:1.9}
