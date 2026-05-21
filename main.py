@@ -1,81 +1,95 @@
-from fastapi import FastAPI, HTTPException, Depends, Request
+from fastapi import FastAPI, HTTPException, Depends, Request, BackgroundTasks
 from fastapi.responses import FileResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-import json, os, time, secrets
+import sqlite3, json, os, time, secrets
 from pathlib import Path
 
 app = FastAPI(docs_url=None, redoc_url=None)
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
 
-ADMIN_PASS = os.getenv("ADMIN_PASS", "admin2025")
-DATABASE_URL = os.getenv("DATABASE_URL", "")
+ADMIN_PASS   = os.getenv("ADMIN_PASS", "admin2025")
+GITHUB_TOKEN = os.getenv("GITHUB_TOKEN", "")
+GIST_ID      = os.getenv("GIST_ID", "")
 _tokens: set = set()
 security = HTTPBearer(auto_error=False)
 
-PG = bool(DATABASE_URL)
-P = "%s" if PG else "?"
+# ── SQLite ────────────────────────────────────────────────
+DB_PATH = os.getenv("DB_PATH", "shop.db")
 
-if PG:
-    import psycopg2
-    from psycopg2.extras import RealDictCursor
+def get_db():
+    conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row
+    return conn
 
-    def _connect():
-        return psycopg2.connect(DATABASE_URL)
-
-    def init_db():
-        conn = _connect()
-        cur = conn.cursor()
-        cur.execute("CREATE TABLE IF NOT EXISTS products (id BIGINT PRIMARY KEY, data TEXT NOT NULL)")
-        cur.execute("CREATE TABLE IF NOT EXISTS orders (id BIGSERIAL PRIMARY KEY, data TEXT NOT NULL)")
-        cur.execute("CREATE TABLE IF NOT EXISTS reviews (id BIGSERIAL PRIMARY KEY, data TEXT NOT NULL)")
-        conn.commit(); cur.close(); conn.close()
-
-    def db_fetchall(sql, params=()):
-        conn = _connect()
-        cur = conn.cursor(cursor_factory=RealDictCursor)
-        cur.execute(sql, params)
-        rows = [dict(r) for r in cur.fetchall()]
-        cur.close(); conn.close()
-        return rows
-
-else:
-    import sqlite3
-    DB_PATH = os.getenv("DB_PATH", "shop.db")
-
-    def _connect():
-        conn = sqlite3.connect(DB_PATH)
-        conn.row_factory = sqlite3.Row
-        return conn
-
-    def init_db():
-        conn = _connect()
-        conn.executescript("""
-            CREATE TABLE IF NOT EXISTS products (id INTEGER PRIMARY KEY, data TEXT NOT NULL);
-            CREATE TABLE IF NOT EXISTS orders (id INTEGER PRIMARY KEY AUTOINCREMENT, data TEXT NOT NULL);
-            CREATE TABLE IF NOT EXISTS reviews (id INTEGER PRIMARY KEY AUTOINCREMENT, data TEXT NOT NULL);
-        """)
-        conn.close()
-
-    def db_fetchall(sql, params=()):
-        conn = _connect()
-        rows = [dict(r) for r in conn.execute(sql, params).fetchall()]
-        conn.close()
-        return rows
-
-def db_exec(statements):
-    conn = _connect()
-    if PG:
-        cur = conn.cursor()
-        for sql, params in statements:
-            cur.execute(sql, params)
-        conn.commit(); cur.close(); conn.close()
-    else:
-        for sql, params in statements:
-            conn.execute(sql, params)
-        conn.commit(); conn.close()
+def init_db():
+    conn = get_db()
+    conn.executescript("""
+        CREATE TABLE IF NOT EXISTS products (id INTEGER PRIMARY KEY, data TEXT NOT NULL);
+        CREATE TABLE IF NOT EXISTS orders   (id INTEGER PRIMARY KEY AUTOINCREMENT, data TEXT NOT NULL);
+        CREATE TABLE IF NOT EXISTS reviews  (id INTEGER PRIMARY KEY AUTOINCREMENT, data TEXT NOT NULL);
+    """)
+    conn.commit(); conn.close()
 
 init_db()
+
+# ── Gist backup ───────────────────────────────────────────
+def _gist_headers():
+    return {"Authorization": f"token {GITHUB_TOKEN}",
+            "Accept": "application/vnd.github.v3+json",
+            "Content-Type": "application/json",
+            "User-Agent": "nice-shopping"}
+
+def _gist_load():
+    """На старті: якщо SQLite порожній — завантажити товари з Gist"""
+    if not GITHUB_TOKEN or not GIST_ID:
+        return
+    conn = get_db()
+    count = conn.execute("SELECT COUNT(*) FROM products").fetchone()[0]
+    conn.close()
+    if count > 0:
+        return
+    try:
+        import urllib.request
+        req = urllib.request.Request(
+            f"https://api.github.com/gists/{GIST_ID}",
+            headers=_gist_headers()
+        )
+        data     = json.loads(urllib.request.urlopen(req, timeout=12).read())
+        content  = data["files"].get("products.json", {}).get("content", "[]")
+        products = json.loads(content)
+        if not products:
+            return
+        conn = get_db()
+        conn.execute("DELETE FROM products")
+        for i, p in enumerate(products):
+            pid = int(p.get("id") or int(time.time() * 1000) + i)
+            p["id"] = pid
+            conn.execute("INSERT INTO products (id, data) VALUES (?, ?)", (pid, json.dumps(p)))
+        conn.commit(); conn.close()
+        print(f"[Gist] Loaded {len(products)} products")
+    except Exception as e:
+        print(f"[Gist] Load error: {e}")
+
+def _gist_save(products):
+    """Зберегти товари в Gist (фоново)"""
+    if not GITHUB_TOKEN or not GIST_ID:
+        return
+    try:
+        import urllib.request
+        body = json.dumps({
+            "files": {"products.json": {"content": json.dumps(products, ensure_ascii=False, indent=2)}}
+        }).encode()
+        req = urllib.request.Request(
+            f"https://api.github.com/gists/{GIST_ID}",
+            data=body, headers=_gist_headers(), method="PATCH"
+        )
+        urllib.request.urlopen(req, timeout=12)
+        print(f"[Gist] Saved {len(products)} products")
+    except Exception as e:
+        print(f"[Gist] Save error: {e}")
+
+_gist_load()
 
 # ── Auth ──────────────────────────────────────────────────
 def require_admin(creds: HTTPAuthorizationCredentials = Depends(security)):
@@ -95,55 +109,77 @@ async def admin_login(req: Request):
 # ── Products ──────────────────────────────────────────────
 @app.get("/api/products")
 def get_products():
-    return [json.loads(r["data"]) for r in db_fetchall("SELECT data FROM products ORDER BY id ASC")]
+    conn = get_db()
+    rows = conn.execute("SELECT data FROM products ORDER BY id ASC").fetchall()
+    conn.close()
+    return [json.loads(r["data"]) for r in rows]
 
 @app.put("/api/products")
-async def set_all_products(req: Request, token: str = Depends(require_admin)):
+async def set_all_products(req: Request, background_tasks: BackgroundTasks,
+                           token: str = Depends(require_admin)):
     products = await req.json()
-    stmts = [("DELETE FROM products", ())]
-    for p in products:
-        pid = int(p.get("id") or int(time.time() * 1000))
+    conn = get_db()
+    conn.execute("DELETE FROM products")
+    for i, p in enumerate(products):
+        pid = int(p.get("id") or int(time.time() * 1000) + i)
         p["id"] = pid
-        stmts.append((f"INSERT INTO products (id, data) VALUES ({P}, {P})", (pid, json.dumps(p))))
-    db_exec(stmts)
+        conn.execute("INSERT INTO products (id, data) VALUES (?, ?)", (pid, json.dumps(p)))
+    conn.commit(); conn.close()
+    background_tasks.add_task(_gist_save, products)
     return {"ok": True, "count": len(products)}
 
 @app.delete("/api/products/{pid}")
-def delete_product(pid: int, token: str = Depends(require_admin)):
-    db_exec([(f"DELETE FROM products WHERE id = {P}", (pid,))])
+def delete_product(pid: int, background_tasks: BackgroundTasks,
+                   token: str = Depends(require_admin)):
+    conn = get_db()
+    conn.execute("DELETE FROM products WHERE id = ?", (pid,))
+    conn.commit()
+    products = [json.loads(r["data"]) for r in
+                conn.execute("SELECT data FROM products ORDER BY id ASC").fetchall()]
+    conn.close()
+    background_tasks.add_task(_gist_save, products)
     return {"ok": True}
 
 # ── Orders ────────────────────────────────────────────────
 @app.get("/api/orders")
 def get_orders(token: str = Depends(require_admin)):
-    rows = db_fetchall("SELECT id, data FROM orders ORDER BY id DESC")
+    conn = get_db()
+    rows = conn.execute("SELECT id, data FROM orders ORDER BY id DESC").fetchall()
+    conn.close()
     result = []
     for r in rows:
-        d = json.loads(r["data"])
-        d["_id"] = r["id"]
-        result.append(d)
+        d = json.loads(r["data"]); d["_id"] = r["id"]; result.append(d)
     return result
 
 @app.post("/api/orders")
 async def create_order(req: Request):
     body = await req.json()
-    db_exec([(f"INSERT INTO orders (data) VALUES ({P})", (json.dumps(body),))])
+    conn = get_db()
+    conn.execute("INSERT INTO orders (data) VALUES (?)", (json.dumps(body),))
+    conn.commit(); conn.close()
     return {"ok": True}
 
 @app.delete("/api/orders/{oid}")
 def delete_order_api(oid: int, token: str = Depends(require_admin)):
-    db_exec([(f"DELETE FROM orders WHERE id = {P}", (oid,))])
+    conn = get_db()
+    conn.execute("DELETE FROM orders WHERE id = ?", (oid,))
+    conn.commit(); conn.close()
     return {"ok": True}
 
 # ── Reviews ───────────────────────────────────────────────
 @app.get("/api/reviews")
 def get_reviews():
-    return [json.loads(r["data"]) for r in db_fetchall("SELECT data FROM reviews ORDER BY id DESC")]
+    conn = get_db()
+    rows = conn.execute("SELECT data FROM reviews ORDER BY id DESC").fetchall()
+    conn.close()
+    return [json.loads(r["data"]) for r in rows]
 
 @app.post("/api/reviews")
 async def create_review(req: Request):
     body = await req.json()
-    db_exec([(f"INSERT INTO reviews (data) VALUES ({P})", (json.dumps(body),))])
+    conn = get_db()
+    conn.execute("INSERT INTO reviews (data) VALUES (?)", (json.dumps(body),))
+    conn.commit(); conn.close()
     return {"ok": True}
 
 # ── Static files ──────────────────────────────────────────
