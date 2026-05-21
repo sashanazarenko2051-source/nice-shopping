@@ -442,7 +442,7 @@ function showTab(name){
   TABS.forEach(function(t){
     var el = document.getElementById('tab-'+t);
     el.style.display = t===name ? (t==='products'?'flex':'block') : 'none';
-    if(t==='products') el.style.flexDirection = 'column';
+    if(t==='products'){ el.style.flexDirection='column'; el.style.flex='1'; el.style.minHeight='0'; el.style.overflow='hidden'; }
     document.getElementById('btn-'+t).classList.toggle('active', t===name);
   });
   if(name==='stats')    loadStats();
