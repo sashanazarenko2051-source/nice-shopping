@@ -56,6 +56,7 @@
 <div class="toast" id="toast"></div>
 
 <script src="js/config.js"></script>
+<script src="js/api.js"></script>
 <script src="js/data.js"></script>
 <script src="js/i18n.js"></script>
 <script src="js/cart.js"></script>
@@ -133,7 +134,7 @@ function removeItem(key) {
   renderCart();
 }
 
-renderCart();
+onProductsReady(renderCart);
 applyLang();
 
 document.getElementById('menuToggle').addEventListener('click', function() {
