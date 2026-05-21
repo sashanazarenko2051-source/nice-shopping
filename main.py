@@ -49,39 +49,63 @@ def _gist_headers():
             "Content-Type": "application/json",
             "User-Agent": "nice-shopping"}
 
+def _insert_products(products):
+    conn = get_db()
+    conn.execute("DELETE FROM products")
+    for i, p in enumerate(products):
+        pid = int(p.get("id") or int(time.time() * 1000) + i)
+        p["id"] = pid
+        conn.execute("INSERT INTO products (id, data) VALUES (?, ?)", (pid, json.dumps(p)))
+    conn.commit(); conn.close()
+
 def _gist_load():
-    """На старті: якщо SQLite порожній — завантажити товари з Gist"""
-    if not GITHUB_TOKEN or not GIST_ID:
-        return
+    """На старті: якщо SQLite порожній — завантажити товари з Gist, потім з products.json"""
     conn = get_db()
     count = conn.execute("SELECT COUNT(*) FROM products").fetchone()[0]
     conn.close()
     if count > 0:
         return
+
+    # 1) Try Gist via raw_url (avoids content-field truncation for large files)
+    if GITHUB_TOKEN and GIST_ID:
+        try:
+            import urllib.request
+            req = urllib.request.Request(
+                f"https://api.github.com/gists/{GIST_ID}",
+                headers=_gist_headers()
+            )
+            meta = json.loads(urllib.request.urlopen(req, timeout=15).read())
+            file_info = meta.get("files", {}).get("products.json", {})
+            raw_url = file_info.get("raw_url", "")
+            if raw_url:
+                raw_req = urllib.request.Request(raw_url, headers={"User-Agent": "nice-shopping"})
+                products = json.loads(urllib.request.urlopen(raw_req, timeout=15).read())
+                if products:
+                    _insert_products(products)
+                    print(f"[Gist] Loaded {len(products)} products")
+                    return
+        except Exception as e:
+            print(f"[Gist] Load error: {e}")
+
+    # 2) Permanent fallback: products.json committed to git repo (always present after deploy)
     try:
-        import urllib.request
-        req = urllib.request.Request(
-            f"https://api.github.com/gists/{GIST_ID}",
-            headers=_gist_headers()
-        )
-        data     = json.loads(urllib.request.urlopen(req, timeout=12).read())
-        content  = data["files"].get("products.json", {}).get("content", "[]")
-        products = json.loads(content)
-        if not products:
-            return
-        conn = get_db()
-        conn.execute("DELETE FROM products")
-        for i, p in enumerate(products):
-            pid = int(p.get("id") or int(time.time() * 1000) + i)
-            p["id"] = pid
-            conn.execute("INSERT INTO products (id, data) VALUES (?, ?)", (pid, json.dumps(p)))
-        conn.commit(); conn.close()
-        print(f"[Gist] Loaded {len(products)} products")
+        fb = Path("products.json")
+        if fb.exists():
+            products = json.loads(fb.read_text(encoding="utf-8"))
+            if products:
+                _insert_products(products)
+                print(f"[Fallback] Loaded {len(products)} products from products.json")
     except Exception as e:
-        print(f"[Gist] Load error: {e}")
+        print(f"[Fallback] Load error: {e}")
 
 def _gist_save(products):
-    """Зберегти товари в Gist (фоново)"""
+    """Зберегти товари в Gist (фоново) + оновити products.json на диску"""
+    # Always update the local file so it's current until next deploy
+    try:
+        Path("products.json").write_text(json.dumps(products, ensure_ascii=False, indent=2), encoding="utf-8")
+    except Exception as e:
+        print(f"[File] Save error: {e}")
+
     if not GITHUB_TOKEN or not GIST_ID:
         return
     try:
@@ -172,6 +196,16 @@ async def update_one_product(pid: int, req: Request, background_tasks: Backgroun
     conn.close()
     background_tasks.add_task(_gist_save, products)
     return {"ok": True}
+
+@app.post("/api/products/sync-file")
+async def sync_products_file(token: str = Depends(require_admin)):
+    """Write current SQLite products to products.json on disk (survives until next deploy)"""
+    conn = get_db()
+    rows = conn.execute("SELECT data FROM products ORDER BY id ASC").fetchall()
+    conn.close()
+    products = [json.loads(r["data"]) for r in rows]
+    Path("products.json").write_text(json.dumps(products, ensure_ascii=False, indent=2), encoding="utf-8")
+    return {"ok": True, "count": len(products)}
 
 @app.delete("/api/products/{pid}")
 def delete_product(pid: int, background_tasks: BackgroundTasks,
