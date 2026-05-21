@@ -793,12 +793,40 @@ function renderOrders(){
   var orders=getOrders();
   var el=document.getElementById('ordersList');
   if(!orders.length){ el.innerHTML='<div class="empty"><div class="empty-ico">📋</div><p>Замовлень ще немає</p></div>'; return; }
-  var payN={cod:'Накладений',prepay:'Передоплата'};
-  el.innerHTML='<div class="tbl-wrap"><table class="data-table"><thead><tr><th>Дата</th><th>Клієнт</th><th>Телефон</th><th>Місто</th><th>Оплата</th><th>Товари</th><th>Сума</th></tr></thead><tbody>'+
-    orders.map(function(o){
+  var payN={cod:'Накладений платіж',prepay:'Передоплата на картку'};
+  el.innerHTML='<div class="tbl-wrap"><table class="data-table"><thead><tr><th>Дата</th><th>Клієнт</th><th>Телефон</th><th>Місто</th><th>Оплата</th><th>Товари</th><th>Сума</th><th></th></tr></thead><tbody>'+
+    orders.map(function(o,idx){
       var items=(o.items||[]).map(function(i){return i.name+' ×'+i.qty;}).join(', ');
-      return '<tr><td style="white-space:nowrap">'+(o.date||'-')+'</td><td style="font-weight:500">'+(o.firstName||'')+' '+(o.lastName||'')+'</td><td>'+(o.phone||'-')+'</td><td>'+(o.city||'-')+'</td><td>'+(payN[o.payment]||o.payment||'-')+'</td><td style="font-size:.78rem;color:var(--dim);max-width:180px">'+(items||'-')+'</td><td style="color:var(--green);font-weight:700">₴'+(o.total||0)+'</td></tr>';
+      var itemsDetail=(o.items||[]).map(function(i){return '<li>'+i.name+(i.size?' ('+i.size+')':'')+' — ×'+i.qty+' — ₴'+(i.price*i.qty)+'</li>';}).join('');
+      var detailHtml=
+        '<tr id="ord-detail-'+idx+'" style="display:none"><td colspan="8" style="padding:0">'+
+          '<div style="background:#0a1a0c;border:1px solid rgba(74,222,128,.15);border-radius:12px;margin:0 8px 12px;padding:20px 24px;font-size:.85rem;line-height:1.8">'+
+            '<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px 32px">'+
+              '<div><span style="color:var(--dim);font-size:.75rem;text-transform:uppercase;letter-spacing:.05em">Клієнт</span><br><strong>'+(o.firstName||'')+' '+(o.lastName||'')+'</strong></div>'+
+              '<div><span style="color:var(--dim);font-size:.75rem;text-transform:uppercase;letter-spacing:.05em">Телефон</span><br><a href="tel:'+(o.phone||'')+'" style="color:var(--green)">'+(o.phone||'-')+'</a></div>'+
+              (o.email?'<div><span style="color:var(--dim);font-size:.75rem;text-transform:uppercase;letter-spacing:.05em">Email</span><br>'+o.email+'</div>':'') +
+              '<div><span style="color:var(--dim);font-size:.75rem;text-transform:uppercase;letter-spacing:.05em">Місто</span><br>'+(o.city||'-')+'</div>'+
+              '<div><span style="color:var(--dim);font-size:.75rem;text-transform:uppercase;letter-spacing:.05em">Відділення / адреса</span><br>'+(o.branch||'-')+'</div>'+
+              '<div><span style="color:var(--dim);font-size:.75rem;text-transform:uppercase;letter-spacing:.05em">Оплата</span><br>'+(payN[o.payment]||o.payment||'-')+'</div>'+
+              (o.comment?'<div style="grid-column:1/-1"><span style="color:var(--dim);font-size:.75rem;text-transform:uppercase;letter-spacing:.05em">Коментар</span><br>'+o.comment+'</div>':'')+
+            '</div>'+
+            '<div style="margin-top:16px;border-top:1px solid rgba(74,222,128,.1);padding-top:14px">'+
+              '<span style="color:var(--dim);font-size:.75rem;text-transform:uppercase;letter-spacing:.05em">Товари</span>'+
+              '<ul style="margin-top:6px;padding-left:18px;color:var(--text)">'+itemsDetail+'</ul>'+
+            '</div>'+
+            '<div style="margin-top:12px;text-align:right;font-size:1.05rem;font-weight:700;color:var(--green)">Разом: ₴'+(o.total||0)+'</div>'+
+          '</div>'+
+        '</td></tr>';
+      var row='<tr style="cursor:pointer" onclick="toggleOrderDetail('+idx+')"><td style="white-space:nowrap">'+(o.date||'-')+'</td><td style="font-weight:500">'+(o.firstName||'')+' '+(o.lastName||'')+'</td><td>'+(o.phone||'-')+'</td><td>'+(o.city||'-')+'</td><td>'+(payN[o.payment]||o.payment||'-')+'</td><td style="font-size:.78rem;color:var(--dim);max-width:180px">'+(items||'-')+'</td><td style="color:var(--green);font-weight:700">₴'+(o.total||0)+'</td><td style="color:var(--dim);font-size:.8rem" id="ord-arrow-'+idx+'">▼</td></tr>';
+      return row+detailHtml;
     }).join('')+'</tbody></table></div>';
+}
+function toggleOrderDetail(idx){
+  var row=document.getElementById('ord-detail-'+idx);
+  var arrow=document.getElementById('ord-arrow-'+idx);
+  var open=row.style.display!=='none';
+  row.style.display=open?'none':'table-row';
+  if(arrow)arrow.textContent=open?'▼':'▲';
 }
 
 /* ─────────── TOAST ─────────── */

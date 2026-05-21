@@ -85,8 +85,8 @@
 
 <div class="page-hero">
   <div class="container">
-    <h1 class="page-hero__title" id="pageTitle">Каталог</h1>
-    <div class="breadcrumb"><a href="index.html">Головна</a> / <span id="crumbCat">Каталог</span></div>
+    <h1 class="page-hero__title" id="pageTitle" data-i18n="page.catalog">Каталог</h1>
+    <div class="breadcrumb"><a href="index.html" data-i18n="bc.home">Головна</a> / <span id="crumbCat" data-i18n="bc.catalog">Каталог</span></div>
   </div>
 </div>
 
@@ -170,8 +170,12 @@ if (urlCat) {
   activeCat = urlCat; activeGender = urlGender;
   var key = urlCat + ':' + urlGender;
   var label = catNames[key] || urlCat;
-  document.getElementById('pageTitle').textContent = label;
-  document.getElementById('crumbCat').textContent = label;
+  var titleEl = document.getElementById('pageTitle');
+  var crumbEl = document.getElementById('crumbCat');
+  titleEl.removeAttribute('data-i18n');
+  crumbEl.removeAttribute('data-i18n');
+  titleEl.textContent = label;
+  crumbEl.textContent = label;
   var matchBtn = document.querySelector('[data-cat="' + urlCat + '"][data-gender="' + urlGender + '"]');
   if (matchBtn) { matchBtn.classList.add('active'); document.querySelector('[data-cat="all"]').classList.remove('active'); }
 }
@@ -200,6 +204,7 @@ function renderSizes(cat, gender) {
 renderSizes(activeCat, activeGender);
 
 function fmtCount(n) {
+  if (window.LANG === 'en') return n + (n === 1 ? ' item' : ' items');
   return n + (n===1?' товар':n<5?' товари':' товарів');
 }
 
