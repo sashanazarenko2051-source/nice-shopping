@@ -171,7 +171,6 @@
     .fsep{font-size:.68rem;font-weight:700;color:var(--green);letter-spacing:.1em;text-transform:uppercase;margin:16px 0 10px;padding-bottom:5px;border-bottom:1px solid var(--gbd)}
     .img-preview{width:100%;height:140px;border-radius:var(--r);border:1.5px dashed #1f3522;display:flex;align-items:center;justify-content:center;color:var(--dim);font-size:.8rem;margin-bottom:8px;overflow:hidden;background:#061008;position:relative}
     .img-preview img{width:100%;height:100%;object-fit:cover;position:absolute;inset:0}
-    .color-preview{height:50px;border-radius:var(--r);margin-bottom:8px;border:1px solid var(--gbd)}
 
     /* ── EMPTY STATE ── */
     .empty{text-align:center;padding:50px 20px;color:var(--dim)}
@@ -334,12 +333,6 @@
         <div style="font-size:.72rem;color:var(--dim);margin-top:5px">Завантажте фото на <a href="https://imgbb.com" target="_blank" style="color:var(--green)">imgbb.com</a> і вставте посилання</div>
       </div>
 
-      <div class="fsep">Колір фону (якщо немає фото)</div>
-      <div class="color-preview" id="colorPreview"></div>
-      <div class="fr2">
-        <div class="fg"><label>Колір 1</label><input type="color" id="pC1" class="fi" style="height:40px;padding:4px 8px;cursor:pointer" oninput="updateColorPreview()"></div>
-        <div class="fg"><label>Колір 2</label><input type="color" id="pC2" class="fi" style="height:40px;padding:4px 8px;cursor:pointer" oninput="updateColorPreview()"></div>
-      </div>
 
     </div>
     <div class="overlay-footer">
@@ -399,6 +392,8 @@ var DEF_CATS = [
   {id:'lingerie-women', key:'lingerie', gender:'women', label:'Жіноча нижня білизна',  icon:'👙', editable:false},
   {id:'lingerie-men',   key:'lingerie', gender:'men',   label:'Чоловіча нижня білизна',icon:'🩲', editable:false},
   {id:'bras',           key:'bras',     gender:'',      label:'Бюстгальтери',           icon:'✨', editable:false},
+  {id:'winter',         key:'winter',   gender:'',      label:'Зимові',                 icon:'❄️', editable:false},
+  {id:'summer',         key:'summer',   gender:'',      label:'Літні',                  icon:'☀️', editable:false},
 ];
 var ICONS = ['🧦','👙','🩲','✨','🧣','🧤','🩱','🩳','👗','👔','💎','🎀','💍','🌸','🌺','⭐'];
 
@@ -526,7 +521,7 @@ function renderProducts(){
 function thumb(p){
   return p.imageUrl
     ? '<img src="'+p.imageUrl+'" class="prod-thumb" onerror="this.style.display=\'none\'">'
-    : '<div class="prod-thumb-grad" style="background:linear-gradient(135deg,'+(p.c1||'#4ade80')+','+(p.c2||'#166534')+')"></div>';
+    : '<div class="prod-thumb-grad" style="background:linear-gradient(135deg,#4ade80,#166534)"></div>';
 }
 function renderList(list,el){
   var catN={socks:'Шкарпетки',lingerie:'Білизна',bras:'Бюстгальтери'};
@@ -550,7 +545,7 @@ function renderList(list,el){
 }
 function renderGrid(list,el){
   el.innerHTML='<div class="prod-grid">'+list.map(function(p){
-    var bg=p.imageUrl?'':'background:linear-gradient(135deg,'+(p.c1||'#4ade80')+','+(p.c2||'#166534')+')';
+    var bg=p.imageUrl?'':'background:linear-gradient(135deg,#4ade80,#166534)';
     var imgInner=p.imageUrl?'<img src="'+p.imageUrl+'" style="width:100%;height:100%;object-fit:cover;position:absolute;inset:0">':'<span style="font-size:2.2rem;position:relative;z-index:1">'+getCatIcon(p)+'</span>';
     return '<div class="prod-grid-card">'+
       '<div class="pgc-img" style="'+bg+'">'+imgInner+(p.oldPrice?'<div class="pgc-new">SALE</div>':'')+'</div>'+
@@ -592,11 +587,8 @@ function openForm(id){
   document.getElementById('formTitle').textContent=id?'Редагувати товар':'Новий товар';
   var fields=['pName','pPrice','pOldPrice','pSizes','pDesc','pDetails','pImageUrl'];
   fields.forEach(function(f){document.getElementById(f).value='';});
-  document.getElementById('pC1').value='#4ade80';
-  document.getElementById('pC2').value='#166534';
   document.getElementById('pGender').value='women';
   buildCatSelect(null);
-  updateColorPreview();
   updateImgPreview();
 
   if(id){
@@ -608,21 +600,15 @@ function openForm(id){
       document.getElementById('pSizes').value=(p.sizes||[]).join(', ');
       document.getElementById('pDesc').value=p.description||'';
       document.getElementById('pDetails').value=(p.details||[]).join('\n');
-      document.getElementById('pC1').value=p.c1||'#4ade80';
-      document.getElementById('pC2').value=p.c2||'#166534';
       document.getElementById('pImageUrl').value=p.imageUrl||'';
       document.getElementById('pGender').value=p.gender||'women';
       buildCatSelect(productCatId(p));
-      updateColorPreview();
       updateImgPreview();
     }
   }
   document.getElementById('overlay').style.display='flex';
 }
 function closeForm(){ document.getElementById('overlay').style.display='none'; S.editingId=null; }
-function updateColorPreview(){
-  document.getElementById('colorPreview').style.background='linear-gradient(135deg,'+document.getElementById('pC1').value+','+document.getElementById('pC2').value+')';
-}
 function updateImgPreview(){
   var url=document.getElementById('pImageUrl').value.trim();
   var prev=document.getElementById('imgPreview');
@@ -655,8 +641,6 @@ function saveProduct(){
     sizes:document.getElementById('pSizes').value.split(',').map(function(s){return s.trim();}).filter(Boolean),
     description:document.getElementById('pDesc').value.trim(),
     details:document.getElementById('pDetails').value.split('\n').map(function(s){return s.trim();}).filter(Boolean),
-    c1:document.getElementById('pC1').value,
-    c2:document.getElementById('pC2').value,
     imageUrl:document.getElementById('pImageUrl').value.trim()
   };
   var list=getProducts();

@@ -30,6 +30,8 @@
     .filter-tag[data-cat="lingerie"][data-gender="women"]::before { background: #8b5cf6; }
     .filter-tag[data-cat="lingerie"][data-gender="men"]::before { background: #10b981; }
     .filter-tag[data-cat="bras"]::before { background: #f43f5e; }
+    .filter-tag[data-cat="winter"]::before { background: #60a5fa; }
+    .filter-tag[data-cat="summer"]::before { background: #fbbf24; }
     .filter-tag.active::before { background: rgba(255,255,255,.6); }
 
     /* Sort & count */
@@ -103,6 +105,8 @@
             <button class="filter-tag" data-cat="lingerie" data-gender="women" data-i18n="filter.wl">Жіноча нижня білизна</button>
             <button class="filter-tag" data-cat="lingerie" data-gender="men" data-i18n="filter.ml">Чоловіча нижня білизна</button>
             <button class="filter-tag" data-cat="bras" data-gender="" data-i18n="filter.br">Бюстгальтери</button>
+            <button class="filter-tag" data-cat="winter" data-gender="">❄️ Зимові</button>
+            <button class="filter-tag" data-cat="summer" data-gender="">☀️ Літні</button>
           </div>
         </div>
         <div class="filter-group">
@@ -157,7 +161,8 @@ var activeSort = 'default';
 var catNames = {
   'socks:women':'Жіночі шкарпетки', 'socks:men':'Чоловічі шкарпетки',
   'lingerie:women':'Жіноча нижня білизна', 'lingerie:men':'Чоловіча нижня білизна',
-  'bras:':'Бюстгальтери'
+  'bras:':'Бюстгальтери',
+  'winter:':'❄️ Зимові', 'summer:':'☀️ Літні'
 };
 
 var urlParams = new URLSearchParams(location.search);
@@ -180,6 +185,8 @@ var SIZE_MAP = {
   'lingerie:women':['XS', 'S', 'M', 'L', 'XL', 'XXL'],
   'lingerie:men':  ['S', 'M', 'L', 'XL', 'XXL'],
   'bras:':         ['70A', '70B', '70C', '75A', '75B', '75C', '80B', '80C', '85C', '80D', '85D'],
+  'winter:':       ['XS', 'S', 'M', 'L', 'XL', 'XXL'],
+  'summer:':       ['XS', 'S', 'M', 'L', 'XL', 'XXL'],
   'all:':          ['XS', 'S', 'M', 'L', 'XL', '35-38', '38-40', '39-41', '43-45', '45-47', '70B', '75C', '80C']
 };
 var sizeEl = document.getElementById('sizeFilters');
