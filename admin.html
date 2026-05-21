@@ -327,10 +327,14 @@
 
       <div class="fsep">Фото товару</div>
       <div class="img-preview" id="imgPreview"><span id="imgPreviewText">Немає фото</span></div>
+      <input type="file" id="pImageFile" accept="image/*" style="display:none" onchange="handleFileUpload(this)">
+      <div style="display:flex;gap:8px;margin-bottom:12px">
+        <button type="button" class="btn-outline" style="flex:1;padding:10px;font-size:.855rem" onclick="document.getElementById('pImageFile').click()">📁 Завантажити фото</button>
+        <button type="button" class="btn-outline" style="padding:10px 12px;font-size:.855rem;color:var(--red);border-color:rgba(248,113,113,.3)" onclick="clearPhoto()" title="Видалити фото">✕</button>
+      </div>
       <div class="fg">
-        <label>Посилання на фото (URL)</label>
+        <label>Або вставте посилання (URL)</label>
         <input type="url" id="pImageUrl" class="fi" placeholder="https://..." oninput="updateImgPreview()">
-        <div style="font-size:.72rem;color:var(--dim);margin-top:5px">Завантажте фото на <a href="https://imgbb.com" target="_blank" style="color:var(--green)">imgbb.com</a> і вставте посилання</div>
       </div>
 
 
@@ -608,20 +612,42 @@ function openForm(id){
   }
   document.getElementById('overlay').style.display='flex';
 }
-function closeForm(){ document.getElementById('overlay').style.display='none'; S.editingId=null; }
-function updateImgPreview(){
-  var url=document.getElementById('pImageUrl').value.trim();
+function closeForm(){ document.getElementById('overlay').style.display='none'; S.editingId=null; document.getElementById('pImageFile').value=''; document.getElementById('pImageFile')._base64=null; }
+function handleFileUpload(input){
+  var file=input.files[0];
+  if(!file) return;
+  if(file.size>3*1024*1024){ toast('Фото більше 3 МБ — зменшіть розмір'); return; }
+  var reader=new FileReader();
+  reader.onload=function(e){
+    document.getElementById('pImageUrl').value='';
+    setImgPreview(e.target.result);
+    input._base64=e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+function clearPhoto(){
+  document.getElementById('pImageUrl').value='';
+  document.getElementById('pImageFile').value='';
+  document.getElementById('pImageFile')._base64=null;
+  setImgPreview('');
+}
+function setImgPreview(src){
   var prev=document.getElementById('imgPreview');
   var txt=document.getElementById('imgPreviewText');
   var existing=prev.querySelector('img');
   if(existing) existing.remove();
-  if(url){
+  if(src){
     txt.style.display='none';
     var img=document.createElement('img');
-    img.src=url;
+    img.src=src;
     img.onerror=function(){txt.style.display='block';img.remove();};
     prev.appendChild(img);
   } else { txt.style.display='block'; }
+}
+function updateImgPreview(){
+  var url=document.getElementById('pImageUrl').value.trim();
+  document.getElementById('pImageFile')._base64=null;
+  setImgPreview(url);
 }
 function saveProduct(){
   var name=document.getElementById('pName').value.trim();
@@ -641,7 +667,7 @@ function saveProduct(){
     sizes:document.getElementById('pSizes').value.split(',').map(function(s){return s.trim();}).filter(Boolean),
     description:document.getElementById('pDesc').value.trim(),
     details:document.getElementById('pDetails').value.split('\n').map(function(s){return s.trim();}).filter(Boolean),
-    imageUrl:document.getElementById('pImageUrl').value.trim()
+    imageUrl:(document.getElementById('pImageFile')._base64||document.getElementById('pImageUrl').value.trim())
   };
   var list=getProducts();
   if(S.editingId){ var idx=list.findIndex(function(x){return x.id===S.editingId;}); if(idx>=0)list[idx]=p; else list.push(p); }
