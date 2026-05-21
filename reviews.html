@@ -150,22 +150,11 @@
 <div class="toast" id="toast"></div>
 
 <script src="js/config.js"></script>
+<script src="js/api.js"></script>
 <script src="js/data.js"></script>
 <script src="js/i18n.js"></script>
 <script src="js/cart.js"></script>
 <script>
-var STORAGE_KEY = 'ns_reviews';
-
-function getReviews() {
-  try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; } catch(e) { return []; }
-}
-
-function saveReview(r) {
-  var list = getReviews();
-  list.unshift(r);
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
-}
-
 function starsHtml(n) {
   return '★'.repeat(n) + '☆'.repeat(5 - n);
 }
@@ -175,10 +164,9 @@ function formatDate(ts) {
   return d.getDate() + '.' + (d.getMonth()+1) + '.' + d.getFullYear();
 }
 
-function renderList() {
-  var list = getReviews();
+function renderList(list) {
   var el = document.getElementById('revList');
-  if (list.length === 0) {
+  if (!list || list.length === 0) {
     el.innerHTML = '<div class="rev-empty"><div class="rev-empty__icon">💬</div><div class="rev-empty__text">' + window.i18n('rev.empty') + '</div></div>';
     return;
   }
@@ -195,6 +183,10 @@ function renderList() {
       '<div class="rev-text">«' + r.text + '»</div>' +
     '</div>';
   }).join('') + '</div>';
+}
+
+function loadReviews() {
+  API.getReviews().then(renderList).catch(function() { renderList([]); });
 }
 
 function resetForm() {
@@ -222,39 +214,21 @@ document.getElementById('revForm').addEventListener('submit', function(e) {
   btn.textContent = window.i18n('rev.sending');
 
   var review = { name: name, rating: rating, text: text, ts: Date.now() };
-  var tgText = '⭐ *Новий відгук — Nice Shopping*\n\n' +
-    '*Ім\'я:* ' + name + '\n' +
-    '*Оцінка:* ' + starsHtml(rating) + ' (' + rating + '/5)\n\n' +
-    '*Відгук:*\n' + text;
 
-  function onSuccess() {
-    saveReview(review);
-    renderList();
-    document.getElementById('formArea').style.display = 'none';
-    document.getElementById('formSuccess').style.display = 'block';
-  }
-
-  if (CONFIG.telegramBotToken && CONFIG.telegramChatId) {
-    fetch('https://api.telegram.org/bot' + CONFIG.telegramBotToken + '/sendMessage', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ chat_id: CONFIG.telegramChatId, text: tgText, parse_mode: 'Markdown' })
-    }).then(function(r) {
-      onSuccess();
-    }).catch(function() {
-      onSuccess();
+  API.createReview(review)
+    .catch(function() {})
+    .finally(function() {
+      loadReviews();
+      document.getElementById('formArea').style.display = 'none';
+      document.getElementById('formSuccess').style.display = 'block';
     });
-  } else {
-    console.log('Review (Telegram not set):\n' + tgText);
-    onSuccess();
-  }
 });
 
 document.getElementById('menuToggle').addEventListener('click', function() {
   document.getElementById('nav').classList.toggle('open');
 });
 
-renderList();
+loadReviews();
 applyLang();
 </script>
 </body>

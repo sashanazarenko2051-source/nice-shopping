@@ -409,9 +409,9 @@
 document.getElementById('menuToggle').addEventListener('click', function() {
   document.getElementById('nav').classList.toggle('open');
 });
-if (typeof PRODUCTS !== 'undefined' && PRODUCTS.length > 0) {
-  document.getElementById('productCount').textContent = PRODUCTS.length + '+';
-}
+onProductsReady(function() {
+  if (PRODUCTS.length > 0) document.getElementById('productCount').textContent = PRODUCTS.length + '+';
+});
 applyLang();
 </script>
 </body>

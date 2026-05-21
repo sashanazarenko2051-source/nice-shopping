@@ -150,14 +150,14 @@
 <div class="toast" id="toast"></div>
 
 <script src="js/config.js"></script>
-<script src="js/sync.js"></script>
+<script src="js/api.js"></script>
 <script src="js/data.js"></script>
 <script src="js/i18n.js"></script>
 <script src="js/cart.js"></script>
 <script src="js/analytics.js"></script>
 <script>
 // Render order items
-(function() {
+onProductsReady(function() {
   var cart = getCart();
   var total = getCartTotal();
   var delivery = total >= 1000 ? 0 : 70;
@@ -173,7 +173,7 @@
   document.getElementById('sumGoods').textContent = CONFIG.currency + total;
   document.getElementById('sumDelivery').textContent = delivery === 0 ? 'Безкоштовно' : CONFIG.currency + delivery;
   document.getElementById('sumTotal').textContent = CONFIG.currency + (total + delivery);
-})();
+});
 
 // Form submit
 document.getElementById('checkoutForm').addEventListener('submit', function(e) {
@@ -221,9 +221,7 @@ document.getElementById('checkoutForm').addEventListener('submit', function(e) {
   btn.textContent = 'Відправляємо...';
 
   function onSuccess() {
-    // Save order to localStorage for admin panel
     var order = {
-      id: Date.now(),
       date: new Date().toLocaleDateString('uk-UA'),
       firstName: firstName, lastName: lastName, phone: phone,
       city: city, branch: branch, payment: payment, comment: comment,
@@ -233,11 +231,7 @@ document.getElementById('checkoutForm').addEventListener('submit', function(e) {
       }),
       subtotal: total, delivery: delivery, total: total + delivery
     };
-    var orders = [];
-    try { orders = JSON.parse(localStorage.getItem('ns_orders')) || []; } catch(e) {}
-    orders.unshift(order);
-    localStorage.setItem('ns_orders', JSON.stringify(orders));
-    if (typeof syncCloud !== 'undefined') syncCloud.saveOrders(orders);
+    API.createOrder(order).catch(function() {});
     clearCart();
     document.getElementById('checkoutPage').style.display = 'none';
     var sp = document.getElementById('successPage');

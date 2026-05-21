@@ -61,12 +61,13 @@
 <div class="toast" id="toast"></div>
 
 <script src="js/config.js"></script>
-<script src="js/sync.js"></script>
 <script src="js/data.js"></script>
 <script src="js/i18n.js"></script>
 <script src="js/cart.js"></script>
 <script>
 var productId = parseInt(new URLSearchParams(location.search).get('id'));
+
+onProductsReady(function() {
 var product = PRODUCTS.find(function(p) { return p.id === productId; });
 
 if (product) {
@@ -149,6 +150,7 @@ if (product) {
   var relEl = document.getElementById('related');
   related.forEach(function(p) { relEl.innerHTML += renderProductCard(p); });
 }
+}); // onProductsReady
 
 document.getElementById('menuToggle').addEventListener('click', function() {
   document.getElementById('nav').classList.toggle('open');

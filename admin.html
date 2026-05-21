@@ -231,8 +231,6 @@
       <button class="sb-item"        id="btn-orders"   onclick="showTab('orders')">  <span class="sb-ico">📋</span> Замовлення <span class="sb-badge" id="sbOrdCount" style="display:none">0</span></button>
     </nav>
     <div class="sb-bottom">
-      <div id="syncStatus" style="margin-bottom:8px;padding:10px 12px;border-radius:10px;font-size:.75rem;line-height:1.5;background:rgba(74,222,128,.06);border:1px solid rgba(74,222,128,.15)"></div>
-      <button onclick="showSyncModal()" style="width:100%;padding:8px;margin-bottom:8px;background:rgba(74,222,128,.1);border:1px solid rgba(74,222,128,.25);color:var(--green);border-radius:8px;font-size:.8rem;cursor:pointer">☁️ Синхронізація</button>
       <a href="index.html" target="_blank" class="sb-site-link">↗ Відкрити сайт</a>
       <a href="catalog.html" target="_blank" class="sb-site-link">↗ Переглянути каталог</a>
       <button class="sb-logout" onclick="doLogout()">Вийти з панелі</button>
@@ -289,33 +287,6 @@
       </div>
     </div>
 
-  </div>
-</div>
-
-<!-- SYNC MODAL -->
-<div id="syncModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:999;align-items:center;justify-content:center" onclick="if(event.target===this)closeSyncModal()">
-  <div style="background:#0d1f10;border:1px solid rgba(74,222,128,.2);border-radius:20px;padding:32px;width:min(500px,95vw);max-height:90vh;overflow-y:auto">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
-      <h3 style="font-family:var(--serif);font-size:1.2rem;color:var(--green)">☁️ Хмарна синхронізація</h3>
-      <button onclick="closeSyncModal()" style="color:var(--dim);font-size:1.2rem;background:none;border:none;cursor:pointer">✕</button>
-    </div>
-    <p style="font-size:.84rem;color:var(--dim);margin-bottom:20px;line-height:1.6">
-      Щоб товари та замовлення були видні з будь-якого пристрою, підключіть безкоштовний <strong style="color:var(--text)">JSONBin.io</strong>.<br>
-      1. Зареєструйтесь на <strong>jsonbin.io</strong><br>
-      2. Скопіюйте <strong>Master Key</strong> з Dashboard<br>
-      3. Вставте нижче і натисніть «Налаштувати»
-    </p>
-    <div style="margin-bottom:16px">
-      <label style="font-size:.78rem;color:var(--dim);display:block;margin-bottom:6px">Master Key (з jsonbin.io)</label>
-      <input id="jbKeyInput" type="password" placeholder="$2a$10$..." style="width:100%;padding:10px 14px;background:#061008;border:1.5px solid #1f3522;border-radius:10px;color:#E0E0E0;font-size:.875rem;font-family:inherit">
-    </div>
-    <button onclick="doSyncSetup()" style="width:100%;padding:12px;background:var(--green);color:#020d04;border-radius:10px;font-size:.9rem;font-weight:700;cursor:pointer;margin-bottom:12px" id="jbSetupBtn">⚡ Налаштувати</button>
-    <div id="jbSetupResult" style="font-size:.82rem;line-height:1.7;display:none"></div>
-    <hr style="border-color:rgba(74,222,128,.1);margin:16px 0">
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-      <button onclick="doSyncLoad()" style="padding:9px;background:rgba(74,222,128,.1);border:1px solid rgba(74,222,128,.25);color:var(--green);border-radius:8px;font-size:.8rem;cursor:pointer">⬇️ Завантажити з хмари</button>
-      <button onclick="doSyncPush()" style="padding:9px;background:rgba(74,222,128,.1);border:1px solid rgba(74,222,128,.25);color:var(--green);border-radius:8px;font-size:.8rem;cursor:pointer">⬆️ Зберегти в хмару</button>
-    </div>
   </div>
 </div>
 
@@ -418,13 +389,11 @@
 <div class="toast" id="toast"></div>
 
 <script src="js/config.js"></script>
-<script src="js/sync.js"></script>
+<script src="js/api.js"></script>
 <script>
-/* ─────────── CONFIG ─────────── */
-var PASS = 'admin2025'; // ← змініть пароль
-
 /* ─────────── STATE ─────────── */
 var S = { view:'list', filter:'all', editingId:null, movingId:null };
+var _products = [];
 
 /* ─────────── DEFAULT CATEGORIES ─────────── */
 var DEF_CATS = [
@@ -448,43 +417,30 @@ function productCatId(p){
   var found = all.find(function(c){ return c.key===p.category && (c.gender===p.gender||c.gender===''); });
   return found ? found.id : '';
 }
-function getProducts(){ try{ return JSON.parse(localStorage.getItem('ns_products'))||[]; }catch(e){ return []; } }
-function setProducts(a){
-  localStorage.setItem('ns_products',JSON.stringify(a));
-  if(typeof syncCloud!=='undefined') syncCloud.saveProducts(a).then(function(bid){
-    if(bid&&bid!==true&&!localStorage.getItem('ns_jb_pb_notified')){
-      localStorage.setItem('ns_jb_pb_notified','1');
-      updateSyncStatus();
-    }
-  });
+function getProducts(){ return _products; }
+async function setProducts(list){
+  _products = list;
+  try { await API.saveAllProducts(list); } catch(e) { toast('❌ Помилка збереження'); }
 }
-function getOrders(){ try{ return JSON.parse(localStorage.getItem('ns_orders'))||[]; }catch(e){ return []; } }
 function getVisits(){ try{ return JSON.parse(localStorage.getItem('ns_visits'))||{}; }catch(e){ return {}; } }
 
 /* ─────────── AUTH ─────────── */
-function doLogin(){
-  if(document.getElementById('loginPass').value===PASS){
-    localStorage.setItem('ns_admin_ok','1');
+async function doLogin(){
+  var pass = document.getElementById('loginPass').value;
+  try {
+    var r = await API.login(pass);
+    API.setToken(r.token);
     document.getElementById('loginErr').style.display='none';
     showAdmin();
-  } else { document.getElementById('loginErr').style.display='block'; }
+  } catch(e) { document.getElementById('loginErr').style.display='block'; }
 }
-function doLogout(){ localStorage.removeItem('ns_admin_ok'); location.reload(); }
-function showAdmin(){
+function doLogout(){ API.clearToken(); location.reload(); }
+async function showAdmin(){
   document.getElementById('loginScreen').style.display='none';
   document.getElementById('adminApp').style.display='flex';
+  try { _products = await API.getProducts(); } catch(e) { _products = []; }
   updateSideBadges();
   loadStats();
-  updateSyncStatus();
-  // Auto-load from cloud on startup
-  if(typeof syncCloud!=='undefined'&&syncCloud.hasBin()){
-    syncCloud.loadProducts().then(function(ok){
-      if(ok){ buildFilterBar(); renderProducts(); updateSideBadges(); }
-    });
-    syncCloud.loadOrders().then(function(ok){
-      if(ok){ renderOrders(); updateSideBadges(); }
-    });
-  }
 }
 
 /* ─────────── TABS ─────────── */
@@ -504,23 +460,20 @@ function showTab(name){
 
 /* ─────────── BADGES ─────────── */
 function updateSideBadges(){
-  var p = getProducts(); var o = getOrders();
-  document.getElementById('sbProdCount').textContent = p.length;
-  var ob = document.getElementById('sbOrdCount');
-  ob.textContent = o.length; ob.style.display = o.length ? 'inline-block' : 'none';
+  document.getElementById('sbProdCount').textContent = _products.length;
 }
 
 /* ─────────── STATS ─────────── */
-function loadStats(){
+async function loadStats(){
   var visits = getVisits();
   var totalV = Object.values(visits).reduce(function(a,b){return a+b;},0);
-  var orders = getOrders();
+  var orders = [];
+  try { orders = await API.getOrders(); } catch(e) {}
   var revenue = orders.reduce(function(s,o){return s+(o.total||0);},0);
-  var products = getProducts();
   document.getElementById('sVisits').textContent   = totalV;
   document.getElementById('sOrders').textContent   = orders.length;
   document.getElementById('sRevenue').textContent  = '₴'+revenue.toLocaleString('uk-UA');
-  document.getElementById('sProducts').textContent = products.length;
+  document.getElementById('sProducts').textContent = _products.length;
   renderChart(visits);
   renderRecentOrders(orders.slice(0,5));
 }
@@ -575,7 +528,7 @@ function renderProducts(){
     return;
   }
   if(S.view==='grid'){ renderGrid(list,el); } else { renderList(list,el); }
-  updateSideBadges();
+  document.getElementById('sbProdCount').textContent = _products.length;
 }
 function thumb(p){
   return p.imageUrl
@@ -626,10 +579,10 @@ function renderGrid(list,el){
 function getCatIcon(p){
   var cat=catById(productCatId(p)); return cat?cat.icon:'📦';
 }
-function quickPrice(id,val){
+async function quickPrice(id,val){
   var list=getProducts();
   var p=list.find(function(x){return x.id===id;});
-  if(p){ p.price=parseFloat(val)||p.price; setProducts(list); toast('Ціну оновлено'); }
+  if(p){ p.price=parseFloat(val)||p.price; await setProducts(list); toast('Ціну оновлено'); }
 }
 
 /* ─────────── PRODUCT FORM ─────────── */
@@ -709,7 +662,7 @@ function updateImgPreview(){
   document.getElementById('pImageFile')._base64=null;
   setImgPreview(url);
 }
-function saveProduct(){
+async function saveProduct(){
   var name=document.getElementById('pName').value.trim();
   var price=parseFloat(document.getElementById('pPrice').value);
   if(!name){toast('Введіть назву товару');return;}
@@ -734,15 +687,15 @@ function saveProduct(){
   var list=getProducts();
   if(S.editingId){ var idx=list.findIndex(function(x){return x.id===S.editingId;}); if(idx>=0)list[idx]=p; else list.push(p); }
   else list.push(p);
-  setProducts(list);
+  await setProducts(list);
   closeForm();
   buildFilterBar();
   renderProducts();
   toast('✅ Товар збережено!');
 }
-function delProduct(id){
+async function delProduct(id){
   if(!confirm('Видалити цей товар?'))return;
-  setProducts(getProducts().filter(function(p){return p.id!==id;}));
+  await setProducts(getProducts().filter(function(p){return p.id!==id;}));
   buildFilterBar(); renderProducts(); toast('Товар видалено');
 }
 
@@ -759,12 +712,12 @@ function openMoveModal(id){
   document.getElementById('moveModal').style.display='flex';
 }
 function closeMoveModal(){ document.getElementById('moveModal').style.display='none'; S.movingId=null; }
-function moveProduct(catId){
+async function moveProduct(catId){
   var cat=catById(catId);
   if(!cat||!S.movingId)return;
   var list=getProducts();
   var p=list.find(function(x){return x.id===S.movingId;});
-  if(p){ p.category=cat.key; p.gender=cat.gender||p.gender; setProducts(list); }
+  if(p){ p.category=cat.key; p.gender=cat.gender||p.gender; await setProducts(list); }
   closeMoveModal();
   buildFilterBar(); renderProducts();
   toast('Товар переміщено до «'+cat.label+'»');
@@ -842,9 +795,15 @@ function saveCat(){
 }
 
 /* ─────────── ORDERS ─────────── */
-function renderOrders(){
-  var orders=getOrders();
+async function renderOrders(){
   var el=document.getElementById('ordersList');
+  el.innerHTML='<div class="empty" style="padding:20px 0"><div class="empty-ico">⏳</div><p>Завантаження...</p></div>';
+  var orders=[];
+  try { orders = await API.getOrders(); } catch(e) {
+    el.innerHTML='<div class="empty"><div class="empty-ico">❌</div><p>Помилка завантаження замовлень</p></div>'; return;
+  }
+  var ob=document.getElementById('sbOrdCount');
+  ob.textContent=orders.length; ob.style.display=orders.length?'inline-block':'none';
   if(!orders.length){ el.innerHTML='<div class="empty"><div class="empty-ico">📋</div><p>Замовлень ще немає</p></div>'; return; }
   var payN={cod:'Накладений платіж',prepay:'Передоплата на картку'};
   el.innerHTML='<div class="tbl-wrap"><table class="data-table"><thead><tr><th>Дата</th><th>Клієнт</th><th>Телефон</th><th>Місто</th><th>Оплата</th><th>Товари</th><th>Сума</th><th></th></tr></thead><tbody>'+
@@ -868,7 +827,7 @@ function renderOrders(){
               '<ul style="margin-top:6px;padding-left:18px;color:var(--text)">'+itemsDetail+'</ul>'+
             '</div>'+
             '<div style="margin-top:12px;display:flex;justify-content:space-between;align-items:center">'+
-              '<button onclick="deleteOrder('+idx+')" style="background:rgba(248,113,113,.12);border:1px solid rgba(248,113,113,.3);color:#f87171;padding:7px 16px;border-radius:8px;font-size:.8rem;cursor:pointer">🗑 Видалити замовлення</button>'+
+              '<button onclick="deleteOrder('+o._id+')" style="background:rgba(248,113,113,.12);border:1px solid rgba(248,113,113,.3);color:#f87171;padding:7px 16px;border-radius:8px;font-size:.8rem;cursor:pointer">🗑 Видалити замовлення</button>'+
               '<span style="font-size:1.05rem;font-weight:700;color:var(--green)">Разом: ₴'+(o.total||0)+'</span>'+
             '</div>'+
           '</div>'+
@@ -877,15 +836,13 @@ function renderOrders(){
       return row+detailHtml;
     }).join('')+'</tbody></table></div>';
 }
-function deleteOrder(idx){
+async function deleteOrder(orderId){
   if(!confirm('Видалити це замовлення?')) return;
-  var orders=getOrders();
-  orders.splice(idx,1);
-  localStorage.setItem('ns_orders',JSON.stringify(orders));
-  if(typeof syncCloud!=='undefined') syncCloud.saveOrders(orders);
-  renderOrders();
-  updateSideBadges();
-  toast('🗑 Замовлення видалено');
+  try {
+    await API.deleteOrder(orderId);
+    renderOrders();
+    toast('🗑 Замовлення видалено');
+  } catch(e) { toast('❌ Помилка видалення'); }
 }
 function toggleOrderDetail(idx){
   var row=document.getElementById('ord-detail-'+idx);
@@ -902,68 +859,9 @@ function toast(msg){
   setTimeout(function(){t.classList.remove('show');},2500);
 }
 
-/* ─────────── SYNC MODAL ─────────── */
-function updateSyncStatus(){
-  var el=document.getElementById('syncStatus');
-  if(!el)return;
-  var hasKey=typeof syncCloud!=='undefined'&&syncCloud.hasKey();
-  var hasBin=typeof syncCloud!=='undefined'&&syncCloud.hasBin();
-  if(hasKey&&hasBin){
-    el.innerHTML='<span style="color:var(--green)">☁️ Хмара підключена</span><br><span style="color:var(--dim)">ID: '+syncCloud.productsBinId().slice(0,8)+'…</span>';
-  } else if(hasKey){
-    el.innerHTML='<span style="color:#fbbf24">⚠️ Ключ є, bin не створено</span>';
-  } else {
-    el.innerHTML='<span style="color:var(--dim)">☁️ Хмара не підключена</span>';
-  }
-}
-function showSyncModal(){
-  var m=document.getElementById('syncModal');
-  m.style.display='flex';
-  var stored=localStorage.getItem('ns_jb_key')||'';
-  if(stored) document.getElementById('jbKeyInput').value=stored;
-  updateSyncStatus();
-}
-function closeSyncModal(){ document.getElementById('syncModal').style.display='none'; }
-async function doSyncSetup(){
-  var key=document.getElementById('jbKeyInput').value.trim();
-  if(!key){alert('Введіть Master Key');return;}
-  var btn=document.getElementById('jbSetupBtn');
-  btn.textContent='⏳ Налаштовуємо...'; btn.disabled=true;
-  var res=await syncCloud.setup(key);
-  btn.textContent='⚡ Налаштувати'; btn.disabled=false;
-  var el=document.getElementById('jbSetupResult');
-  el.style.display='block';
-  if(res.ok){
-    el.innerHTML='<span style="color:var(--green)">✅ Готово! Товари та замовлення синхронізуються.</span><br>'+
-      '<span style="color:var(--dim)">Products bin: <code style="color:var(--text)">'+res.pb+'</code></span><br>'+
-      '<span style="color:var(--dim)">Щоб всі пристрої бачили товари, додайте в <code>js/config.js</code>:<br>'+
-      '<code style="color:var(--green)">jsonbinProductsBin: \''+res.pb+'\'</code></span>';
-    updateSyncStatus();
-  } else {
-    el.innerHTML='<span style="color:#f87171">❌ Помилка: '+res.error+'<br>Перевірте Master Key</span>';
-  }
-}
-async function doSyncLoad(){
-  toast('⏳ Завантажуємо з хмари...');
-  var ok1=await syncCloud.loadProducts();
-  var ok2=await syncCloud.loadOrders();
-  if(ok1){ buildFilterBar(); renderProducts(); }
-  if(ok2){ renderOrders(); updateSideBadges(); }
-  toast(ok1||ok2?'✅ Дані завантажено з хмари':'⚠️ Нічого не завантажено');
-  updateSyncStatus();
-}
-async function doSyncPush(){
-  toast('⏳ Зберігаємо в хмару...');
-  var p=getProducts(); var o=getOrders();
-  await syncCloud.saveProducts(p);
-  await syncCloud.saveOrders(o);
-  toast('✅ Дані збережено в хмару');
-  updateSyncStatus();
-}
-
 /* ─────────── INIT ─────────── */
 document.getElementById('loginPass').addEventListener('keydown',function(e){if(e.key==='Enter')doLogin();});
-if(localStorage.getItem('ns_admin_ok')==='1') showAdmin();
+if(API.hasToken()) showAdmin();
 </script>
 </body>
 </html>

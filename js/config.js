@@ -8,8 +8,4 @@ const CONFIG = {
   instagram: 'fayni_pokupky',
   telegramBotToken: '',
   telegramChatId: '',
-  // JSONBin.io — заповнюється після налаштування в адмін-панелі
-  jsonbinKey: '',
-  jsonbinProductsBin: '',
-  jsonbinOrdersBin: '',
 };
