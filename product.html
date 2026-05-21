@@ -85,11 +85,13 @@ if (product) {
 
   document.getElementById('pdLayout').innerHTML =
     '<div class="pd-gallery">' +
-      '<div class="pd-main-img" style="background:linear-gradient(135deg,' + product.c1 + ',' + product.c2 + ')"></div>' +
+      '<div class="pd-main-img" style="background:#f0eded;display:flex;align-items:center;justify-content:center;overflow:hidden">' +
+        (product.imageUrl ? '<img src="' + product.imageUrl + '" style="width:100%;height:100%;object-fit:contain" onerror="this.parentNode.style.background=\'#f0eded\'">' : '') +
+      '</div>' +
       '<div class="pd-thumbs">' +
-        ['135deg','160deg','110deg','180deg'].map(function(deg) {
-          return '<div class="pd-thumb" style="background:linear-gradient(' + deg + ',' + product.c1 + ',' + product.c2 + ')"></div>';
-        }).join('') +
+        (product.imageUrl
+          ? '<div class="pd-thumb" style="background:#f0eded;overflow:hidden"><img src="' + product.imageUrl + '" style="width:100%;height:100%;object-fit:cover"></div>'
+          : '<div class="pd-thumb" style="background:#f0eded"></div>') +
       '</div>' +
     '</div>' +
     '<div class="pd-info">' +
