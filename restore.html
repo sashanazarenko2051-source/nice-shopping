@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <title>Відновлення товарів</title>
+  <style>
+    body { font-family: sans-serif; max-width: 640px; margin: 60px auto; padding: 24px; background: #f9fafb; }
+    h1 { color: #111; margin-bottom: 8px; }
+    p { color: #555; margin-bottom: 20px; }
+    .row { display: flex; gap: 10px; margin-bottom: 16px; align-items: center; }
+    input { padding: 10px 14px; border: 1.5px solid #d1d5db; border-radius: 8px; font-size: .95rem; width: 220px; }
+    button { background: #4ade80; color: #020d04; padding: 12px 28px; border: none; border-radius: 8px; font-size: 1rem; font-weight: 700; cursor: pointer; }
+    button:disabled { opacity: .5; cursor: not-allowed; }
+    #status { margin-top: 20px; padding: 16px; border-radius: 10px; font-size: .9rem; line-height: 1.6; display: none; }
+    .ok { background: #d1fae5; color: #065f46; }
+    .err { background: #fee2e2; color: #991b1b; }
+    .note { background: #fef3c7; color: #92400e; padding: 12px 16px; border-radius: 8px; font-size: .85rem; margin-bottom: 20px; }
+  </style>
+</head>
+<body>
+  <h1>Відновлення товарів</h1>
+  <div class="note">⚠️ Буде відновлено 21 товар без цін та фото. Після відновлення зайдіть в адмінку і проставте ціни та фото для кожного товару.</div>
+  <p>Введіть пароль адмінки і натисніть кнопку:</p>
+  <div class="row">
+    <input type="password" id="pass" placeholder="Пароль адмінки">
+    <button onclick="restore()" id="btn">Відновити 21 товар →</button>
+  </div>
+  <div id="status"></div>
+
+<script>
+var PRODUCTS = [
+  {id:1,name:"Бюстгальтер м'ятний з мереживом",nameEn:"Mint Lace Bra",category:"bras",gender:"women",price:1,oldPrice:null,stock:1,rating:5,reviews:0,sizes:["70A","70B","70C","75A","75B","75C","80B","80C","85C"],description:"Ніжний бюстгальтер м'ятного кольору з витонченим мереживним оздобленням. Приємний матеріал забезпечує комфорт протягом усього дня.",details:["Колір: м'ятний","Матеріал: мікрофібра, мереживо","Чашечки: формовані","Застібка: ззаду","Бретелі: регульовані","Догляд: ручне прання 30°C"],imageUrl:""},
+  {id:2,name:"Трусики-стрінги чорні",nameEn:"Black Thong Panties",category:"lingerie",gender:"women",price:1,oldPrice:null,stock:1,rating:5,reviews:0,sizes:["XS","S","M","L","XL"],description:"Класичні жіночі трусики-стрінги чорного кольору з мереживними вставками. Мінімальний шов забезпечує непомітність під одягом.",details:["Колір: чорний","Тип: стрінги","Матеріал: мікрофібра, еластан, мереживо","Оздоблення: мереживна вставка ззаду","Догляд: ручне прання 30°C"],imageUrl:""},
+  {id:3,name:"Трусики сині вишиті",nameEn:"Blue Embroidered Panties",category:"lingerie",gender:"women",price:1,oldPrice:null,stock:1,rating:5,reviews:0,sizes:["XS","S","M","L","XL"],description:"Жіночі трусики блакитного кольору з ніжним квітковим вишиванням. Легкий матеріал та витончений декор.",details:["Колір: блакитний","Тип: класичні","Матеріал: бавовна, еластан","Оздоблення: квіткова вишивка","Догляд: прання 30°C"],imageUrl:""},
+  {id:4,name:"Комплект білий мереживний (4 шт)",nameEn:"White Lace Panties Set (4 pcs)",category:"lingerie",gender:"women",price:1,oldPrice:null,stock:1,rating:5,reviews:0,sizes:["XS","S","M","L","XL"],description:"Набір з 4 пар жіночих трусиків білого кольору з мереживним оздобленням. Чудове рішення — відразу кілька пар за вигідною ціною.",details:["Колір: білий","Тип: класичні","Матеріал: бавовна, мереживо, еластан","Комплект: 4 пари","Оздоблення: мереживна вставка","Догляд: прання 30°C"],imageUrl:""},
+  {id:5,name:"Трусики білі з м'ятним кантом",nameEn:"White Panties with Mint Trim",category:"lingerie",gender:"women",price:1,oldPrice:null,stock:1,rating:5,reviews:0,sizes:["XS","S","M","L","XL"],description:"Ніжні жіночі трусики білого кольору з акуратним м'ятним кантом по краях. Комфортна посадка та приємний матеріал.",details:["Колір: білий з м'ятним кантом","Тип: класичні","Матеріал: бавовна, еластан","Оздоблення: кольоровий кант","Догляд: прання 30°C"],imageUrl:""},
+  {id:6,name:"Трусики білі з рожевим кантом",nameEn:"White Panties with Pink Trim",category:"lingerie",gender:"women",price:1,oldPrice:null,stock:1,rating:5,reviews:0,sizes:["XS","S","M","L","XL"],description:"Ніжні жіночі трусики білого кольору з акуратним рожевим кантом по краях. Комфортна посадка та приємний матеріал.",details:["Колір: білий з рожевим кантом","Тип: класичні","Матеріал: бавовна, еластан","Оздоблення: кольоровий кант","Догляд: прання 30°C"],imageUrl:""},
+  {id:7,name:"Трусики білі з зеленим кантом",nameEn:"White Panties with Green Trim",category:"lingerie",gender:"women",price:1,oldPrice:null,stock:1,rating:5,reviews:0,sizes:["XS","S","M","L","XL"],description:"Ніжні жіночі трусики білого кольору з акуратним зеленим кантом по краях. Комфортна посадка та приємний матеріал.",details:["Колір: білий з зеленим кантом","Тип: класичні","Матеріал: бавовна, еластан","Оздоблення: кольоровий кант","Догляд: прання 30°C"],imageUrl:""},
+  {id:8,name:"Трусики білі з квіткою",nameEn:"White Panties with Flower",category:"lingerie",gender:"women",price:1,oldPrice:null,stock:1,rating:5,reviews:0,sizes:["XS","S","M","L","XL"],description:"Ніжні білі трусики з квітковим декором. Романтичний дизайн та комфортна посадка для щоденного носіння.",details:["Колір: білий","Тип: класичні","Матеріал: бавовна, еластан","Оздоблення: квітковий декор","Догляд: прання 30°C"],imageUrl:""},
+  {id:9,name:"Трусики рожеві з квіткою",nameEn:"Pink Panties with Flower",category:"lingerie",gender:"women",price:1,oldPrice:null,stock:1,rating:5,reviews:0,sizes:["XS","S","M","L","XL"],description:"Ніжні рожеві трусики з квітковим декором. Романтичний дизайн та комфортна посадка для щоденного носіння.",details:["Колір: рожевий","Тип: класичні","Матеріал: бавовна, еластан","Оздоблення: квітковий декор","Догляд: прання 30°C"],imageUrl:""},
+  {id:10,name:"Бюстгальтер білий у горошок",nameEn:"White Polka Dot Bra",category:"bras",gender:"women",price:1,oldPrice:null,stock:1,rating:5,reviews:0,sizes:["70A","70B","70C","75A","75B","75C","80B","80C"],description:"Ніжний бюстгальтер білого кольору з грайливим принтом горошок. Формовані чашечки та зручні бретелі.",details:["Колір: білий з горошком","Матеріал: мікрофібра, еластан","Чашечки: формовані","Застібка: ззаду","Бретелі: регульовані","Догляд: ручне прання 30°C"],imageUrl:""},
+  {id:11,name:"Бюстгальтер рожевий з чорним мереживом",nameEn:"Pink Bra with Black Lace",category:"bras",gender:"women",price:1,oldPrice:null,stock:1,rating:5,reviews:0,sizes:["70A","70B","70C","75A","75B","75C","80B","80C","85C"],description:"Яскравий рожевий бюстгальтер з пишним чорним мереживом. Поєднання кольорів створює ефектний та жіночний вигляд.",details:["Колір: рожевий з чорним мереживом","Матеріал: мікрофібра, мереживо, еластан","Чашечки: формовані","Застібка: ззаду","Бретелі: регульовані","Догляд: ручне прання 30°C"],imageUrl:""},
+  {id:12,name:"Шкарпетки Nike червоні (3 пари)",nameEn:"Nike Red Socks (3 pairs)",category:"summer",gender:"women",price:1,oldPrice:null,stock:1,rating:5,reviews:0,sizes:["35-38","38-40","40-42"],description:"Набір з 3 пар яскравих червоних шкарпеток Nike. Якісний матеріал та фірмовий логотип.",details:["Колір: червоний","Тип: короткі (анкл)","Матеріал: бавовна, поліестер, еластан","Бренд: Nike","Комплект: 3 пари","Логотип: фірмовий Swoosh","Догляд: прання 40°C"],imageUrl:""},
+  {id:13,name:"Шкарпетки Elit теракотові",nameEn:"Elit Terracotta Socks",category:"summer",gender:"women",price:1,oldPrice:null,stock:1,rating:5,reviews:0,sizes:["35-38","38-40","40-42"],description:"Стильні шкарпетки теракотового кольору бренду Elit. Натуральний склад та комфортна посадка.",details:["Колір: теракотовий","Тип: середньої висоти","Матеріал: бавовна, поліамід, еластан","Бренд: Elit","Догляд: прання 40°C"],imageUrl:""},
+  {id:14,name:"Шкарпетки Elit сірі",nameEn:"Elit Grey Socks",category:"summer",gender:"women",price:1,oldPrice:null,stock:1,rating:5,reviews:0,sizes:["35-38","38-40","40-42"],description:"Класичні сірі шкарпетки бренду Elit. Натуральний склад та комфортна посадка для повсякденного носіння.",details:["Колір: сірий","Тип: середньої висоти","Матеріал: бавовна, поліамід, еластан","Бренд: Elit","Догляд: прання 40°C"],imageUrl:""},
+  {id:15,name:"Шкарпетки Fashion Socks чорні",nameEn:"Fashion Socks Black",category:"summer",gender:"women",price:1,oldPrice:null,stock:1,rating:5,reviews:0,sizes:["35-38","38-40","40-42"],description:"Стильні короткі шкарпетки чорного кольору з яскравим кольоровим візерунком по резинці.",details:["Колір: чорний з кольоровим декором","Тип: короткі (анкл)","Матеріал: бавовна, поліамід, еластан","Бренд: Fashion Socks","Догляд: прання 40°C"],imageUrl:""},
+  {id:16,name:"Шкарпетки Fashion Socks темно-сірі в горошок",nameEn:"Fashion Socks Dark Grey Polka Dot",category:"summer",gender:"women",price:1,oldPrice:null,stock:1,rating:5,reviews:0,sizes:["35-38","38-40","40-42"],description:"Елегантні короткі шкарпетки темно-сірого кольору з дрібним горошковим візерунком.",details:["Колір: темно-сірий з білим горошком","Тип: короткі (анкл)","Матеріал: бавовна, поліамід, еластан","Бренд: Fashion Socks","Оздоблення: дрібний горошок","Догляд: прання 40°C"],imageUrl:""},
+  {id:17,name:"Шкарпетки Fashion Socks малинові (4 пари)",nameEn:"Fashion Socks Burgundy (4 pairs)",category:"summer",gender:"women",price:1,oldPrice:null,stock:1,rating:5,reviews:0,sizes:["35-38","38-40","40-42"],description:"Набір з 4 пар коротких шкарпеток яскравого малинового кольору з дрібним горошковим візерунком.",details:["Колір: малиновий з горошком","Тип: короткі (анкл)","Матеріал: бавовна, поліамід, еластан","Бренд: Fashion Socks","Комплект: 4 пари","Догляд: прання 40°C"],imageUrl:""},
+  {id:18,name:"Шкарпетки Fashion Socks білі з мереживом",nameEn:"Fashion Socks White with Lace",category:"summer",gender:"women",price:1,oldPrice:null,stock:1,rating:5,reviews:0,sizes:["35-38","38-40","40-42"],description:"Ніжні короткі шкарпетки білого кольору з дрібним горошком та витонченим блакитним мереживним оздобленням по краю.",details:["Колір: білий з темним горошком","Тип: короткі (анкл)","Матеріал: бавовна, поліамід, еластан","Бренд: Fashion Socks","Оздоблення: блакитне мереживо по резинці","Догляд: прання 40°C"],imageUrl:""},
+  {id:19,name:"Шкарпетки термо чорні",nameEn:"Black Thermal Socks",category:"winter",gender:"women",price:1,oldPrice:null,stock:1,rating:5,reviews:0,sizes:["36-38","38-40","40-42","42-44"],description:"Теплі термошкарпетки чорного кольору для холодної пори року. Утримують тепло та забезпечують комфорт навіть у сильні морози.",details:["Колір: чорний","Тип: термо, середньої висоти","Матеріал: бавовна, вовна, поліамід, еластан","Серія: ТЕРМО","Призначення: зима, активний відпочинок","Догляд: прання 30°C"],imageUrl:""},
+  {id:20,name:"Шкарпетки термо темно-коричневі",nameEn:"Dark Brown Thermal Socks",category:"winter",gender:"women",price:1,oldPrice:null,stock:1,rating:5,reviews:0,sizes:["36-38","38-40","40-42","42-44"],description:"Теплі термошкарпетки темно-коричневого кольору для холодної пори року. Щільний матеріал чудово зберігає тепло.",details:["Колір: темно-коричневий","Тип: термо, середньої висоти","Матеріал: бавовна, вовна, поліамід, еластан","Серія: TERMO","Призначення: зима, активний відпочинок","Догляд: прання 30°C"],imageUrl:""},
+  {id:21,name:"Шкарпетки Chanel бежеві",nameEn:"Beige Chanel Socks",category:"summer",gender:"women",price:1,oldPrice:null,stock:1,rating:5,reviews:0,sizes:["36-38","38-41"],description:"Стильні шкарпетки бежевого кольору з фірмовим логотипом Chanel. Виконані в рубчик для кращої посадки.",details:["Колір: бежевий / пудровий","Тип: середньої висоти, в рубчик","Матеріал: бавовна, поліамід, еластан","Бренд: Chanel","Оздоблення: логотип CC","Догляд: прання 30°C"],imageUrl:""}
+];
+
+async function restore() {
+  var btn = document.getElementById('btn');
+  var pass = document.getElementById('pass').value.trim();
+  var status = document.getElementById('status');
+  if (!pass) { alert('Введіть пароль'); return; }
+  btn.disabled = true;
+  btn.textContent = 'Входимо...';
+  status.style.display = 'block';
+  status.className = '';
+  status.textContent = '⏳ Входимо в адмінку...';
+
+  try {
+    var r1 = await fetch('/api/admin/login', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({password: pass})
+    });
+    var d1 = await r1.json();
+    if (!d1.token) throw new Error('Невірний пароль');
+
+    status.textContent = '⏳ Зберігаємо ' + PRODUCTS.length + ' товарів...';
+    var r2 = await fetch('/api/products', {
+      method: 'PUT',
+      headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer ' + d1.token},
+      body: JSON.stringify(PRODUCTS)
+    });
+    var d2 = await r2.json();
+
+    status.className = 'ok';
+    status.textContent = '✅ Відновлено ' + d2.count + ' товарів!\n\nТепер зайдіть в адмінку та для кожного товару:\n1. Натисніть ✏️ Змінити\n2. Вкажіть правильну ціну\n3. Додайте фото\n\nПісля цього видаліть цю сторінку (restore.html) з сайту.';
+    btn.textContent = '✅ Готово!';
+  } catch(e) {
+    status.className = 'err';
+    status.textContent = '❌ Помилка: ' + e.message;
+    btn.disabled = false;
+    btn.textContent = 'Спробувати ще раз';
+  }
+}
+</script>
+</body>
+</html>
