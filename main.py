@@ -11,6 +11,7 @@ app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], all
 ADMIN_PASS   = os.getenv("ADMIN_PASS", "admin2025")
 GITHUB_TOKEN = os.getenv("GITHUB_TOKEN", "")
 GIST_ID      = os.getenv("GIST_ID", "")
+GITHUB_REPO  = os.getenv("GITHUB_REPO", "sashanazarenko2051-source/nice-shopping")
 _tokens: set = set()
 security = HTTPBearer(auto_error=False)
 
@@ -98,13 +99,57 @@ def _gist_load():
     except Exception as e:
         print(f"[Fallback] Load error: {e}")
 
+def _slim_products(products):
+    """Strip base64 images (keep only URL images) to keep git file small"""
+    result = []
+    for p in products:
+        s = dict(p)
+        if s.get("imageUrl", "").startswith("data:"):
+            s["imageUrl"] = ""
+        result.append(s)
+    return result
+
+def _github_commit(products):
+    """Commit products.json directly to git repo so it survives every deploy"""
+    if not GITHUB_TOKEN or not GITHUB_REPO:
+        return
+    try:
+        import urllib.request, base64 as b64
+        slim = _slim_products(products)
+        content = json.dumps(slim, ensure_ascii=False, indent=2)
+        encoded = b64.b64encode(content.encode()).decode()
+        api_url = f"https://api.github.com/repos/{GITHUB_REPO}/contents/products.json"
+        headers = {**_gist_headers(), "Content-Type": "application/json"}
+        # Get current file SHA
+        sha = ""
+        try:
+            req = urllib.request.Request(api_url, headers=headers)
+            resp = json.loads(urllib.request.urlopen(req, timeout=10).read())
+            sha = resp.get("sha", "")
+        except Exception:
+            pass
+        body = json.dumps({
+            "message": f"chore: update products ({len(slim)} items)",
+            "content": encoded,
+            **({"sha": sha} if sha else {}),
+            "committer": {"name": "Shop Bot", "email": "bot@shop.local"}
+        }).encode()
+        req = urllib.request.Request(api_url, data=body, headers=headers, method="PUT")
+        urllib.request.urlopen(req, timeout=30)
+        print(f"[GitHub] Committed {len(slim)} products to repo")
+    except Exception as e:
+        print(f"[GitHub] Commit error: {e}")
+
 def _gist_save(products):
-    """Зберегти товари в Gist (фоново) + оновити products.json на диску"""
-    # Always update the local file so it's current until next deploy
+    """Зберегти товари в Gist + комітити products.json в git-репо"""
+    # 1) Always update local file
     try:
         Path("products.json").write_text(json.dumps(products, ensure_ascii=False, indent=2), encoding="utf-8")
     except Exception as e:
         print(f"[File] Save error: {e}")
+
+    # 2) Commit slim version (no base64 images) to git repo — survives every Render deploy
+    _github_commit(products)
 
     if not GITHUB_TOKEN or not GIST_ID:
         return
