@@ -727,16 +727,24 @@ async function saveProduct(){
   };
   try {
     if(S.editingId){
-      await API.updateProduct(S.editingId, p);
+      if(typeof API.updateProduct==='function'){
+        await API.updateProduct(S.editingId, p);
+      } else {
+        var fb=getProducts(); var fi=fb.findIndex(function(x){return x.id===S.editingId;}); if(fi>=0)fb[fi]=p; else fb.push(p);
+        await API.saveAllProducts(fb);
+      }
       var list=getProducts(); var idx=list.findIndex(function(x){return x.id===S.editingId;});
-      if(idx>=0) list[idx]=p; else list.push(p);
-      _products=list;
+      if(idx>=0) list[idx]=p; else list.push(p); _products=list;
     } else {
-      var res=await API.addProduct(p);
-      if(res.id) p.id=res.id;
-      _products=getProducts().concat([p]);
+      var allNew=getProducts().concat([p]);
+      if(typeof API.addProduct==='function'){
+        var res=await API.addProduct(p); if(res&&res.id) p.id=res.id;
+      } else {
+        await API.saveAllProducts(allNew);
+      }
+      _products=allNew;
     }
-  } catch(e){ toast('❌ Помилка збереження'); return; }
+  } catch(e){ toast('❌ Помилка: '+(e.message||e)); return; }
   closeForm(); buildFilterBar(); renderProducts(); toast('✅ Товар збережено!');
 }
 async function delProduct(id){
