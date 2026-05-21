@@ -169,8 +169,8 @@
     textarea.fi{resize:vertical;min-height:76px}
     .fr2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
     .fsep{font-size:.68rem;font-weight:700;color:var(--green);letter-spacing:.1em;text-transform:uppercase;margin:16px 0 10px;padding-bottom:5px;border-bottom:1px solid var(--gbd)}
-    .img-preview{width:100%;height:140px;border-radius:var(--r);border:1.5px dashed #1f3522;display:flex;align-items:center;justify-content:center;color:var(--dim);font-size:.8rem;margin-bottom:8px;overflow:hidden;background:#061008;position:relative}
-    .img-preview img{width:100%;height:100%;object-fit:cover;position:absolute;inset:0}
+    .img-preview{width:100%;height:160px;border-radius:var(--r);border:1.5px dashed #1f3522;display:flex;align-items:center;justify-content:center;color:var(--dim);font-size:.8rem;margin-bottom:8px;overflow:hidden;background:#061008;position:relative}
+    .img-preview img{max-width:100%;max-height:100%;object-fit:contain;position:relative}
 
     /* ── EMPTY STATE ── */
     .empty{text-align:center;padding:50px 20px;color:var(--dim)}
@@ -396,8 +396,10 @@ var DEF_CATS = [
   {id:'lingerie-women', key:'lingerie', gender:'women', label:'Жіноча нижня білизна',  icon:'👙', editable:false},
   {id:'lingerie-men',   key:'lingerie', gender:'men',   label:'Чоловіча нижня білизна',icon:'🩲', editable:false},
   {id:'bras',           key:'bras',     gender:'',      label:'Бюстгальтери',           icon:'✨', editable:false},
-  {id:'winter',         key:'winter',   gender:'',      label:'Зимові',                 icon:'❄️', editable:false},
-  {id:'summer',         key:'summer',   gender:'',      label:'Літні',                  icon:'☀️', editable:false},
+  {id:'winter-women',   key:'winter',   gender:'women', label:'Жіночі зимові шкарпетки', icon:'❄️', editable:false},
+  {id:'winter-men',     key:'winter',   gender:'men',   label:'Чоловічі зимові шкарпетки',icon:'❄️', editable:false},
+  {id:'summer-women',   key:'summer',   gender:'women', label:'Жіночі літні шкарпетки',  icon:'☀️', editable:false},
+  {id:'summer-men',     key:'summer',   gender:'men',   label:'Чоловічі літні шкарпетки', icon:'☀️', editable:false},
 ];
 var ICONS = ['🧦','👙','🩲','✨','🧣','🧤','🩱','🩳','👗','👔','💎','🎀','💍','🌸','🌺','⭐'];
 
