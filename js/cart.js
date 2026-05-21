@@ -70,8 +70,9 @@ function renderProductCard(product) {
   var discount = product.oldPrice ? Math.round((1 - product.price / product.oldPrice) * 100) : null;
   var fullStars = Math.round(product.rating);
   var stars = '★'.repeat(fullStars) + '☆'.repeat(5 - fullStars);
-  var imgHtml = product.img
-    ? '<img src="' + product.img + '" alt="' + product.name + '" loading="lazy" onerror="this.style.background=\'linear-gradient(135deg,#f0e8e8,#e0d0d0)\';this.style.minHeight=\'100%\';this.src=\'\'">'
+  var imgSrc = product.imageUrl || product.img || '';
+  var imgHtml = imgSrc
+    ? '<img src="' + imgSrc + '" alt="' + product.name + '" loading="lazy" onerror="this.style.background=\'linear-gradient(135deg,#f0e8e8,#e0d0d0)\';this.style.minHeight=\'100%\';this.src=\'\'">'
     : '<div style="width:100%;height:100%;background:linear-gradient(135deg,#f0e8e8,#e0d0d0)"></div>';
   return '<div class="product-card">' +
     '<div class="product-card__img-wrap">' +
