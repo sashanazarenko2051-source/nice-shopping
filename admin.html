@@ -300,7 +300,10 @@
     <div class="overlay-body">
 
       <div class="fsep">Основна інформація</div>
-      <div class="fg"><label>Назва товару *</label><input type="text" id="pName" class="fi" placeholder="Наприклад: Комплект White Rose"></div>
+      <div class="fr2">
+        <div class="fg"><label>Назва товару (UA) *</label><input type="text" id="pName" class="fi" placeholder="Наприклад: Жіночі шкарпетки"></div>
+        <div class="fg"><label>Назва товару (EN)</label><input type="text" id="pNameEn" class="fi" placeholder="e.g. Women's socks"></div>
+      </div>
       <div class="fr2">
         <div class="fg"><label>Категорія *</label>
           <select id="pCatId" class="fi" onchange="onCatChange()"></select>
@@ -596,7 +599,7 @@ function onCatChange(){
 function openForm(id){
   S.editingId=id||null;
   document.getElementById('formTitle').textContent=id?'Редагувати товар':'Новий товар';
-  var fields=['pName','pPrice','pOldPrice','pStock','pSizes','pDesc','pDetails','pImageUrl'];
+  var fields=['pName','pNameEn','pPrice','pOldPrice','pStock','pSizes','pDesc','pDetails','pImageUrl'];
   fields.forEach(function(f){document.getElementById(f).value='';});
   document.getElementById('pGender').value='women';
   buildCatSelect(null);
@@ -606,6 +609,7 @@ function openForm(id){
     var p=getProducts().find(function(x){return x.id===id;});
     if(p){
       document.getElementById('pName').value=p.name||'';
+      document.getElementById('pNameEn').value=p.nameEn||'';
       document.getElementById('pPrice').value=p.price||'';
       document.getElementById('pOldPrice').value=p.oldPrice||'';
       document.getElementById('pStock').value=p.stock!=null?p.stock:'';
@@ -667,6 +671,7 @@ function saveProduct(){
   var p={
     id:S.editingId||Date.now(),
     name:name,
+    nameEn:document.getElementById('pNameEn').value.trim()||null,
     category:cat.key,
     gender:document.getElementById('pGender').value,
     price:price,
@@ -814,12 +819,24 @@ function renderOrders(){
               '<span style="color:var(--dim);font-size:.75rem;text-transform:uppercase;letter-spacing:.05em">Товари</span>'+
               '<ul style="margin-top:6px;padding-left:18px;color:var(--text)">'+itemsDetail+'</ul>'+
             '</div>'+
-            '<div style="margin-top:12px;text-align:right;font-size:1.05rem;font-weight:700;color:var(--green)">Разом: ₴'+(o.total||0)+'</div>'+
+            '<div style="margin-top:12px;display:flex;justify-content:space-between;align-items:center">'+
+              '<button onclick="deleteOrder('+idx+')" style="background:rgba(248,113,113,.12);border:1px solid rgba(248,113,113,.3);color:#f87171;padding:7px 16px;border-radius:8px;font-size:.8rem;cursor:pointer">🗑 Видалити замовлення</button>'+
+              '<span style="font-size:1.05rem;font-weight:700;color:var(--green)">Разом: ₴'+(o.total||0)+'</span>'+
+            '</div>'+
           '</div>'+
         '</td></tr>';
       var row='<tr style="cursor:pointer" onclick="toggleOrderDetail('+idx+')"><td style="white-space:nowrap">'+(o.date||'-')+'</td><td style="font-weight:500">'+(o.firstName||'')+' '+(o.lastName||'')+'</td><td>'+(o.phone||'-')+'</td><td>'+(o.city||'-')+'</td><td>'+(payN[o.payment]||o.payment||'-')+'</td><td style="font-size:.78rem;color:var(--dim);max-width:180px">'+(items||'-')+'</td><td style="color:var(--green);font-weight:700">₴'+(o.total||0)+'</td><td style="color:var(--dim);font-size:.8rem" id="ord-arrow-'+idx+'">▼</td></tr>';
       return row+detailHtml;
     }).join('')+'</tbody></table></div>';
+}
+function deleteOrder(idx){
+  if(!confirm('Видалити це замовлення?')) return;
+  var orders=getOrders();
+  orders.splice(idx,1);
+  localStorage.setItem('ns_orders',JSON.stringify(orders));
+  renderOrders();
+  updateSideBadges();
+  toast('🗑 Замовлення видалено');
 }
 function toggleOrderDetail(idx){
   var row=document.getElementById('ord-detail-'+idx);

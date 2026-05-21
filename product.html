@@ -97,10 +97,10 @@ if (product) {
     '<div class="pd-info">' +
       '<div class="pd-category">' + catNames[product.category] + '</div>' +
       '<h1 class="pd-name">' + product.name + '</h1>' +
-      '<div class="pd-rating"><span class="stars">' + stars + '</span> ' + product.rating + ' <span style="color:var(--gray)">(' + product.reviews + ' відгуків)</span></div>' +
+      '<div class="pd-rating"><span class="stars">' + stars + '</span> ' + product.rating + ' <span style="color:var(--gray)">(' + product.reviews + ' ' + window.i18n('pd.reviews_word') + ')</span></div>' +
       '<div class="pd-price">' + CONFIG.currency + product.price + (discount ? ' <span style="background:var(--sale);color:#fff;font-size:.75rem;padding:3px 8px;border-radius:4px;font-family:var(--font)">-' + discount + '%</span>' : '') + '</div>' +
       (product.oldPrice ? '<div class="pd-old-price">' + CONFIG.currency + product.oldPrice + '</div>' : '<div style="height:22px"></div>') +
-      '<div class="pd-label">Розмір</div>' +
+      '<div class="pd-label" data-i18n="filter.size">Розмір</div>' +
       '<div class="sizes-grid" id="sizes">' + sizeBtns + '</div>' +
       '<div class="pd-add-row">' +
         '<div class="qty">' +
@@ -108,11 +108,11 @@ if (product) {
           '<span class="qty-val" id="qtyVal">1</span>' +
           '<button class="qty-btn" id="qtyPlus">+</button>' +
         '</div>' +
-        '<button class="btn btn--dark" style="flex:1" id="addBtn">Додати до кошика</button>' +
+        '<button class="btn btn--dark" style="flex:1" id="addBtn" data-i18n="pd.add">Додати до кошика</button>' +
       '</div>' +
-      '<div class="pd-label">Опис</div>' +
+      '<div class="pd-label" data-i18n="pd.desc">Опис</div>' +
       '<div class="pd-desc">' + product.description + '</div>' +
-      '<div class="pd-label">Характеристики</div>' +
+      '<div class="pd-label" data-i18n="pd.specs">Характеристики</div>' +
       '<ul class="pd-details">' + product.details.map(function(d) { return '<li>' + d + '</li>'; }).join('') + '</ul>' +
     '</div>';
 
@@ -137,7 +137,7 @@ if (product) {
   // Add to cart
   document.getElementById('addBtn').addEventListener('click', function() {
     if (!selectedSize) {
-      showToast('Оберіть розмір');
+      showToast(window.i18n('pd.select_size'));
       return;
     }
     addToCart(product.id, selectedSize, qty);

@@ -71,16 +71,18 @@ function renderProductCard(product) {
   var fullStars = Math.round(product.rating);
   var stars = '★'.repeat(fullStars) + '☆'.repeat(5 - fullStars);
   var imgSrc = product.imageUrl || product.img || '';
+  var displayName = (window.LANG === 'en' && product.nameEn) ? product.nameEn : product.name;
   var imgHtml = imgSrc
-    ? '<img src="' + imgSrc + '" alt="' + product.name + '" loading="lazy" onerror="this.style.background=\'linear-gradient(135deg,#f0e8e8,#e0d0d0)\';this.style.minHeight=\'100%\';this.src=\'\'">'
+    ? '<img src="' + imgSrc + '" alt="' + displayName + '" loading="lazy" onerror="this.style.background=\'linear-gradient(135deg,#f0e8e8,#e0d0d0)\';this.style.minHeight=\'100%\';this.src=\'\'">'
     : '<div style="width:100%;height:100%;background:linear-gradient(135deg,#f0e8e8,#e0d0d0)"></div>';
+  var quickLabel = (window.i18n && window.i18n('quick.add')) || 'Швидко додати';
   return '<div class="product-card">' +
     '<div class="product-card__img-wrap">' +
       '<a href="product.html?id=' + product.id + '">' + imgHtml + '</a>' +
       (discount ? '<span class="badge-sale">-' + discount + '%</span>' : '') +
-      '<div class="product-card__quick" onclick="quickAdd(' + product.id + ')">Швидко додати</div>' +
+      '<div class="product-card__quick" onclick="quickAdd(' + product.id + ')">' + quickLabel + '</div>' +
     '</div>' +
-    '<div class="product-card__name"><a href="product.html?id=' + product.id + '">' + product.name + '</a></div>' +
+    '<div class="product-card__name"><a href="product.html?id=' + product.id + '">' + displayName + '</a></div>' +
     '<div class="product-card__prices">' +
       '<span class="price">' + CONFIG.currency + product.price + '</span>' +
       (product.oldPrice ? '<span class="price-old">' + CONFIG.currency + product.oldPrice + '</span>' : '') +
