@@ -74,7 +74,14 @@ if (product) {
   document.title = product.name + ' — Файні покупки';
   document.getElementById('pdBreadcrumb').textContent = product.name;
 
-  var catNames = { sets:'Комплекти', bras:'Бюстгальтери', panties:'Трусики', bodysuits:'Боді' };
+  var catMap = {
+    bras: 'Бюстгальтери',
+    lingerie: product.gender === 'men' ? 'Чоловіча нижня білизна' : 'Жіноча нижня білизна',
+    winter: product.gender === 'men' ? 'Чоловічі зимові шкарпетки' : 'Жіночі зимові шкарпетки',
+    summer: product.gender === 'men' ? 'Чоловічі літні шкарпетки' : 'Жіночі літні шкарпетки',
+    socks: product.gender === 'men' ? 'Чоловічі шкарпетки' : 'Жіночі шкарпетки',
+  };
+  var catLabel = catMap[product.category] || product.category || '';
   var discount = product.oldPrice ? Math.round((1 - product.price / product.oldPrice) * 100) : null;
   var fullStars = Math.round(product.rating);
   var stars = '★'.repeat(fullStars) + '☆'.repeat(5 - fullStars);
@@ -97,7 +104,7 @@ if (product) {
       '</div>' +
     '</div>' +
     '<div class="pd-info">' +
-      '<div class="pd-category">' + catNames[product.category] + '</div>' +
+      '<div class="pd-category">' + catLabel + '</div>' +
       '<h1 class="pd-name">' + product.name + '</h1>' +
       '<div class="pd-rating"><span class="stars">' + stars + '</span> ' + product.rating + ' <span style="color:var(--gray)">(' + product.reviews + ' ' + window.i18n('pd.reviews_word') + ')</span></div>' +
       '<div class="pd-price">' + CONFIG.currency + product.price + (discount ? ' <span style="background:var(--sale);color:#fff;font-size:.75rem;padding:3px 8px;border-radius:4px;font-family:var(--font)">-' + discount + '%</span>' : '') + '</div>' +
@@ -147,8 +154,7 @@ if (product) {
 
   // Related products
   var related = PRODUCTS.filter(function(p) { return p.category === product.category && p.id !== product.id; }).slice(0, 4);
-  var relEl = document.getElementById('related');
-  related.forEach(function(p) { relEl.innerHTML += renderProductCard(p); });
+  document.getElementById('related').innerHTML = related.map(renderProductCard).join('');
 }
 }); // onProductsReady
 

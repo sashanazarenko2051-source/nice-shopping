@@ -231,12 +231,16 @@ document.getElementById('checkoutForm').addEventListener('submit', function(e) {
       }),
       subtotal: total, delivery: delivery, total: total + delivery
     };
-    API.createOrder(order).catch(function() {});
-    clearCart();
-    document.getElementById('checkoutPage').style.display = 'none';
-    var sp = document.getElementById('successPage');
-    sp.style.display = 'block';
-    window.scrollTo(0, 0);
+    API.createOrder(order).then(function() {
+      clearCart();
+      document.getElementById('checkoutPage').style.display = 'none';
+      document.getElementById('successPage').style.display = 'block';
+      window.scrollTo(0, 0);
+    }).catch(function() {
+      showToast('Помилка збереження замовлення. Зателефонуйте нам: ' + CONFIG.phone);
+      btn.disabled = false;
+      btn.textContent = 'Оформити замовлення →';
+    });
   }
 
   if (CONFIG.telegramBotToken && CONFIG.telegramChatId) {
