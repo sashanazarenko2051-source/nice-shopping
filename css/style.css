@@ -28,8 +28,8 @@ select{font-family:inherit}
 .nav a{font-family:var(--serif);font-style:italic;font-size:1rem;letter-spacing:.02em;color:var(--gray);transition:color var(--tr)}
 .nav a:hover{color:var(--dark)}
 .hdr-right{display:flex;align-items:center;gap:4px}
-.lang-btn{padding:4px 10px;border-radius:6px;font-size:.75rem;font-weight:600;letter-spacing:.04em;border:1.5px solid var(--border);color:var(--gray);transition:all var(--tr);flex-shrink:0}
-.lang-btn:hover{border-color:var(--dark);color:var(--dark)}
+.lang-btn{padding:6px 13px;border-radius:8px;font-size:.8rem;font-weight:700;letter-spacing:.06em;border:1.5px solid var(--border);color:var(--dark);transition:all var(--tr);flex-shrink:0;background:var(--white)}
+.lang-btn:hover{border-color:var(--dark);background:var(--dark);color:#fff}
 .theme-btn{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1rem;transition:background var(--tr);flex-shrink:0}
 .theme-btn:hover{background:var(--light)}
 .cart-btn{position:relative;display:flex;align-items:center;padding:8px;transition:opacity var(--tr)}
@@ -210,8 +210,8 @@ html.dark .checkout-items{background:#141414}
 html.dark .co-item{border-color:#222}
 html.dark .cart-empty__title,.html.dark .cart-empty__sub{color:#E0E0E0}
 html.dark .theme-btn:hover{background:#1A1A1A}
-html.dark .lang-btn{border-color:#333;color:#777}
-html.dark .lang-btn:hover{border-color:#E0E0E0;color:#E0E0E0}
+html.dark .lang-btn{border-color:#4ade80;color:#4ade80;background:rgba(74,222,128,.08)}
+html.dark .lang-btn:hover{border-color:#4ade80;background:#4ade80;color:#020d04}
 html.dark .qty{border-color:#2A2A2A}
 html.dark .qty-btn:hover{background:#1A1A1A}
 html.dark .footer-bottom{border-color:#1A1A1A}

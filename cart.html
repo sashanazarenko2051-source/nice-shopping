@@ -84,14 +84,14 @@ function renderCart() {
       '<div class="cart-item__img">' + (p.imageUrl ? '<img src="' + p.imageUrl + '" style="width:100%;height:100%;object-fit:cover;border-radius:var(--r)">' : '') + '</div>' +
       '<div>' +
         '<div class="cart-item__name">' + p.name + '</div>' +
-        '<div class="cart-item__size">Розмір: ' + item.size + '</div>' +
+        '<div class="cart-item__size">'+(window.LANG==='en'?'Size':'Розмір')+': ' + item.size + '</div>' +
         '<div class="cart-item__row">' +
           '<div class="qty">' +
             '<button class="qty-btn" onclick="changeQty(\'' + item.key + '\',-1)">−</button>' +
             '<span class="qty-val">' + item.qty + '</span>' +
             '<button class="qty-btn" onclick="changeQty(\'' + item.key + '\',1)">+</button>' +
           '</div>' +
-          '<button class="cart-item__remove" onclick="removeItem(\'' + item.key + '\')">Видалити</button>' +
+          '<button class="cart-item__remove" onclick="removeItem(\'' + item.key + '\')">'+(window.LANG==='en'?'Remove':'Видалити')+'</button>' +
           '<span class="cart-item__price">' + CONFIG.currency + (p.price * item.qty) + '</span>' +
         '</div>' +
       '</div>' +
@@ -103,17 +103,17 @@ function renderCart() {
       '<div>' +
         itemsHtml +
         '<div style="margin-top:20px">' +
-          '<a href="catalog.html" style="color:var(--gray);font-size:.875rem;border-bottom:1px solid currentColor">← Продовжити покупки</a>' +
+          '<a href="catalog.html" style="color:var(--gray);font-size:.875rem;border-bottom:1px solid currentColor">'+(window.LANG==='en'?'← Continue shopping':'← Продовжити покупки')+'</a>' +
         '</div>' +
       '</div>' +
       '<div>' +
         '<div class="order-summary">' +
-          '<div class="order-summary__title">Підсумок замовлення</div>' +
-          '<div class="sum-row"><span>Товари (' + cart.reduce(function(s,i){return s+i.qty;},0) + ')</span><span>' + CONFIG.currency + total + '</span></div>' +
-          '<div class="sum-row"><span>Доставка</span><span>' + (delivery === 0 ? 'Безкоштовно' : CONFIG.currency + delivery) + '</span></div>' +
-          '<div class="sum-row total"><span>Разом</span><span>' + CONFIG.currency + (total + delivery) + '</span></div>' +
-          '<a href="checkout.html" class="btn btn--dark btn--full" style="margin-top:16px">Оформити замовлення</a>' +
-          (delivery > 0 ? '<p style="font-size:.8125rem;color:var(--gray);text-align:center;margin-top:10px">Ще ' + CONFIG.currency + (1000 - total) + ' до безкоштовної доставки</p>' : '<p style="font-size:.8125rem;color:var(--success);text-align:center;margin-top:10px">✓ Безкоштовна доставка</p>') +
+          '<div class="order-summary__title">'+(window.LANG==='en'?'Order summary':'Підсумок замовлення')+'</div>' +
+          '<div class="sum-row"><span>'+(window.LANG==='en'?'Items':'Товари')+' (' + cart.reduce(function(s,i){return s+i.qty;},0) + ')</span><span>' + CONFIG.currency + total + '</span></div>' +
+          '<div class="sum-row"><span>'+(window.LANG==='en'?'Delivery':'Доставка')+'</span><span>' + (delivery === 0 ? (window.LANG==='en'?'Free':'Безкоштовно') : CONFIG.currency + delivery) + '</span></div>' +
+          '<div class="sum-row total"><span>'+(window.LANG==='en'?'Total':'Разом')+'</span><span>' + CONFIG.currency + (total + delivery) + '</span></div>' +
+          '<a href="checkout.html" class="btn btn--dark btn--full" style="margin-top:16px">'+(window.LANG==='en'?'Checkout':'Оформити замовлення')+'</a>' +
+          (delivery > 0 ? '<p style="font-size:.8125rem;color:var(--gray);text-align:center;margin-top:10px">'+(window.LANG==='en'?'Only':'Ще')+' ' + CONFIG.currency + (1000 - total) + ' '+(window.LANG==='en'?'until free delivery':'до безкоштовної доставки')+'</p>' : '<p style="font-size:.8125rem;color:var(--success);text-align:center;margin-top:10px">✓ '+(window.LANG==='en'?'Free delivery':'Безкоштовна доставка')+'</p>') +
         '</div>' +
       '</div>' +
     '</div>';
