@@ -86,7 +86,7 @@ function renderProductCard(product) {
       (product.oldPrice ? '<span class="price-old">' + CONFIG.currency + product.oldPrice + '</span>' : '') +
     '</div>' +
     '<div class="product-card__rating"><span class="stars">' + stars + '</span><span class="reviews">(' + product.reviews + ')</span></div>' +
-    (product.stock != null ? '<div class="product-card__stock' + (product.stock === 0 ? ' out' : '') + '">' + (product.stock === 0 ? '❌ Немає в наявності' : '✅ В наявності: ' + product.stock + ' шт.') + '</div>' : '') +
+    (product.stock != null ? '<div class="product-card__stock' + (product.stock === 0 ? ' out' : '') + '">' + (product.stock === 0 ? '❌ ' + (window.LANG==='en'?'Out of stock':'Немає в наявності') : '✅ ' + (window.LANG==='en'?'In stock':'В наявності') + ': ' + product.stock + ' ' + (window.LANG==='en'?'pcs.':'шт.')) + '</div>' : '') +
   '</div>';
 }
 
