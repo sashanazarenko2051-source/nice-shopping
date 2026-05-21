@@ -7,6 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
   <style>
     :root{--bg:#020d04;--bg2:#0a1a0c;--bg3:#010a03;--green:#4ade80;--green-l:#86efac;--gb:rgba(74,222,128,.1);--gbd:rgba(74,222,128,.13);--text:#E0E0E0;--dim:rgba(224,224,224,.55);--serif:'Playfair Display',serif;--font:'Inter',sans-serif;--r:12px;--tr:.22s ease;--max:1240px;--hh:64px}
     *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -17,7 +18,9 @@
     /* Header */
     .header{position:sticky;top:0;z-index:100;background:rgba(5,46,22,.97);backdrop-filter:blur(12px);border-bottom:1px solid rgba(74,222,128,.1);height:var(--hh)}
     .hdr{max-width:var(--max);margin:0 auto;padding:0 24px;display:flex;align-items:center;gap:16px;height:100%}
-    .logo{font-family:var(--serif);font-size:1.5rem;letter-spacing:.02em;flex-shrink:0;color:var(--green)}
+    .logo{font-family:var(--serif);font-size:1.5rem;letter-spacing:.02em;flex-shrink:0;color:#c48b9a;display:flex;align-items:center;gap:9px}
+    .logo-icon{flex-shrink:0;transition:transform .4s cubic-bezier(.34,1.56,.64,1)}
+    .logo:hover .logo-icon{transform:scale(1.18) rotate(-8deg)}
     .nav{display:flex;gap:24px;margin-left:auto;align-items:center}
     .nav a{font-family:var(--serif);font-style:italic;font-size:1rem;color:rgba(224,224,224,.92);letter-spacing:.02em;transition:color var(--tr)}
     .nav a:hover{color:var(--green)}
@@ -182,7 +185,7 @@
 
 <header class="header">
   <div class="hdr">
-    <a href="index.html" class="logo"><svg class="logo-icon" width="22" height="22" viewBox="0 0 22 22" fill="currentColor" aria-hidden="true"><ellipse cx="11" cy="5.5" rx="2.5" ry="4.5" opacity=".8"/><ellipse cx="11" cy="16.5" rx="2.5" ry="4.5" opacity=".8"/><ellipse cx="5.5" cy="11" rx="4.5" ry="2.5" opacity=".8"/><ellipse cx="16.5" cy="11" rx="4.5" ry="2.5" opacity=".8"/><circle cx="11" cy="11" r="2.8"/></svg>Nice Shopping</a>
+    <a href="index.html" class="logo"><svg class="logo-icon" width="34" height="24" viewBox="0 0 34 24" fill="currentColor" aria-hidden="true"><path d="M17,11 C15,7 8,4 2,7 C0,9 1,13 4,13 C9,14 14,13 17,11Z" opacity=".9"/><path d="M17,11 C19,7 26,4 32,7 C34,9 33,13 30,13 C25,14 20,13 17,11Z" opacity=".9"/><path d="M15,13 Q11,18 9,22" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" fill="none" opacity=".7"/><path d="M19,13 Q23,18 25,22" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" fill="none" opacity=".7"/><ellipse cx="17" cy="11" rx="3" ry="3.5"/></svg>Nice Shopping</a>
     <nav class="nav" id="nav">
       <a href="index.html" data-i18n="nav.home">Головна</a>
       <a href="catalog.html" data-i18n="nav.catalog">Каталог</a>
