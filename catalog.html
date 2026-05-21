@@ -25,8 +25,6 @@
     .filter-tag.active { background: #111; color: #fff; font-weight: 500; }
     .filter-tag::before { content: ''; width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; background: #D1D5DB; transition: background var(--tr); }
     .filter-tag[data-cat="all"]::before { display: none; }
-    .filter-tag[data-cat="socks"][data-gender="women"]::before { background: #ec4899; }
-    .filter-tag[data-cat="socks"][data-gender="men"]::before { background: #3b82f6; }
     .filter-tag[data-cat="lingerie"][data-gender="women"]::before { background: #8b5cf6; }
     .filter-tag[data-cat="lingerie"][data-gender="men"]::before { background: #10b981; }
     .filter-tag[data-cat="bras"]::before { background: #f43f5e; }
@@ -100,8 +98,6 @@
           <div class="filter-group__title" data-i18n="filter.cat">Категорія</div>
           <div class="filter-tags">
             <button class="filter-tag active" data-cat="all" data-gender="" data-i18n="filter.all">Всі</button>
-            <button class="filter-tag" data-cat="socks" data-gender="women" data-i18n="filter.ws">Жіночі шкарпетки</button>
-            <button class="filter-tag" data-cat="socks" data-gender="men" data-i18n="filter.ms">Чоловічі шкарпетки</button>
             <button class="filter-tag" data-cat="lingerie" data-gender="women" data-i18n="filter.wl">Жіноча нижня білизна</button>
             <button class="filter-tag" data-cat="lingerie" data-gender="men" data-i18n="filter.ml">Чоловіча нижня білизна</button>
             <button class="filter-tag" data-cat="bras" data-gender="" data-i18n="filter.br">Бюстгальтери</button>
@@ -161,7 +157,6 @@ var activeSize = '';
 var activeSort = 'default';
 
 var catNames = {
-  'socks:women':'Жіночі шкарпетки', 'socks:men':'Чоловічі шкарпетки',
   'lingerie:women':'Жіноча нижня білизна', 'lingerie:men':'Чоловіча нижня білизна',
   'bras:':'Бюстгальтери',
   'winter:women':'❄️ Жіночі зимові шкарпетки', 'winter:men':'❄️ Чоловічі зимові шкарпетки',
