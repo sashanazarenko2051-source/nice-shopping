@@ -150,6 +150,7 @@
 <div class="toast" id="toast"></div>
 
 <script src="js/config.js"></script>
+<script src="js/sync.js"></script>
 <script src="js/data.js"></script>
 <script src="js/i18n.js"></script>
 <script src="js/cart.js"></script>
@@ -236,6 +237,7 @@ document.getElementById('checkoutForm').addEventListener('submit', function(e) {
     try { orders = JSON.parse(localStorage.getItem('ns_orders')) || []; } catch(e) {}
     orders.unshift(order);
     localStorage.setItem('ns_orders', JSON.stringify(orders));
+    if (typeof syncCloud !== 'undefined') syncCloud.saveOrders(orders);
     clearCart();
     document.getElementById('checkoutPage').style.display = 'none';
     var sp = document.getElementById('successPage');

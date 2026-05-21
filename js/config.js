@@ -6,7 +6,10 @@ const CONFIG = {
   email: 'ornazartatyana@gmail.com',
   telegram: 'NazarT84',
   instagram: 'fayni_pokupky',
-  // Telegram-бот: вставте токен і chat_id після налаштування
   telegramBotToken: '',
   telegramChatId: '',
+  // JSONBin.io — заповнюється після налаштування в адмін-панелі
+  jsonbinKey: '',
+  jsonbinProductsBin: '',
+  jsonbinOrdersBin: '',
 };

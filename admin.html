@@ -231,6 +231,8 @@
       <button class="sb-item"        id="btn-orders"   onclick="showTab('orders')">  <span class="sb-ico">📋</span> Замовлення <span class="sb-badge" id="sbOrdCount" style="display:none">0</span></button>
     </nav>
     <div class="sb-bottom">
+      <div id="syncStatus" style="margin-bottom:8px;padding:10px 12px;border-radius:10px;font-size:.75rem;line-height:1.5;background:rgba(74,222,128,.06);border:1px solid rgba(74,222,128,.15)"></div>
+      <button onclick="showSyncModal()" style="width:100%;padding:8px;margin-bottom:8px;background:rgba(74,222,128,.1);border:1px solid rgba(74,222,128,.25);color:var(--green);border-radius:8px;font-size:.8rem;cursor:pointer">☁️ Синхронізація</button>
       <a href="index.html" target="_blank" class="sb-site-link">↗ Відкрити сайт</a>
       <a href="catalog.html" target="_blank" class="sb-site-link">↗ Переглянути каталог</a>
       <button class="sb-logout" onclick="doLogout()">Вийти з панелі</button>
@@ -287,6 +289,33 @@
       </div>
     </div>
 
+  </div>
+</div>
+
+<!-- SYNC MODAL -->
+<div id="syncModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:999;align-items:center;justify-content:center" onclick="if(event.target===this)closeSyncModal()">
+  <div style="background:#0d1f10;border:1px solid rgba(74,222,128,.2);border-radius:20px;padding:32px;width:min(500px,95vw);max-height:90vh;overflow-y:auto">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+      <h3 style="font-family:var(--serif);font-size:1.2rem;color:var(--green)">☁️ Хмарна синхронізація</h3>
+      <button onclick="closeSyncModal()" style="color:var(--dim);font-size:1.2rem;background:none;border:none;cursor:pointer">✕</button>
+    </div>
+    <p style="font-size:.84rem;color:var(--dim);margin-bottom:20px;line-height:1.6">
+      Щоб товари та замовлення були видні з будь-якого пристрою, підключіть безкоштовний <strong style="color:var(--text)">JSONBin.io</strong>.<br>
+      1. Зареєструйтесь на <strong>jsonbin.io</strong><br>
+      2. Скопіюйте <strong>Master Key</strong> з Dashboard<br>
+      3. Вставте нижче і натисніть «Налаштувати»
+    </p>
+    <div style="margin-bottom:16px">
+      <label style="font-size:.78rem;color:var(--dim);display:block;margin-bottom:6px">Master Key (з jsonbin.io)</label>
+      <input id="jbKeyInput" type="password" placeholder="$2a$10$..." style="width:100%;padding:10px 14px;background:#061008;border:1.5px solid #1f3522;border-radius:10px;color:#E0E0E0;font-size:.875rem;font-family:inherit">
+    </div>
+    <button onclick="doSyncSetup()" style="width:100%;padding:12px;background:var(--green);color:#020d04;border-radius:10px;font-size:.9rem;font-weight:700;cursor:pointer;margin-bottom:12px" id="jbSetupBtn">⚡ Налаштувати</button>
+    <div id="jbSetupResult" style="font-size:.82rem;line-height:1.7;display:none"></div>
+    <hr style="border-color:rgba(74,222,128,.1);margin:16px 0">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+      <button onclick="doSyncLoad()" style="padding:9px;background:rgba(74,222,128,.1);border:1px solid rgba(74,222,128,.25);color:var(--green);border-radius:8px;font-size:.8rem;cursor:pointer">⬇️ Завантажити з хмари</button>
+      <button onclick="doSyncPush()" style="padding:9px;background:rgba(74,222,128,.1);border:1px solid rgba(74,222,128,.25);color:var(--green);border-radius:8px;font-size:.8rem;cursor:pointer">⬆️ Зберегти в хмару</button>
+    </div>
   </div>
 </div>
 
@@ -389,6 +418,7 @@
 <div class="toast" id="toast"></div>
 
 <script src="js/config.js"></script>
+<script src="js/sync.js"></script>
 <script>
 /* ─────────── CONFIG ─────────── */
 var PASS = 'admin2025'; // ← змініть пароль
@@ -419,7 +449,15 @@ function productCatId(p){
   return found ? found.id : '';
 }
 function getProducts(){ try{ return JSON.parse(localStorage.getItem('ns_products'))||[]; }catch(e){ return []; } }
-function setProducts(a){ localStorage.setItem('ns_products',JSON.stringify(a)); }
+function setProducts(a){
+  localStorage.setItem('ns_products',JSON.stringify(a));
+  if(typeof syncCloud!=='undefined') syncCloud.saveProducts(a).then(function(bid){
+    if(bid&&bid!==true&&!localStorage.getItem('ns_jb_pb_notified')){
+      localStorage.setItem('ns_jb_pb_notified','1');
+      updateSyncStatus();
+    }
+  });
+}
 function getOrders(){ try{ return JSON.parse(localStorage.getItem('ns_orders'))||[]; }catch(e){ return []; } }
 function getVisits(){ try{ return JSON.parse(localStorage.getItem('ns_visits'))||{}; }catch(e){ return {}; } }
 
@@ -437,6 +475,16 @@ function showAdmin(){
   document.getElementById('adminApp').style.display='flex';
   updateSideBadges();
   loadStats();
+  updateSyncStatus();
+  // Auto-load from cloud on startup
+  if(typeof syncCloud!=='undefined'&&syncCloud.hasBin()){
+    syncCloud.loadProducts().then(function(ok){
+      if(ok){ buildFilterBar(); renderProducts(); updateSideBadges(); }
+    });
+    syncCloud.loadOrders().then(function(ok){
+      if(ok){ renderOrders(); updateSideBadges(); }
+    });
+  }
 }
 
 /* ─────────── TABS ─────────── */
@@ -834,6 +882,7 @@ function deleteOrder(idx){
   var orders=getOrders();
   orders.splice(idx,1);
   localStorage.setItem('ns_orders',JSON.stringify(orders));
+  if(typeof syncCloud!=='undefined') syncCloud.saveOrders(orders);
   renderOrders();
   updateSideBadges();
   toast('🗑 Замовлення видалено');
@@ -851,6 +900,65 @@ function toast(msg){
   var t=document.getElementById('toast');
   t.textContent=msg; t.classList.add('show');
   setTimeout(function(){t.classList.remove('show');},2500);
+}
+
+/* ─────────── SYNC MODAL ─────────── */
+function updateSyncStatus(){
+  var el=document.getElementById('syncStatus');
+  if(!el)return;
+  var hasKey=typeof syncCloud!=='undefined'&&syncCloud.hasKey();
+  var hasBin=typeof syncCloud!=='undefined'&&syncCloud.hasBin();
+  if(hasKey&&hasBin){
+    el.innerHTML='<span style="color:var(--green)">☁️ Хмара підключена</span><br><span style="color:var(--dim)">ID: '+syncCloud.productsBinId().slice(0,8)+'…</span>';
+  } else if(hasKey){
+    el.innerHTML='<span style="color:#fbbf24">⚠️ Ключ є, bin не створено</span>';
+  } else {
+    el.innerHTML='<span style="color:var(--dim)">☁️ Хмара не підключена</span>';
+  }
+}
+function showSyncModal(){
+  var m=document.getElementById('syncModal');
+  m.style.display='flex';
+  var stored=localStorage.getItem('ns_jb_key')||'';
+  if(stored) document.getElementById('jbKeyInput').value=stored;
+  updateSyncStatus();
+}
+function closeSyncModal(){ document.getElementById('syncModal').style.display='none'; }
+async function doSyncSetup(){
+  var key=document.getElementById('jbKeyInput').value.trim();
+  if(!key){alert('Введіть Master Key');return;}
+  var btn=document.getElementById('jbSetupBtn');
+  btn.textContent='⏳ Налаштовуємо...'; btn.disabled=true;
+  var res=await syncCloud.setup(key);
+  btn.textContent='⚡ Налаштувати'; btn.disabled=false;
+  var el=document.getElementById('jbSetupResult');
+  el.style.display='block';
+  if(res.ok){
+    el.innerHTML='<span style="color:var(--green)">✅ Готово! Товари та замовлення синхронізуються.</span><br>'+
+      '<span style="color:var(--dim)">Products bin: <code style="color:var(--text)">'+res.pb+'</code></span><br>'+
+      '<span style="color:var(--dim)">Щоб всі пристрої бачили товари, додайте в <code>js/config.js</code>:<br>'+
+      '<code style="color:var(--green)">jsonbinProductsBin: \''+res.pb+'\'</code></span>';
+    updateSyncStatus();
+  } else {
+    el.innerHTML='<span style="color:#f87171">❌ Помилка: '+res.error+'<br>Перевірте Master Key</span>';
+  }
+}
+async function doSyncLoad(){
+  toast('⏳ Завантажуємо з хмари...');
+  var ok1=await syncCloud.loadProducts();
+  var ok2=await syncCloud.loadOrders();
+  if(ok1){ buildFilterBar(); renderProducts(); }
+  if(ok2){ renderOrders(); updateSideBadges(); }
+  toast(ok1||ok2?'✅ Дані завантажено з хмари':'⚠️ Нічого не завантажено');
+  updateSyncStatus();
+}
+async function doSyncPush(){
+  toast('⏳ Зберігаємо в хмару...');
+  var p=getProducts(); var o=getOrders();
+  await syncCloud.saveProducts(p);
+  await syncCloud.saveOrders(o);
+  toast('✅ Дані збережено в хмару');
+  updateSyncStatus();
 }
 
 /* ─────────── INIT ─────────── */

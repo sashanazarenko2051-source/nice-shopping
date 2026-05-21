@@ -145,6 +145,7 @@
 <div class="toast" id="toast"></div>
 
 <script src="js/config.js"></script>
+<script src="js/sync.js"></script>
 <script src="js/data.js"></script>
 <script src="js/i18n.js"></script>
 <script src="js/cart.js"></script>
@@ -260,6 +261,11 @@ sizeEl.addEventListener('click', function(e) {
 });
 document.getElementById('sortSelect').addEventListener('change', function() { activeSort = this.value; render(); });
 render();
+
+// Load from cloud if JSONBin is configured
+if (typeof syncCloud !== 'undefined' && syncCloud.hasBin()) {
+  syncCloud.loadProducts().then(function(ok) { if (ok) render(); });
+}
 
 document.getElementById('menuToggle').addEventListener('click', function() {
   document.getElementById('nav').classList.toggle('open');
