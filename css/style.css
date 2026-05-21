@@ -23,7 +23,7 @@ select{font-family:inherit}
 /* ─── Header ─── */
 .header{position:sticky;top:0;z-index:100;background:rgba(255,255,255,.96);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);height:var(--hh);transition:background .3s,border-color .3s}
 .header__inner{display:flex;align-items:center;gap:20px;height:100%}
-.logo{font-family:var(--serif);font-size:1.45rem;letter-spacing:.03em;flex-shrink:0;color:#c48b9a;display:flex;align-items:center;gap:9px}
+.logo{font-family:var(--serif);font-size:1.45rem;letter-spacing:.03em;flex-shrink:0;color:#4ade80;display:flex;align-items:center;gap:9px}
 .logo-icon{flex-shrink:0;transition:transform .5s cubic-bezier(.34,1.56,.64,1)}
 .logo:hover .logo-icon{transform:rotate(90deg)}
 .nav{display:flex;gap:24px;margin-left:auto;align-items:center}
