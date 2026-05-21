@@ -314,10 +314,14 @@
         </div>
       </div>
 
-      <div class="fsep">Ціна</div>
+      <div class="fsep">Ціна та кількість</div>
       <div class="fr2">
         <div class="fg"><label>Ціна (₴) *</label><input type="number" id="pPrice" class="fi" placeholder="450"></div>
         <div class="fg"><label>Стара ціна (₴)</label><input type="number" id="pOldPrice" class="fi" placeholder="600"></div>
+      </div>
+      <div class="fr2">
+        <div class="fg"><label>Кількість (шт.) *</label><input type="number" id="pStock" class="fi" placeholder="10" min="0"></div>
+        <div class="fg"><label style="opacity:0">—</label><div style="padding:9px 13px;background:#061008;border:1.5px solid #1f3522;border-radius:var(--r);font-size:.8rem;color:var(--dim)">0 = немає в наявності</div></div>
       </div>
 
       <div class="fsep">Розміри та опис</div>
@@ -531,16 +535,19 @@ function thumb(p){
 }
 function renderList(list,el){
   var catN={socks:'Шкарпетки',lingerie:'Білизна',bras:'Бюстгальтери'};
-  el.innerHTML='<div class="box" style="padding:0;overflow:hidden"><div class="tbl-wrap"><table class="data-table"><thead><tr><th>Фото</th><th>Назва</th><th>Каталог</th><th>Ціна ₴</th><th>Дії</th></tr></thead><tbody>'+
+  el.innerHTML='<div class="box" style="padding:0;overflow:hidden"><div class="tbl-wrap"><table class="data-table"><thead><tr><th>Фото</th><th>Назва</th><th>Каталог</th><th>Ціна ₴</th><th>Залишок</th><th>Дії</th></tr></thead><tbody>'+
     list.map(function(p){
       var cat=catById(productCatId(p));
       var catLabel=cat?(cat.icon+' '+cat.label):(p.category||'-');
       var priceCell='<input class="inline-price" type="number" value="'+p.price+'" onchange="quickPrice('+p.id+',this.value)" title="Змінити ціну">';
+      var stock=p.stock!=null?p.stock:null;
+      var stockBadge=stock===null?'<span style="color:var(--dim)">—</span>':stock===0?'<span style="color:var(--red);font-weight:600">Немає</span>':'<span style="color:var(--green);font-weight:600">'+stock+' шт.</span>';
       return '<tr>'+
         '<td style="width:56px">'+thumb(p)+'</td>'+
         '<td style="font-weight:500;max-width:200px"><div style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+p.name+'</div>'+(p.oldPrice?'<div style="font-size:.72rem;color:var(--dim);text-decoration:line-through">₴'+p.oldPrice+'</div>':'')+'</td>'+
         '<td><span class="badge badge-'+(p.category||'custom')+'">'+catLabel+'</span></td>'+
         '<td>'+priceCell+'</td>'+
+        '<td>'+stockBadge+'</td>'+
         '<td style="white-space:nowrap">'+
           '<button class="btn-icon btn-edit" onclick="openForm('+p.id+')">✏️ Змінити</button> '+
           '<button class="btn-icon btn-move" onclick="openMoveModal('+p.id+')">↔ Перемістити</button> '+
@@ -591,7 +598,7 @@ function onCatChange(){
 function openForm(id){
   S.editingId=id||null;
   document.getElementById('formTitle').textContent=id?'Редагувати товар':'Новий товар';
-  var fields=['pName','pPrice','pOldPrice','pSizes','pDesc','pDetails','pImageUrl'];
+  var fields=['pName','pPrice','pOldPrice','pStock','pSizes','pDesc','pDetails','pImageUrl'];
   fields.forEach(function(f){document.getElementById(f).value='';});
   document.getElementById('pGender').value='women';
   buildCatSelect(null);
@@ -603,6 +610,7 @@ function openForm(id){
       document.getElementById('pName').value=p.name||'';
       document.getElementById('pPrice').value=p.price||'';
       document.getElementById('pOldPrice').value=p.oldPrice||'';
+      document.getElementById('pStock').value=p.stock!=null?p.stock:'';
       document.getElementById('pSizes').value=(p.sizes||[]).join(', ');
       document.getElementById('pDesc').value=p.description||'';
       document.getElementById('pDetails').value=(p.details||[]).join('\n');
@@ -665,6 +673,7 @@ function saveProduct(){
     gender:document.getElementById('pGender').value,
     price:price,
     oldPrice:parseFloat(document.getElementById('pOldPrice').value)||null,
+    stock:parseInt(document.getElementById('pStock').value)||0,
     rating:5.0, reviews:0,
     sizes:document.getElementById('pSizes').value.split(',').map(function(s){return s.trim();}).filter(Boolean),
     description:document.getElementById('pDesc').value.trim(),

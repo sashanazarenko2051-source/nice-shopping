@@ -85,6 +85,7 @@ function renderProductCard(product) {
       (product.oldPrice ? '<span class="price-old">' + CONFIG.currency + product.oldPrice + '</span>' : '') +
     '</div>' +
     '<div class="product-card__rating"><span class="stars">' + stars + '</span><span class="reviews">(' + product.reviews + ')</span></div>' +
+    (product.stock != null ? '<div class="product-card__stock' + (product.stock === 0 ? ' out' : '') + '">' + (product.stock === 0 ? '❌ Немає в наявності' : '✅ В наявності: ' + product.stock + ' шт.') + '</div>' : '') +
   '</div>';
 }
 
