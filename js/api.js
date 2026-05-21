@@ -27,6 +27,15 @@ var API = (function() {
     saveAllProducts: function(list) {
       return _req('/api/products', { method: 'PUT', headers: _headers(), body: JSON.stringify(list) });
     },
+    addProduct: function(data) {
+      return _req('/api/products/one', { method: 'POST', headers: _headers(), body: JSON.stringify(data) });
+    },
+    updateProduct: function(id, data) {
+      return _req('/api/products/' + id, { method: 'PUT', headers: _headers(), body: JSON.stringify(data) });
+    },
+    deleteProduct: function(id) {
+      return _req('/api/products/' + id, { method: 'DELETE', headers: _headers() });
+    },
 
     getOrders: function() { return _req('/api/orders', { headers: _headers() }); },
     createOrder: function(data) {

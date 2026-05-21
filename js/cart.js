@@ -72,8 +72,9 @@ function renderProductCard(product) {
   var stars = '★'.repeat(fullStars) + '☆'.repeat(5 - fullStars);
   var imgSrc = product.imageUrl || product.img || '';
   var displayName = (window.LANG === 'en' && product.nameEn) ? product.nameEn : product.name;
+  var isData = imgSrc && imgSrc.indexOf('data:') === 0;
   var imgHtml = imgSrc
-    ? '<img src="' + imgSrc + '" alt="' + displayName + '" loading="lazy" onerror="this.style.background=\'linear-gradient(135deg,#f0e8e8,#e0d0d0)\';this.style.minHeight=\'100%\';this.src=\'\'">'
+    ? '<img src="' + imgSrc + '" alt="' + displayName + '"' + (isData ? '' : ' loading="lazy"') + ' onerror="this.onerror=null;this.style.display=\'none\'">'
     : '<div style="width:100%;height:100%;background:linear-gradient(135deg,#f0e8e8,#e0d0d0)"></div>';
   var quickLabel = (window.i18n && window.i18n('quick.add')) || 'Швидко додати';
   return '<div class="product-card">' +

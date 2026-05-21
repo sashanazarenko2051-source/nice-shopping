@@ -200,6 +200,25 @@
     .icon-grid{display:grid;grid-template-columns:repeat(8,1fr);gap:4px;margin-bottom:8px}
     .icon-opt{font-size:1.3rem;padding:6px;border-radius:6px;background:var(--bg3);border:1.5px solid transparent;cursor:pointer;text-align:center;transition:all var(--tr)}
     .icon-opt:hover,.icon-opt.selected{border-color:var(--green);background:var(--gb)}
+
+    /* ── PHOTO TAB ── */
+    .photo-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(155px,1fr));gap:14px}
+    .photo-card{background:var(--bg2);border:1.5px solid var(--gbd);border-radius:14px;overflow:hidden;cursor:pointer;transition:all var(--tr);position:relative}
+    .photo-card:hover{border-color:rgba(74,222,128,.45);box-shadow:0 6px 24px rgba(74,222,128,.12);transform:translateY(-2px)}
+    .photo-card__img{height:140px;display:flex;align-items:center;justify-content:center;background:#061008;position:relative;overflow:hidden}
+    .photo-card__img img{width:100%;height:100%;object-fit:cover}
+    .photo-card__no-img{font-size:2.2rem;opacity:.3}
+    .photo-card__overlay{position:absolute;inset:0;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity var(--tr);font-size:1.6rem}
+    .photo-card:hover .photo-card__overlay{opacity:1}
+    .photo-card__name{padding:10px 12px 4px;font-size:.8rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .photo-card__status{padding:0 12px 10px;font-size:.7rem}
+    .photo-card.uploading{opacity:.5;pointer-events:none}
+    .photo-hint{font-size:.82rem;color:var(--dim);margin-bottom:16px}
+    .photo-stats{display:flex;gap:18px;margin-bottom:18px;font-size:.82rem}
+    .photo-stat{color:var(--dim)}
+    .photo-stat strong{color:var(--text)}
+    .photo-stat.ok strong{color:var(--green)}
+    .photo-stat.miss strong{color:var(--red)}
   </style>
 </head>
 <body>
@@ -229,6 +248,7 @@
       <button class="sb-item"        id="btn-products" onclick="showTab('products')"><span class="sb-ico">📦</span> Товари <span class="sb-badge" id="sbProdCount">0</span></button>
       <button class="sb-item"        id="btn-catalogs" onclick="showTab('catalogs')"><span class="sb-ico">🗂</span> Каталоги</button>
       <button class="sb-item"        id="btn-orders"   onclick="showTab('orders')">  <span class="sb-ico">📋</span> Замовлення <span class="sb-badge" id="sbOrdCount" style="display:none">0</span></button>
+      <button class="sb-item"        id="btn-photos"   onclick="showTab('photos')"> <span class="sb-ico">📸</span> Фото товарів</button>
     </nav>
     <div class="sb-bottom">
       <a href="index.html" target="_blank" class="sb-site-link">↗ Відкрити сайт</a>
@@ -287,8 +307,24 @@
       </div>
     </div>
 
+    <!-- PHOTOS -->
+    <div id="tab-photos" style="display:none;flex-direction:column;flex:1;min-height:0;overflow:hidden">
+      <div class="topbar">
+        <h1>Фото товарів</h1>
+        <div class="topbar-actions">
+          <span style="font-size:.8rem;color:var(--dim)">Натисніть на картку — вибере фото і збереже автоматично</span>
+        </div>
+      </div>
+      <div class="tab-scroll">
+        <div class="photo-stats" id="photoStats"></div>
+        <div id="photoGrid"></div>
+      </div>
+    </div>
+
   </div>
 </div>
+
+<input type="file" id="photoPickerInput" accept="image/*" style="display:none" onchange="onPhotoPickerChange(this)">
 
 <!-- PRODUCT FORM -->
 <div id="overlay" class="overlay" style="display:none" onclick="if(event.target===this)closeForm()">
@@ -444,18 +480,21 @@ async function showAdmin(){
 }
 
 /* ─────────── TABS ─────────── */
-var TABS = ['stats','products','catalogs','orders'];
+var TABS = ['stats','products','catalogs','orders','photos'];
 function showTab(name){
+  var flexTabs = ['products','photos'];
   TABS.forEach(function(t){
     var el = document.getElementById('tab-'+t);
-    el.style.display = t===name ? (t==='products'?'flex':'block') : 'none';
-    if(t==='products'){ el.style.flexDirection='column'; el.style.flex='1'; el.style.minHeight='0'; el.style.overflow='hidden'; }
+    var isFlex = flexTabs.indexOf(t) >= 0;
+    el.style.display = t===name ? (isFlex?'flex':'block') : 'none';
+    if(isFlex){ el.style.flexDirection='column'; el.style.flex='1'; el.style.minHeight='0'; el.style.overflow='hidden'; }
     document.getElementById('btn-'+t).classList.toggle('active', t===name);
   });
   if(name==='stats')    loadStats();
   if(name==='products'){ buildFilterBar(); renderProducts(); }
   if(name==='catalogs') renderCatalogs();
   if(name==='orders')   renderOrders();
+  if(name==='photos')   renderPhotos();
 }
 
 /* ─────────── BADGES ─────────── */
@@ -582,7 +621,10 @@ function getCatIcon(p){
 async function quickPrice(id,val){
   var list=getProducts();
   var p=list.find(function(x){return x.id===id;});
-  if(p){ p.price=parseFloat(val)||p.price; await setProducts(list); toast('Ціну оновлено'); }
+  if(p){
+    p.price=parseFloat(val)||p.price;
+    try { await API.updateProduct(id,p); toast('Ціну оновлено'); } catch(e){ toast('❌ Помилка'); }
+  }
 }
 
 /* ─────────── PRODUCT FORM ─────────── */
@@ -629,14 +671,11 @@ function closeForm(){ document.getElementById('overlay').style.display='none'; S
 function handleFileUpload(input){
   var file=input.files[0];
   if(!file) return;
-  if(file.size>3*1024*1024){ toast('Фото більше 3 МБ — зменшіть розмір'); return; }
-  var reader=new FileReader();
-  reader.onload=function(e){
+  compressImage(file, 800, 0.80, function(base64){
     document.getElementById('pImageUrl').value='';
-    setImgPreview(e.target.result);
-    input._base64=e.target.result;
-  };
-  reader.readAsDataURL(file);
+    setImgPreview(base64);
+    input._base64=base64;
+  });
 }
 function clearPhoto(){
   document.getElementById('pImageUrl').value='';
@@ -669,6 +708,7 @@ async function saveProduct(){
   if(!price){toast('Введіть ціну');return;}
   var catId=document.getElementById('pCatId').value;
   var cat=catById(catId)||{key:'socks',gender:'women'};
+  var existing=S.editingId?getProducts().find(function(x){return x.id===S.editingId;}):null;
   var p={
     id:S.editingId||Date.now(),
     name:name,
@@ -678,25 +718,34 @@ async function saveProduct(){
     price:price,
     oldPrice:parseFloat(document.getElementById('pOldPrice').value)||null,
     stock:parseInt(document.getElementById('pStock').value)||0,
-    rating:5.0, reviews:0,
+    rating:(existing&&existing.rating)||5.0,
+    reviews:(existing&&existing.reviews)||0,
     sizes:document.getElementById('pSizes').value.split(',').map(function(s){return s.trim();}).filter(Boolean),
     description:document.getElementById('pDesc').value.trim(),
     details:document.getElementById('pDetails').value.split('\n').map(function(s){return s.trim();}).filter(Boolean),
     imageUrl:(document.getElementById('pImageFile')._base64||document.getElementById('pImageUrl').value.trim())
   };
-  var list=getProducts();
-  if(S.editingId){ var idx=list.findIndex(function(x){return x.id===S.editingId;}); if(idx>=0)list[idx]=p; else list.push(p); }
-  else list.push(p);
-  await setProducts(list);
-  closeForm();
-  buildFilterBar();
-  renderProducts();
-  toast('✅ Товар збережено!');
+  try {
+    if(S.editingId){
+      await API.updateProduct(S.editingId, p);
+      var list=getProducts(); var idx=list.findIndex(function(x){return x.id===S.editingId;});
+      if(idx>=0) list[idx]=p; else list.push(p);
+      _products=list;
+    } else {
+      var res=await API.addProduct(p);
+      if(res.id) p.id=res.id;
+      _products=getProducts().concat([p]);
+    }
+  } catch(e){ toast('❌ Помилка збереження'); return; }
+  closeForm(); buildFilterBar(); renderProducts(); toast('✅ Товар збережено!');
 }
 async function delProduct(id){
   if(!confirm('Видалити цей товар?'))return;
-  await setProducts(getProducts().filter(function(p){return p.id!==id;}));
-  buildFilterBar(); renderProducts(); toast('Товар видалено');
+  try {
+    await API.deleteProduct(id);
+    _products=_products.filter(function(p){return p.id!==id;});
+    buildFilterBar(); renderProducts(); toast('Товар видалено');
+  } catch(e){ toast('❌ Помилка видалення'); }
 }
 
 /* ─────────── MOVE MODAL ─────────── */
@@ -717,9 +766,11 @@ async function moveProduct(catId){
   if(!cat||!S.movingId)return;
   var list=getProducts();
   var p=list.find(function(x){return x.id===S.movingId;});
-  if(p){ p.category=cat.key; p.gender=cat.gender||p.gender; await setProducts(list); }
-  closeMoveModal();
-  buildFilterBar(); renderProducts();
+  if(p){
+    p.category=cat.key; p.gender=cat.gender||p.gender;
+    try { await API.updateProduct(p.id, p); } catch(e){ toast('❌ Помилка'); return; }
+  }
+  closeMoveModal(); buildFilterBar(); renderProducts();
   toast('Товар переміщено до «'+cat.label+'»');
 }
 
@@ -850,6 +901,84 @@ function toggleOrderDetail(idx){
   var open=row.style.display!=='none';
   row.style.display=open?'none':'table-row';
   if(arrow)arrow.textContent=open?'▼':'▲';
+}
+
+/* ─────────── PHOTOS TAB ─────────── */
+function renderPhotos(){
+  var list = getProducts();
+  var el = document.getElementById('photoGrid');
+  var statsEl = document.getElementById('photoStats');
+  if(!list.length){
+    el.innerHTML='<div class="empty"><div class="empty-ico">📦</div><p>Немає товарів</p></div>';
+    statsEl.innerHTML='';
+    return;
+  }
+  var withPhoto = list.filter(function(p){ return !!p.imageUrl; }).length;
+  var without = list.length - withPhoto;
+  statsEl.innerHTML=
+    '<div class="photo-stat"><span>Всього товарів: </span><strong>'+list.length+'</strong></div>'+
+    '<div class="photo-stat ok"><span>З фото: </span><strong>'+withPhoto+'</strong></div>'+
+    (without ? '<div class="photo-stat miss"><span>Без фото: </span><strong>'+without+'</strong></div>' : '');
+  el.innerHTML='<div class="photo-grid">'+list.map(function(p){
+    var hasImg = !!p.imageUrl;
+    var imgHtml = hasImg
+      ? '<img src="'+p.imageUrl+'" onerror="this.style.display=\'none\'">'
+      : '<div class="photo-card__no-img">📷</div>';
+    var statusColor = hasImg ? 'var(--green)' : '#f87171';
+    var statusText  = hasImg ? '✓ Є фото' : '✗ Немає фото';
+    return '<div class="photo-card" id="pc-'+p.id+'" onclick="pickPhoto('+p.id+')" title="Клікніть, щоб вибрати фото">'+
+      '<div class="photo-card__img">'+imgHtml+'<div class="photo-card__overlay">📷</div></div>'+
+      '<div class="photo-card__name">'+p.name+'</div>'+
+      '<div class="photo-card__status" style="color:'+statusColor+'">'+statusText+'</div>'+
+    '</div>';
+  }).join('')+'</div>';
+}
+
+function pickPhoto(productId){
+  var input = document.getElementById('photoPickerInput');
+  input._productId = productId;
+  input.value = '';
+  input.click();
+}
+
+function compressImage(file, maxPx, quality, cb){
+  var reader = new FileReader();
+  reader.onload = function(e){
+    var img = new Image();
+    img.onload = function(){
+      var w = img.width, h = img.height;
+      if(w > maxPx || h > maxPx){
+        if(w >= h){ h = Math.round(h * maxPx / w); w = maxPx; }
+        else      { w = Math.round(w * maxPx / h); h = maxPx; }
+      }
+      var canvas = document.createElement('canvas');
+      canvas.width = w; canvas.height = h;
+      canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+      cb(canvas.toDataURL('image/jpeg', quality));
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+async function onPhotoPickerChange(input){
+  var file = input.files[0];
+  var productId = input._productId;
+  if(!file || !productId) return;
+  var card = document.getElementById('pc-'+productId);
+  if(card) card.classList.add('uploading');
+  compressImage(file, 800, 0.80, async function(base64){
+    var list = getProducts();
+    var p = list.find(function(x){ return x.id === productId; });
+    if(p){
+      p.imageUrl = base64;
+      try {
+        await API.updateProduct(p.id, p);
+        toast('✅ Фото збережено!');
+      } catch(e){ toast('❌ Помилка збереження фото'); }
+    }
+    renderPhotos();
+  });
 }
 
 /* ─────────── TOAST ─────────── */

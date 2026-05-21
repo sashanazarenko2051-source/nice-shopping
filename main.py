@@ -128,6 +128,39 @@ async def set_all_products(req: Request, background_tasks: BackgroundTasks,
     background_tasks.add_task(_gist_save, products)
     return {"ok": True, "count": len(products)}
 
+@app.post("/api/products/one")
+async def add_one_product(req: Request, background_tasks: BackgroundTasks,
+                          token: str = Depends(require_admin)):
+    data = await req.json()
+    pid = int(data.get("id") or int(time.time() * 1000))
+    data["id"] = pid
+    conn = get_db()
+    conn.execute("INSERT OR REPLACE INTO products (id, data) VALUES (?, ?)", (pid, json.dumps(data)))
+    conn.commit()
+    products = [json.loads(r["data"]) for r in
+                conn.execute("SELECT data FROM products ORDER BY id ASC").fetchall()]
+    conn.close()
+    background_tasks.add_task(_gist_save, products)
+    return {"ok": True, "id": pid}
+
+@app.put("/api/products/{pid}")
+async def update_one_product(pid: int, req: Request, background_tasks: BackgroundTasks,
+                             token: str = Depends(require_admin)):
+    data = await req.json()
+    data["id"] = pid
+    conn = get_db()
+    row = conn.execute("SELECT id FROM products WHERE id = ?", (pid,)).fetchone()
+    if not row:
+        conn.close()
+        raise HTTPException(status_code=404, detail="Product not found")
+    conn.execute("UPDATE products SET data = ? WHERE id = ?", (json.dumps(data), pid))
+    conn.commit()
+    products = [json.loads(r["data"]) for r in
+                conn.execute("SELECT data FROM products ORDER BY id ASC").fetchall()]
+    conn.close()
+    background_tasks.add_task(_gist_save, products)
+    return {"ok": True}
+
 @app.delete("/api/products/{pid}")
 def delete_product(pid: int, background_tasks: BackgroundTasks,
                    token: str = Depends(require_admin)):
