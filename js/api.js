@@ -26,7 +26,11 @@ var API = (function() {
     hasToken: function() { return !!_token; },
 
     login: function(pass) {
-      return _req('/api/admin/login', { method: 'POST', headers: _headers(), body: JSON.stringify({ password: pass }) });
+      return fetch('/api/admin/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ password: pass }) })
+        .then(function(r) {
+          if (!r.ok) throw new Error('Invalid password');
+          return r.json();
+        });
     },
 
     getProducts: function() { return _req('/api/products', { headers: _headers() }); },
