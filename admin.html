@@ -20,8 +20,12 @@
     .login-card{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:var(--bg2);border:1px solid var(--gbd);border-radius:20px;padding:48px 40px;width:380px;text-align:center}
     .login-logo{font-family:var(--serif);font-size:1.9rem;color:var(--green);margin-bottom:6px}
     .login-sub{font-size:.85rem;color:var(--dim);margin-bottom:32px}
-    .login-input{width:100%;padding:13px 16px;background:#061008;border:1.5px solid #1f3522;border-radius:var(--r);color:var(--text);font-size:1rem;margin-bottom:12px;transition:border-color var(--tr);text-align:center}
+    .login-input{width:100%;padding:13px 44px 13px 16px;background:#061008;border:1.5px solid #1f3522;border-radius:var(--r);color:var(--text);font-size:1rem;margin-bottom:12px;transition:border-color var(--tr);text-align:center}
     .login-input:focus{outline:none;border-color:var(--green)}
+    .pass-wrap{position:relative;margin-bottom:12px}
+    .pass-wrap .login-input{margin-bottom:0}
+    .pass-eye{position:absolute;right:14px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--dim);font-size:1.1rem;padding:4px;transition:color var(--tr)}
+    .pass-eye:hover{color:var(--green)}
     .login-btn{width:100%;padding:13px;background:var(--green);color:#020d04;border-radius:var(--r);font-size:.95rem;font-weight:700;transition:all var(--tr)}
     .login-btn:hover{background:var(--gl);transform:translateY(-1px)}
     .login-error{color:var(--red);font-size:.82rem;margin-top:10px}
@@ -229,7 +233,10 @@
   <div class="login-card">
     <div class="login-logo">Nice Shopping</div>
     <div class="login-sub">Адміністративна панель</div>
-    <input type="password" id="loginPass" class="login-input" placeholder="Введіть пароль">
+    <div class="pass-wrap">
+      <input type="password" id="loginPass" class="login-input" placeholder="Введіть пароль">
+      <button class="pass-eye" onclick="togglePass()" id="eyeBtn" title="Показати пароль">👁</button>
+    </div>
     <button class="login-btn" onclick="doLogin()">Увійти →</button>
     <div id="loginErr" class="login-error" style="display:none">Невірний пароль</div>
   </div>
@@ -1038,6 +1045,12 @@ async function restoreProducts(){
 
 /* ─────────── INIT ─────────── */
 document.getElementById('loginPass').addEventListener('keydown',function(e){if(e.key==='Enter')doLogin();});
+function togglePass(){
+  var inp=document.getElementById('loginPass');
+  var btn=document.getElementById('eyeBtn');
+  if(inp.type==='password'){inp.type='text';btn.textContent='🙈';}
+  else{inp.type='password';btn.textContent='👁';}
+}
 if(API.hasToken()) showAdmin();
 </script>
 </body>
