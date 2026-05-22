@@ -385,6 +385,8 @@
       <input type="file" id="pImageFile" accept="image/*" style="display:none" onchange="handleFileUpload(this)">
       <div style="display:flex;gap:8px;margin-bottom:12px">
         <button type="button" class="btn-outline" style="flex:1;padding:10px;font-size:.855rem" onclick="document.getElementById('pImageFile').click()">📁 Завантажити фото</button>
+        <button type="button" class="btn-outline" style="padding:10px 13px;font-size:1.1rem" onclick="rotatePhoto(-1)" title="Повернути вліво">↺</button>
+        <button type="button" class="btn-outline" style="padding:10px 13px;font-size:1.1rem" onclick="rotatePhoto(1)" title="Повернути вправо">↻</button>
         <button type="button" class="btn-outline" style="padding:10px 12px;font-size:.855rem;color:var(--red);border-color:rgba(248,113,113,.3)" onclick="clearPhoto()" title="Видалити фото">✕</button>
       </div>
       <div class="fg">
@@ -727,6 +729,24 @@ function clearPhoto(){
   document.getElementById('pImageFile').value='';
   document.getElementById('pImageFile')._base64=null;
   setImgPreview('');
+}
+function rotatePhoto(dir){
+  var src=document.getElementById('pImageFile')._base64||document.getElementById('pImageUrl').value.trim();
+  if(!src){toast('Спочатку додайте фото');return;}
+  var img=new Image();
+  img.onload=function(){
+    var canvas=document.createElement('canvas');
+    canvas.width=img.height; canvas.height=img.width;
+    var ctx=canvas.getContext('2d');
+    ctx.translate(canvas.width/2,canvas.height/2);
+    ctx.rotate(dir*Math.PI/2);
+    ctx.drawImage(img,-img.width/2,-img.height/2);
+    var rotated=canvas.toDataURL('image/jpeg',0.85);
+    document.getElementById('pImageFile')._base64=rotated;
+    document.getElementById('pImageUrl').value='';
+    setImgPreview(rotated);
+  };
+  img.src=src;
 }
 function setImgPreview(src){
   var prev=document.getElementById('imgPreview');
