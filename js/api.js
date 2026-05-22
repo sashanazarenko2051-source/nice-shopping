@@ -28,8 +28,13 @@ var API = (function() {
     login: function(pass) {
       return fetch('/api/admin/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ password: pass }) })
         .then(function(r) {
-          if (!r.ok) throw new Error('Invalid password');
+          if (r.status === 401) throw new Error('wrong_password');
+          if (!r.ok) throw new Error('network_error');
           return r.json();
+        })
+        .catch(function(e) {
+          if (e.message === 'wrong_password') throw e;
+          throw new Error('network_error');
         });
     },
 

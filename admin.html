@@ -475,12 +475,39 @@ function getVisits(){ try{ return JSON.parse(localStorage.getItem('ns_visits'))|
 /* ─────────── AUTH ─────────── */
 async function doLogin(){
   var pass = document.getElementById('loginPass').value;
-  try {
-    var r = await API.login(pass);
-    API.setToken(r.token);
-    document.getElementById('loginErr').style.display='none';
-    showAdmin();
-  } catch(e) { document.getElementById('loginErr').style.display='block'; }
+  if(!pass){return;}
+  var btn = document.querySelector('.login-btn');
+  var err = document.getElementById('loginErr');
+  btn.disabled=true; btn.textContent='Підключення...'; err.style.display='none';
+
+  async function attempt(){
+    try{
+      var r = await API.login(pass);
+      API.setToken(r.token);
+      err.style.display='none';
+      showAdmin();
+      return 'ok';
+    }catch(e){
+      return e.message==='wrong_password'?'wrong_password':'network_error';
+    }
+  }
+
+  var res = await attempt();
+  if(res==='ok') return;
+  if(res==='wrong_password'){
+    err.textContent='Невірний пароль'; err.style.display='block';
+    btn.disabled=false; btn.textContent='Увійти →';
+    return;
+  }
+  // network_error — Render cold start, retry after 5s
+  err.textContent='Сервер запускається, зачекайте...'; err.style.display='block';
+  btn.textContent='Повторна спроба...';
+  await new Promise(function(r){setTimeout(r,5000);});
+  var res2 = await attempt();
+  if(res2==='ok') return;
+  err.textContent = res2==='wrong_password' ? 'Невірний пароль' : 'Помилка з\'єднання. Перевірте інтернет.';
+  err.style.display='block';
+  btn.disabled=false; btn.textContent='Увійти →';
 }
 function doLogout(){ API.clearToken(); location.reload(); }
 async function showAdmin(){
