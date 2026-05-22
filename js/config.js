@@ -4,7 +4,7 @@ const CONFIG = {
   phone: '+380954141820',
   phoneName: 'Тетяна',
   email: 'ornazartatyana@gmail.com',
-  telegram: 'NazarT84',
+  telegram: 'NazarT85',
   instagram: 'fayni_pokupky',
   telegramBotToken: '',
   telegramChatId: '',
