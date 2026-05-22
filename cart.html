@@ -115,7 +115,7 @@ function renderCart() {
           '<div class="sum-row"><span>'+(window.LANG==='en'?'Delivery':'Доставка')+'</span><span>' + (delivery === 0 ? (window.LANG==='en'?'Free':'Безкоштовно') : CONFIG.currency + delivery) + '</span></div>' +
           '<div class="sum-row total"><span>'+(window.LANG==='en'?'Total':'Разом')+'</span><span>' + CONFIG.currency + (total + delivery) + '</span></div>' +
           '<a href="checkout.html" class="btn btn--dark btn--full" style="margin-top:16px">'+(window.LANG==='en'?'Checkout':'Оформити замовлення')+'</a>' +
-          (delivery > 0 ? '<p style="font-size:.8125rem;color:var(--gray);text-align:center;margin-top:10px">'+(window.LANG==='en'?'Only':'Ще')+' ' + CONFIG.currency + (1000 - total) + ' '+(window.LANG==='en'?'until free delivery':'до безкоштовної доставки')+'</p>' : '<p style="font-size:.8125rem;color:var(--success);text-align:center;margin-top:10px">✓ '+(window.LANG==='en'?'Free delivery':'Безкоштовна доставка')+'</p>') +
+          (delivery === 0 ? '<p style="font-size:.8125rem;color:var(--success);text-align:center;margin-top:10px">✓ '+(window.LANG==='en'?'Free delivery':'Безкоштовна доставка')+'</p>' : '') +
         '</div>' +
       '</div>' +
     '</div>';
