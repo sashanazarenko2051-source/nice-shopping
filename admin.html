@@ -224,6 +224,81 @@
     .photo-stat strong{color:var(--text)}
     .photo-stat.ok strong{color:var(--green)}
     .photo-stat.miss strong{color:var(--red)}
+
+    /* ── MOBILE HAMBURGER ── */
+    .mob-bar{display:none;align-items:center;justify-content:space-between;padding:12px 16px;background:var(--bg3);border-bottom:1px solid var(--gbd);flex-shrink:0}
+    .mob-bar__logo{font-family:var(--serif);font-size:1.1rem;color:var(--green)}
+    .mob-ham{background:none;border:1px solid var(--gbd);border-radius:8px;color:var(--text);padding:7px 10px;font-size:1rem;cursor:pointer;transition:all var(--tr)}
+    .mob-ham:hover{border-color:var(--green);color:var(--green)}
+    .sb-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:149}
+    .sb-overlay.open{display:block}
+
+    /* ── RESPONSIVE ── */
+    @media(max-width:768px){
+      .admin-app{flex-direction:column}
+
+      /* Sidebar becomes drawer */
+      .sidebar{position:fixed;top:0;left:-240px;height:100vh;z-index:150;transition:left .25s ease;width:240px}
+      .sidebar.open{left:0}
+      .mob-bar{display:flex}
+
+      /* Main area full width, scroll from top */
+      .main-area{height:calc(100vh - 49px);overflow:hidden}
+
+      /* Stat cards: 2 per row */
+      .stat-cards{grid-template-columns:repeat(2,1fr);gap:10px}
+      .stat-card{padding:16px 14px}
+      .stat-card__val{font-size:1.5rem}
+
+      /* Topbar */
+      .topbar{padding:12px 16px}
+      .topbar h1{font-size:1.1rem}
+      .topbar-actions{gap:6px}
+      .topbar-actions .view-toggle{display:none}
+
+      /* Tab scroll */
+      .tab-scroll{padding:16px}
+
+      /* Overlay panel: full width */
+      .overlay{align-items:flex-end}
+      .overlay-panel{width:100%;max-height:92vh;height:auto;border-left:none;border-top:1px solid var(--gbd);border-radius:18px 18px 0 0}
+
+      /* Page header */
+      .page-hdr{gap:8px}
+      .page-hdr h1{font-size:1.2rem}
+      .hdr-tools{gap:6px}
+
+      /* Form 2-col → 1-col */
+      .fr2{grid-template-columns:1fr}
+
+      /* Login card */
+      .login-card{width:calc(100% - 32px);padding:32px 24px}
+
+      /* Product grid smaller */
+      .prod-grid{grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px}
+
+      /* Photo grid smaller */
+      .photo-grid{grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px}
+
+      /* Chart */
+      .chart{height:80px}
+      .bar-lbl{font-size:.58rem}
+
+      /* Toast bottom center */
+      .toast{left:16px;right:16px;bottom:16px}
+
+      /* Icon grid smaller */
+      .icon-grid{grid-template-columns:repeat(6,1fr)}
+    }
+
+    @media(max-width:480px){
+      .stat-cards{grid-template-columns:1fr 1fr}
+      .stat-card__val{font-size:1.3rem}
+      .btn-green{padding:8px 14px;font-size:.8rem}
+      .filter-pill{font-size:.72rem;padding:4px 10px}
+      .prod-grid{grid-template-columns:repeat(2,1fr)}
+      .photo-grid{grid-template-columns:repeat(2,1fr)}
+    }
   </style>
 </head>
 <body>
@@ -245,8 +320,11 @@
 <!-- ADMIN APP -->
 <div id="adminApp" class="admin-app" style="display:none">
 
+  <!-- Mobile overlay -->
+  <div class="sb-overlay" id="sbOverlay" onclick="closeSidebar()"></div>
+
   <!-- Sidebar -->
-  <aside class="sidebar">
+  <aside class="sidebar" id="sidebar">
     <div class="sb-logo">
       <div style="display:flex;align-items:center;gap:7px">
         <svg width="16" height="19" viewBox="0 0 24 30" fill="#4ade80" aria-hidden="true"><circle cx="12" cy="6" r="5.8"/><circle cx="12" cy="18" r="5.8"/><circle cx="6" cy="12" r="5.8"/><circle cx="18" cy="12" r="5.8"/><path d="M12,24 Q10,27 9,29" stroke="#4ade80" stroke-width="2" stroke-linecap="round" fill="none" opacity=".85"/></svg>
@@ -271,6 +349,11 @@
 
   <!-- Main -->
   <div class="main-area">
+    <!-- Mobile top bar -->
+    <div class="mob-bar">
+      <span class="mob-bar__logo">Nice Shopping</span>
+      <button class="mob-ham" onclick="openSidebar()">☰ Меню</button>
+    </div>
 
     <!-- STATISTICS -->
     <div id="tab-stats" class="tab-scroll">
@@ -528,7 +611,17 @@ async function showAdmin(){
 
 /* ─────────── TABS ─────────── */
 var TABS = ['stats','products','catalogs','orders','photos'];
+function openSidebar(){
+  document.getElementById('sidebar').classList.add('open');
+  document.getElementById('sbOverlay').classList.add('open');
+}
+function closeSidebar(){
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('sbOverlay').classList.remove('open');
+}
+
 function showTab(name){
+  closeSidebar();
   var flexTabs = ['products','photos'];
   TABS.forEach(function(t){
     var el = document.getElementById('tab-'+t);

@@ -58,7 +58,12 @@
     .form-success .btn-again { margin-top: 20px; display: inline-block; background: rgba(74,222,128,.1); border: 1px solid rgba(74,222,128,.25); color: #4ade80; padding: 10px 24px; border-radius: 10px; font-size: .875rem; font-weight: 500; cursor: pointer; transition: all .2s; }
     .form-success .btn-again:hover { background: rgba(74,222,128,.2); }
 
-    @media(max-width:768px) { .reviews-layout { grid-template-columns: 1fr; } }
+    @media(max-width:768px) {
+      .reviews-layout { grid-template-columns: 1fr; gap: 28px; }
+      .reviews-page { padding: 36px 0 52px; }
+      .rev-form-wrap { padding: 24px 20px; }
+      .rev-list-wrap h3 { font-size: 1.25rem; }
+    }
   </style>
 </head>
 <body>

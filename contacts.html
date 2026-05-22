@@ -49,7 +49,13 @@
     .form-success h3 { font-family: var(--serif); font-size: 1.4rem; margin-bottom: 8px; }
     .form-success p { color: var(--gray); }
 
-    @media(max-width:768px) { .contacts-grid { grid-template-columns: 1fr; } }
+    @media(max-width:768px) {
+      .contacts-grid { grid-template-columns: 1fr; gap: 28px; }
+      .contacts-page { padding: 36px 0 52px; }
+      .contact-form-wrap { padding: 24px 20px; }
+      .contact-card { padding: 24px 20px; }
+      .info-row { padding: 14px; gap: 12px; }
+    }
   </style>
 </head>
 <body>
