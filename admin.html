@@ -478,7 +478,7 @@ async function doLogin(){
   if(!pass){return;}
   var btn = document.querySelector('.login-btn');
   var err = document.getElementById('loginErr');
-  btn.disabled=true; btn.textContent='Підключення...'; err.style.display='none';
+  btn.disabled=true; err.style.display='none';
 
   async function attempt(){
     try{
@@ -492,20 +492,26 @@ async function doLogin(){
     }
   }
 
-  var res = await attempt();
-  if(res==='ok') return;
-  if(res==='wrong_password'){
-    err.textContent='Невірний пароль'; err.style.display='block';
-    btn.disabled=false; btn.textContent='Увійти →';
-    return;
+  var delays = [0, 5000, 10000, 15000];
+  for(var i=0;i<delays.length;i++){
+    if(delays[i]>0){
+      btn.textContent='Спроба '+(i+1)+'/'+delays.length+'...';
+      err.textContent='З\'єднання... зачекайте (~'+Math.round(delays[i]/1000)+'с)';
+      err.style.display='block';
+      await new Promise(function(r){setTimeout(r,delays[i]);});
+    } else {
+      btn.textContent='Підключення...';
+    }
+    var res = await attempt();
+    if(res==='ok') return;
+    if(res==='wrong_password'){
+      err.textContent='Невірний пароль'; err.style.display='block';
+      btn.disabled=false; btn.textContent='Увійти →';
+      return;
+    }
   }
-  // network_error — Render cold start, retry after 5s
-  err.textContent='Сервер запускається, зачекайте...'; err.style.display='block';
-  btn.textContent='Повторна спроба...';
-  await new Promise(function(r){setTimeout(r,5000);});
-  var res2 = await attempt();
-  if(res2==='ok') return;
-  err.textContent = res2==='wrong_password' ? 'Невірний пароль' : 'Помилка з\'єднання. Перевірте інтернет.';
+
+  err.innerHTML='Не вдалось підключитись.<br><small>Перевірте інтернет або спробуйте через хвилину.</small>';
   err.style.display='block';
   btn.disabled=false; btn.textContent='Увійти →';
 }
