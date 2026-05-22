@@ -75,13 +75,29 @@
 
         <!-- Delivery -->
         <div class="cf-section">
-          <div class="cf-section__title">Доставка (Нова Пошта)</div>
+          <div class="cf-section__title">Доставка</div>
+          <div class="payment-opts" style="margin-bottom:16px">
+            <label class="payment-opt">
+              <input type="radio" name="delivery" value="nova" checked onchange="updateBranchLabel()">
+              <div>
+                <div class="payment-opt__name">🟡 Нова Пошта</div>
+                <div class="payment-opt__desc">Доставка по всій Україні</div>
+              </div>
+            </label>
+            <label class="payment-opt">
+              <input type="radio" name="delivery" value="ukr" onchange="updateBranchLabel()">
+              <div>
+                <div class="payment-opt__name">🔵 Укрпошта</div>
+                <div class="payment-opt__desc">Доставка по всій Україні</div>
+              </div>
+            </label>
+          </div>
           <div class="form-group">
             <label for="city">Місто *</label>
             <input type="text" id="city" class="form-control" placeholder="Київ" required>
           </div>
           <div class="form-group">
-            <label for="branch">Відділення або адреса доставки *</label>
+            <label for="branch" id="branchLabel">Відділення або адреса доставки *</label>
             <input type="text" id="branch" class="form-control" placeholder="Відділення №1 або вул. Хрещатик, 1" required>
           </div>
           <div class="form-group">
@@ -195,6 +211,8 @@ document.getElementById('checkoutForm').addEventListener('submit', function(e) {
 
   var cart = getCart();
   var total = getCartTotal();
+  var deliveryType = document.querySelector('input[name="delivery"]:checked').value;
+  var deliveryText = deliveryType === 'nova' ? 'Нова Пошта' : 'Укрпошта';
   var paymentText = payment === 'cod' ? 'Накладений платіж' : 'Передоплата на картку';
 
   var itemsText = cart.map(function(item) {
@@ -205,6 +223,7 @@ document.getElementById('checkoutForm').addEventListener('submit', function(e) {
   var message = '🛍 *Нове замовлення — Файні покупки*\n\n' +
     '*Клієнт:* ' + firstName + ' ' + lastName + '\n' +
     '*Телефон:* ' + phone + '\n\n' +
+    '*Доставка:* ' + deliveryText + '\n' +
     '*Місто:* ' + city + '\n' +
     '*Відділення/Адреса:* ' + branch + '\n' +
     '*Оплата:* ' + paymentText + '\n\n' +
@@ -258,6 +277,16 @@ document.getElementById('checkoutForm').addEventListener('submit', function(e) {
     onSuccess();
   }
 });
+
+function updateBranchLabel() {
+  var isNova = document.querySelector('input[name="delivery"]:checked').value === 'nova';
+  document.getElementById('branchLabel').textContent = isNova
+    ? 'Відділення або адреса доставки *'
+    : 'Поштовий індекс або відділення *';
+  document.getElementById('branch').placeholder = isNova
+    ? 'Відділення №1 або вул. Хрещатик, 1'
+    : 'Індекс 01001 або відділення №5';
+}
 
 document.getElementById('menuToggle').addEventListener('click', function() {
   document.getElementById('nav').classList.toggle('open');
