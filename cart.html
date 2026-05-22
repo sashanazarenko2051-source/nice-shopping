@@ -78,7 +78,6 @@ function renderCart() {
   }
 
   var total = getCartTotal();
-  var delivery = total >= 1000 ? 0 : 70;
   var itemsHtml = cart.map(function(item) {
     var p = PRODUCTS.find(function(x) { return x.id === item.productId; });
     if (!p) return '';
@@ -112,10 +111,8 @@ function renderCart() {
         '<div class="order-summary">' +
           '<div class="order-summary__title">'+(window.LANG==='en'?'Order summary':'Підсумок замовлення')+'</div>' +
           '<div class="sum-row"><span>'+(window.LANG==='en'?'Items':'Товари')+' (' + cart.reduce(function(s,i){return s+i.qty;},0) + ')</span><span>' + CONFIG.currency + total + '</span></div>' +
-          '<div class="sum-row"><span>'+(window.LANG==='en'?'Delivery':'Доставка')+'</span><span>' + (delivery === 0 ? (window.LANG==='en'?'Free':'Безкоштовно') : CONFIG.currency + delivery) + '</span></div>' +
-          '<div class="sum-row total"><span>'+(window.LANG==='en'?'Total':'Разом')+'</span><span>' + CONFIG.currency + (total + delivery) + '</span></div>' +
+          '<div class="sum-row total"><span>'+(window.LANG==='en'?'Total':'Разом')+'</span><span>' + CONFIG.currency + total + '</span></div>' +
           '<a href="checkout.html" class="btn btn--dark btn--full" style="margin-top:16px">'+(window.LANG==='en'?'Checkout':'Оформити замовлення')+'</a>' +
-          (delivery === 0 ? '<p style="font-size:.8125rem;color:var(--success);text-align:center;margin-top:10px">✓ '+(window.LANG==='en'?'Free delivery':'Безкоштовна доставка')+'</p>' : '') +
         '</div>' +
       '</div>' +
     '</div>';

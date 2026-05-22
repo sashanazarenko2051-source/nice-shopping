@@ -123,7 +123,6 @@
         </div>
         <div class="order-summary">
           <div class="sum-row"><span>Товари</span><span id="sumGoods">₴0</span></div>
-          <div class="sum-row"><span>Доставка</span><span id="sumDelivery">₴70</span></div>
           <div class="sum-row total"><span>Разом</span><span id="sumTotal">₴0</span></div>
         </div>
       </div>
@@ -161,7 +160,6 @@
 onProductsReady(function() {
   var cart = getCart();
   var total = getCartTotal();
-  var delivery = total >= 1000 ? 0 : 70;
   var itemsEl = document.getElementById('orderItems');
   cart.forEach(function(item) {
     var p = PRODUCTS.find(function(x) { return x.id === item.productId; });
@@ -172,8 +170,7 @@ onProductsReady(function() {
     '</div>';
   });
   document.getElementById('sumGoods').textContent = CONFIG.currency + total;
-  document.getElementById('sumDelivery').textContent = delivery === 0 ? 'Безкоштовно' : CONFIG.currency + delivery;
-  document.getElementById('sumTotal').textContent = CONFIG.currency + (total + delivery);
+  document.getElementById('sumTotal').textContent = CONFIG.currency + total;
 });
 
 // Form submit
@@ -198,7 +195,6 @@ document.getElementById('checkoutForm').addEventListener('submit', function(e) {
 
   var cart = getCart();
   var total = getCartTotal();
-  var delivery = total >= 1000 ? 0 : 70;
   var paymentText = payment === 'cod' ? 'Накладений платіж' : 'Передоплата на картку';
 
   var itemsText = cart.map(function(item) {
@@ -213,8 +209,7 @@ document.getElementById('checkoutForm').addEventListener('submit', function(e) {
     '*Відділення/Адреса:* ' + branch + '\n' +
     '*Оплата:* ' + paymentText + '\n\n' +
     '*Товари:*\n' + itemsText + '\n\n' +
-    '*Доставка:* ' + (delivery === 0 ? 'Безкоштовно' : CONFIG.currency + delivery) + '\n' +
-    '*Разом:* ' + CONFIG.currency + (total + delivery) +
+    '*Разом:* ' + CONFIG.currency + total +
     (comment ? '\n\n*Коментар:* ' + comment : '');
 
   var btn = e.target.querySelector('[type="submit"]');
@@ -230,7 +225,7 @@ document.getElementById('checkoutForm').addEventListener('submit', function(e) {
         var p = PRODUCTS.find(function(x) { return x.id === item.productId; });
         return { name: p ? p.name : '?', size: item.size, qty: item.qty, price: p ? p.price : 0 };
       }),
-      subtotal: total, delivery: delivery, total: total + delivery
+      subtotal: total, delivery: 0, total: total
     };
     API.createOrder(order).then(function() {
       clearCart();
