@@ -72,21 +72,36 @@
     if (typeof render === 'function') render();
     if (typeof renderCart === 'function') renderCart();
     if (typeof renderList === 'function') renderList();
+    if (typeof window._renderRelated === 'function') window._renderRelated();
+
+    // Also translate product detail page elements if on that page
+    if (window._pdProduct) {
+      translateProductDetail(window._pdProduct, window._pdCatLabel || '', lang);
+    }
   }
 
-  // Translate a single product's description + details for detail page
-  async function translateProductDetail(product, lang) {
+  // Translate product detail page: name, category, breadcrumb, description, specs
+  async function translateProductDetail(product, catLabel, lang) {
     if (!lang || lang === 'ua') return;
     var to = lang;
-    var texts = [product.description || ''].concat(product.details || []);
+    var texts = [product.name || '', catLabel || '', product.description || ''].concat(product.details || []);
     var results = await batchTranslate(texts, to);
 
+    var nameEl = document.querySelector('.pd-name');
+    if (nameEl && results[0]) nameEl.textContent = results[0];
+
+    var breadEl = document.getElementById('pdBreadcrumb');
+    if (breadEl && results[0]) breadEl.textContent = results[0];
+
+    var catEl = document.querySelector('.pd-category');
+    if (catEl && results[1]) catEl.textContent = results[1];
+
     var descEl = document.getElementById('pdDesc');
-    if (descEl && results[0]) descEl.textContent = results[0];
+    if (descEl && results[2]) descEl.textContent = results[2];
 
     var detailsEl = document.getElementById('pdDetails');
     if (detailsEl) {
-      detailsEl.innerHTML = results.slice(1).map(function(d) {
+      detailsEl.innerHTML = results.slice(3).map(function(d) {
         return '<li>' + d + '</li>';
       }).join('');
     }
