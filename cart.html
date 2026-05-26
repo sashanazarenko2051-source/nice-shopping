@@ -85,7 +85,7 @@ function renderCart() {
       '<div class="cart-item__img">' + (p.imageUrl ? '<img src="' + p.imageUrl + '" style="width:100%;height:100%;object-fit:cover;border-radius:var(--r)">' : '') + '</div>' +
       '<div>' +
         '<div class="cart-item__name">' + p.name + '</div>' +
-        '<div class="cart-item__size">'+(window.LANG==='en'?'Size':'Розмір')+': ' + item.size + '</div>' +
+        '<div class="cart-item__size">'+(window.LANG==='en'?'Size':'Розмір')+': ' + item.size + (item.color ? ' · ' + item.color : '') + '</div>' +
         '<div class="cart-item__row">' +
           '<div class="qty">' +
             '<button class="qty-btn" onclick="changeQty(\'' + item.key + '\',-1)">−</button>' +

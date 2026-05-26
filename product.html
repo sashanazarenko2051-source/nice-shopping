@@ -89,20 +89,36 @@ if (product) {
   var selectedSize = '';
   var qty = 1;
 
+  var images = (product.images && product.images.length) ? product.images : (product.imageUrl ? [product.imageUrl] : []);
+  var selectedColor = (product.colors && product.colors.length) ? product.colors[0].name : '';
+
   var sizeBtns = product.sizes.map(function(s) {
     return '<button class="size-btn" data-size="' + s + '">' + s + '</button>';
   }).join('');
 
+  var thumbsHtml = images.map(function(img, idx) {
+    return '<div class="pd-thumb' + (idx === 0 ? ' active' : '') + '" data-idx="' + idx + '" style="background:#f0eded;overflow:hidden">' +
+      '<img src="' + img + '" style="width:100%;height:100%;object-fit:cover" loading="lazy">' +
+    '</div>';
+  }).join('') || '<div class="pd-thumb" style="background:#f0eded"></div>';
+
+  var colorsHtml = '';
+  if (product.colors && product.colors.length) {
+    colorsHtml = '<div class="pd-label">Колір</div>' +
+      '<div class="color-swatches">' +
+        product.colors.map(function(c, i) {
+          return '<div class="color-swatch' + (i === 0 ? ' active' : '') + '" style="background:' + c.hex + '" data-color="' + c.name + '" title="' + c.name + '"></div>';
+        }).join('') +
+      '</div>' +
+      '<div class="color-swatch-label" id="colorLabel">' + product.colors[0].name + '</div>';
+  }
+
   document.getElementById('pdLayout').innerHTML =
     '<div class="pd-gallery">' +
-      '<div class="pd-main-img" style="background:#f0eded;display:flex;align-items:center;justify-content:center;overflow:hidden">' +
-        (product.imageUrl ? '<img src="' + product.imageUrl + '" style="width:100%;height:100%;object-fit:contain" onerror="this.parentNode.style.background=\'#f0eded\'">' : '') +
+      '<div class="pd-main-img" id="pdMainImg" style="background:#f0eded;display:flex;align-items:center;justify-content:center;overflow:hidden">' +
+        (images[0] ? '<img id="pdMainImgEl" src="' + images[0] + '" style="width:100%;height:100%;object-fit:contain">' : '') +
       '</div>' +
-      '<div class="pd-thumbs">' +
-        (product.imageUrl
-          ? '<div class="pd-thumb" style="background:#f0eded;overflow:hidden"><img src="' + product.imageUrl + '" style="width:100%;height:100%;object-fit:cover"></div>'
-          : '<div class="pd-thumb" style="background:#f0eded"></div>') +
-      '</div>' +
+      '<div class="pd-thumbs" id="pdThumbs">' + thumbsHtml + '</div>' +
     '</div>' +
     '<div class="pd-info">' +
       '<div class="pd-category">' + catLabel + '</div>' +
@@ -110,6 +126,7 @@ if (product) {
       '<div class="pd-rating"><span class="stars">' + stars + '</span> ' + product.rating + ' <span style="color:var(--gray)">(' + product.reviews + ' ' + window.i18n('pd.reviews_word') + ')</span></div>' +
       '<div class="pd-price">' + CONFIG.currency + product.price + (discount ? ' <span style="background:var(--sale);color:#fff;font-size:.75rem;padding:3px 8px;border-radius:4px;font-family:var(--font)">-' + discount + '%</span>' : '') + '</div>' +
       (product.oldPrice ? '<div class="pd-old-price">' + CONFIG.currency + product.oldPrice + '</div>' : '<div style="height:22px"></div>') +
+      colorsHtml +
       '<div class="pd-label" data-i18n="filter.size">Розмір</div>' +
       '<div class="sizes-grid" id="sizes">' + sizeBtns + '</div>' +
       '<div class="pd-add-row">' +
@@ -127,6 +144,30 @@ if (product) {
     '</div>';
 
   applyLang();
+
+  // Thumbnail gallery
+  document.getElementById('pdThumbs').addEventListener('click', function(e) {
+    var thumb = e.target.closest('.pd-thumb');
+    if (!thumb) return;
+    document.querySelectorAll('.pd-thumb').forEach(function(t) { t.classList.remove('active'); });
+    thumb.classList.add('active');
+    var idx = parseInt(thumb.dataset.idx);
+    var mainEl = document.getElementById('pdMainImgEl');
+    if (mainEl && images[idx]) mainEl.src = images[idx];
+  });
+
+  // Color selection
+  if (product.colors && product.colors.length) {
+    document.querySelector('.color-swatches').addEventListener('click', function(e) {
+      var sw = e.target.closest('.color-swatch');
+      if (!sw) return;
+      document.querySelectorAll('.color-swatch').forEach(function(s) { s.classList.remove('active'); });
+      sw.classList.add('active');
+      selectedColor = sw.dataset.color;
+      var lbl = document.getElementById('colorLabel');
+      if (lbl) lbl.textContent = selectedColor;
+    });
+  }
 
   // Size selection
   document.getElementById('sizes').addEventListener('click', function(e) {
@@ -152,7 +193,7 @@ if (product) {
       showToast(window.i18n('pd.select_size'));
       return;
     }
-    addToCart(product.id, selectedSize, qty);
+    addToCart(product.id, selectedSize, qty, selectedColor);
   });
 
   // Related products

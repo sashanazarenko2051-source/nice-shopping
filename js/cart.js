@@ -7,15 +7,15 @@ function saveCart(cart) {
   updateCartCount();
 }
 
-function addToCart(productId, size, qty) {
+function addToCart(productId, size, qty, color) {
   qty = qty || 1;
   var cart = getCart();
   var product = PRODUCTS.find(function(p) { return p.id === productId; });
   if (!product) return;
-  var key = productId + '-' + size;
+  var key = productId + '-' + size + (color ? '-' + color : '');
   var existing = cart.find(function(i) { return i.key === key; });
   if (existing) { existing.qty += qty; }
-  else { cart.push({ key: key, productId: productId, size: size, qty: qty }); }
+  else { cart.push({ key: key, productId: productId, size: size, qty: qty, color: color || '' }); }
   saveCart(cart);
   showToast('"' + product.name + '" додано до кошика');
 }

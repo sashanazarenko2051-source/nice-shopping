@@ -176,6 +176,20 @@
     .fsep{font-size:.68rem;font-weight:700;color:var(--green);letter-spacing:.1em;text-transform:uppercase;margin:16px 0 10px;padding-bottom:5px;border-bottom:1px solid var(--gbd)}
     .img-preview{width:100%;height:220px;border-radius:var(--r);border:1.5px dashed #1f3522;display:flex;align-items:center;justify-content:center;color:var(--dim);font-size:.8rem;margin-bottom:8px;overflow:hidden;background:#061008}
     .img-preview img{max-width:100%;max-height:220px;object-fit:contain;display:block}
+    /* Multi-image slots */
+    .imgs-slots{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:10px}
+    .img-slot{aspect-ratio:3/4;border-radius:10px;border:1.5px dashed #1f3522;background:#061008;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--dim);font-size:1.5rem;position:relative;overflow:hidden;transition:border-color var(--tr)}
+    .img-slot:hover{border-color:rgba(74,222,128,.4)}
+    .img-slot img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+    .img-slot__del{position:absolute;top:3px;right:3px;background:rgba(0,0,0,.75);color:#fff;border:none;border-radius:4px;width:18px;height:18px;font-size:.6rem;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:2;line-height:1}
+    .img-slot__main{position:absolute;bottom:3px;left:3px;background:var(--green);color:#020d04;font-size:.5rem;font-weight:700;padding:1px 5px;border-radius:3px;z-index:2;pointer-events:none}
+    .img-slot.active-slot::after{content:'';position:absolute;inset:0;border:2px solid var(--green);border-radius:10px;pointer-events:none;z-index:1}
+    /* Color tags */
+    .color-tags{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px;min-height:28px}
+    .color-tag{display:flex;align-items:center;gap:6px;background:var(--bg3);border:1px solid var(--gbd);border-radius:20px;padding:4px 10px 4px 6px;font-size:.78rem;color:var(--text)}
+    .color-tag__dot{width:14px;height:14px;border-radius:50%;flex-shrink:0;border:1px solid rgba(255,255,255,.1)}
+    .color-tag__del{background:none;border:none;color:var(--dim);cursor:pointer;font-size:.8rem;margin-left:2px;padding:0;line-height:1}
+    .color-tag__del:hover{color:var(--red)}
 
     /* ── EMPTY STATE ── */
     .empty{text-align:center;padding:50px 20px;color:var(--dim)}
@@ -463,18 +477,25 @@
       <div class="fg"><label>Опис товару</label><textarea id="pDesc" class="fi" placeholder="Короткий опис..."></textarea></div>
       <div class="fg"><label>Характеристики (кожна з нового рядка)</label><textarea id="pDetails" class="fi" placeholder="Матеріал: бавовна 95%&#10;Колір: білий&#10;Догляд: ручне прання"></textarea></div>
 
-      <div class="fsep">Фото товару</div>
-      <div class="img-preview" id="imgPreview"><span id="imgPreviewText">Немає фото</span></div>
-      <input type="file" id="pImageFile" accept="image/*" style="display:none" onchange="handleFileUpload(this)">
-      <div style="display:flex;gap:8px;margin-bottom:12px">
-        <button type="button" class="btn-outline" style="flex:1;padding:10px;font-size:.855rem" onclick="document.getElementById('pImageFile').click()">📁 Завантажити фото</button>
-        <button type="button" class="btn-outline" style="padding:10px 13px;font-size:1.1rem" onclick="rotatePhoto(-1)" title="Повернути вліво">↺</button>
-        <button type="button" class="btn-outline" style="padding:10px 13px;font-size:1.1rem" onclick="rotatePhoto(1)" title="Повернути вправо">↻</button>
-        <button type="button" class="btn-outline" style="padding:10px 12px;font-size:.855rem;color:var(--red);border-color:rgba(248,113,113,.3)" onclick="clearPhoto()" title="Видалити фото">✕</button>
+      <div class="fsep">Фото товару (до 5 штук)</div>
+      <div class="imgs-slots" id="imgsSlots"></div>
+      <input type="file" id="pImageFile" accept="image/*" multiple style="display:none" onchange="handleMultiUpload(this)">
+      <div style="display:flex;gap:8px;margin-bottom:10px">
+        <button type="button" class="btn-outline" style="flex:1;padding:9px;font-size:.835rem" onclick="document.getElementById('pImageFile').click()">📁 Додати фото</button>
+        <button type="button" class="btn-outline" style="padding:9px 12px;font-size:1.05rem" onclick="rotateActivePhoto(-1)" title="Повернути вліво">↺</button>
+        <button type="button" class="btn-outline" style="padding:9px 12px;font-size:1.05rem" onclick="rotateActivePhoto(1)" title="Повернути вправо">↻</button>
       </div>
       <div class="fg">
-        <label>Або вставте посилання (URL)</label>
-        <input type="url" id="pImageUrl" class="fi" placeholder="https://..." oninput="updateImgPreview()">
+        <label>Або вставте URL та натисніть Enter</label>
+        <input type="url" id="pImageUrl" class="fi" placeholder="https://..." onkeydown="if(event.key==='Enter'){addImageByUrl();event.preventDefault()}">
+      </div>
+
+      <div class="fsep">Кольори товару</div>
+      <div class="color-tags" id="colorTags"><span style="font-size:.75rem;color:var(--dim)">Кольори не додані</span></div>
+      <div style="display:flex;gap:8px;align-items:center;margin-bottom:6px">
+        <input type="text" id="colorName" class="fi" placeholder="Назва: Чорний, Білий..." style="flex:1">
+        <input type="color" id="colorHex" value="#1a1a1a" style="width:42px;height:38px;padding:2px 3px;border-radius:8px;border:1.5px solid #1f3522;background:#061008;cursor:pointer;flex-shrink:0">
+        <button type="button" class="btn-outline" style="padding:9px 14px;white-space:nowrap;flex-shrink:0" onclick="addColor()">+ Колір</button>
       </div>
 
 
@@ -786,7 +807,9 @@ function openForm(id){
   fields.forEach(function(f){document.getElementById(f).value='';});
   document.getElementById('pGender').value='women';
   buildCatSelect(null);
-  updateImgPreview();
+  _editImages=[];
+  _editColors=[];
+  _activeImgIdx=0;
 
   if(id){
     var p=getProducts().find(function(x){return x.id===id;});
@@ -799,66 +822,102 @@ function openForm(id){
       document.getElementById('pSizes').value=(p.sizes||[]).join(', ');
       document.getElementById('pDesc').value=p.description||'';
       document.getElementById('pDetails').value=(p.details||[]).join('\n');
-      document.getElementById('pImageUrl').value=p.imageUrl||'';
       document.getElementById('pGender').value=p.gender||'women';
       buildCatSelect(productCatId(p));
-      updateImgPreview();
+      _editImages=(p.images&&p.images.length?p.images.slice():(p.imageUrl?[p.imageUrl]:[]));
+      _editColors=(p.colors?p.colors.map(function(c){return Object.assign({},c)}):[]);
     }
   }
+  renderImgSlots();
+  renderColorTags();
   document.getElementById('overlay').style.display='flex';
 }
-function closeForm(){ document.getElementById('overlay').style.display='none'; S.editingId=null; document.getElementById('pImageFile').value=''; document.getElementById('pImageFile')._base64=null; }
-function handleFileUpload(input){
-  var file=input.files[0];
-  if(!file) return;
-  compressImage(file, 800, 0.80, function(base64){
-    document.getElementById('pImageUrl').value='';
-    setImgPreview(base64);
-    input._base64=base64;
+var _editImages=[];
+var _editColors=[];
+var _activeImgIdx=0;
+
+function closeForm(){ document.getElementById('overlay').style.display='none'; S.editingId=null; document.getElementById('pImageFile').value=''; _editImages=[]; _editColors=[]; _activeImgIdx=0; }
+
+function renderImgSlots(){
+  var html='';
+  for(var i=0;i<5;i++){
+    if(_editImages[i]){
+      html+='<div class="img-slot'+(i===_activeImgIdx?' active-slot':'')+'" onclick="setActiveImg('+i+')">' +
+        '<img src="'+_editImages[i]+'">' +
+        (i===0?'<span class="img-slot__main">Головне</span>':'')+
+        '<button class="img-slot__del" onclick="event.stopPropagation();removeImg('+i+')">✕</button>'+
+      '</div>';
+    } else {
+      html+='<div class="img-slot" onclick="document.getElementById(\'pImageFile\').click()" title="Додати фото">+</div>';
+    }
+  }
+  document.getElementById('imgsSlots').innerHTML=html;
+}
+function setActiveImg(idx){_activeImgIdx=idx;renderImgSlots();}
+function removeImg(idx){
+  _editImages.splice(idx,1);
+  if(_activeImgIdx>=_editImages.length)_activeImgIdx=Math.max(0,_editImages.length-1);
+  renderImgSlots();
+}
+function handleMultiUpload(input){
+  var files=Array.from(input.files);
+  var remaining=5-_editImages.length;
+  var toProcess=files.slice(0,remaining);
+  toProcess.forEach(function(file){
+    compressImage(file,800,0.80,function(base64){
+      _editImages.push(base64);
+      renderImgSlots();
+    });
   });
+  input.value='';
 }
-function clearPhoto(){
+function addImageByUrl(){
+  var url=document.getElementById('pImageUrl').value.trim();
+  if(!url)return;
+  if(_editImages.length>=5){toast('Максимум 5 фото');return;}
+  _editImages.push(url);
   document.getElementById('pImageUrl').value='';
-  document.getElementById('pImageFile').value='';
-  document.getElementById('pImageFile')._base64=null;
-  setImgPreview('');
+  renderImgSlots();
 }
-function rotatePhoto(dir){
-  var src=document.getElementById('pImageFile')._base64||document.getElementById('pImageUrl').value.trim();
-  if(!src){toast('Спочатку додайте фото');return;}
+function rotateActivePhoto(dir){
+  var src=_editImages[_activeImgIdx];
+  if(!src){toast('Виберіть фото для повороту');return;}
   var img=new Image();
   img.onload=function(){
     var canvas=document.createElement('canvas');
-    canvas.width=img.height; canvas.height=img.width;
+    canvas.width=img.height;canvas.height=img.width;
     var ctx=canvas.getContext('2d');
     ctx.translate(canvas.width/2,canvas.height/2);
     ctx.rotate(dir*Math.PI/2);
     ctx.drawImage(img,-img.width/2,-img.height/2);
-    var rotated=canvas.toDataURL('image/jpeg',0.85);
-    document.getElementById('pImageFile')._base64=rotated;
-    document.getElementById('pImageUrl').value='';
-    setImgPreview(rotated);
+    _editImages[_activeImgIdx]=canvas.toDataURL('image/jpeg',0.85);
+    renderImgSlots();
   };
+  img.crossOrigin='anonymous';
   img.src=src;
 }
-function setImgPreview(src){
-  var prev=document.getElementById('imgPreview');
-  var txt=document.getElementById('imgPreviewText');
-  var existing=prev.querySelector('img');
-  if(existing) existing.remove();
-  if(src){
-    txt.style.display='none';
-    var img=document.createElement('img');
-    img.src=src;
-    img.onerror=function(){txt.style.display='block';img.remove();};
-    prev.appendChild(img);
-  } else { txt.style.display='block'; }
+function renderColorTags(){
+  if(!_editColors.length){
+    document.getElementById('colorTags').innerHTML='<span style="font-size:.75rem;color:var(--dim)">Кольори не додані</span>';
+    return;
+  }
+  document.getElementById('colorTags').innerHTML=_editColors.map(function(c,i){
+    return '<div class="color-tag">' +
+      '<div class="color-tag__dot" style="background:'+c.hex+'"></div>' +
+      c.name+
+      '<button class="color-tag__del" onclick="removeColor('+i+')">✕</button>'+
+    '</div>';
+  }).join('');
 }
-function updateImgPreview(){
-  var url=document.getElementById('pImageUrl').value.trim();
-  document.getElementById('pImageFile')._base64=null;
-  setImgPreview(url);
+function addColor(){
+  var name=document.getElementById('colorName').value.trim();
+  var hex=document.getElementById('colorHex').value;
+  if(!name){toast('Введіть назву кольору');return;}
+  _editColors.push({name:name,hex:hex});
+  document.getElementById('colorName').value='';
+  renderColorTags();
 }
+function removeColor(idx){_editColors.splice(idx,1);renderColorTags();}
 async function saveProduct(){
   var name=document.getElementById('pName').value.trim();
   var price=parseFloat(document.getElementById('pPrice').value);
@@ -881,7 +940,9 @@ async function saveProduct(){
     sizes:document.getElementById('pSizes').value.split(',').map(function(s){return s.trim();}).filter(Boolean),
     description:document.getElementById('pDesc').value.trim(),
     details:document.getElementById('pDetails').value.split('\n').map(function(s){return s.trim();}).filter(Boolean),
-    imageUrl:(document.getElementById('pImageFile')._base64||document.getElementById('pImageUrl').value.trim())
+    images:_editImages.slice(),
+    imageUrl:_editImages[0]||'',
+    colors:_editColors.slice()
   };
   try {
     if(S.editingId){
