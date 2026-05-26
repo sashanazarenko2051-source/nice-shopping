@@ -209,8 +209,12 @@
     window.LANG = LANG;
     localStorage.setItem('fp_lang', LANG);
     applyLang();
-    if (typeof render === 'function') render();
-    if (typeof renderCart === 'function') renderCart();
-    if (typeof renderList === 'function') renderList();
+    if (LANG !== 'ua' && typeof translateProducts === 'function') {
+      translateProducts(LANG); // auto-translates then re-renders
+    } else {
+      if (typeof render === 'function') render();
+      if (typeof renderCart === 'function') renderCart();
+      if (typeof renderList === 'function') renderList();
+    }
   };
 })();
