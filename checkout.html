@@ -52,19 +52,19 @@
       <form class="checkout-form" id="checkoutForm" novalidate>
         <!-- Contact -->
         <div class="cf-section">
-          <div class="cf-section__title">Контактні дані</div>
+          <div class="cf-section__title" data-i18n="co.contact">Контактні дані</div>
           <div class="form-row">
             <div class="form-group">
-              <label for="firstName">Ім'я *</label>
+              <label for="firstName" data-i18n="co.first">Ім'я *</label>
               <input type="text" id="firstName" class="form-control" placeholder="Олена" required>
             </div>
             <div class="form-group">
-              <label for="lastName">Прізвище *</label>
+              <label for="lastName" data-i18n="co.last">Прізвище *</label>
               <input type="text" id="lastName" class="form-control" placeholder="Іваненко" required>
             </div>
           </div>
           <div class="form-group">
-            <label for="phone">Телефон *</label>
+            <label for="phone" data-i18n="co.phone">Телефон *</label>
             <input type="tel" id="phone" class="form-control" placeholder="+380954141820" required>
           </div>
           <div class="form-group">
@@ -75,71 +75,71 @@
 
         <!-- Delivery -->
         <div class="cf-section">
-          <div class="cf-section__title">Доставка</div>
+          <div class="cf-section__title" data-i18n="co.del">Доставка</div>
           <div class="payment-opts" style="margin-bottom:16px">
             <label class="payment-opt">
               <input type="radio" name="delivery" value="nova" checked onchange="updateBranchLabel()">
               <div>
-                <div class="payment-opt__name">🟡 Нова Пошта</div>
-                <div class="payment-opt__desc">Доставка по всій Україні</div>
+                <div class="payment-opt__name" data-i18n="co.del.nova">🟡 Нова Пошта</div>
+                <div class="payment-opt__desc" data-i18n="co.del.nova.d">Доставка по всій Україні</div>
               </div>
             </label>
             <label class="payment-opt">
               <input type="radio" name="delivery" value="ukr" onchange="updateBranchLabel()">
               <div>
-                <div class="payment-opt__name">🔵 Укрпошта</div>
-                <div class="payment-opt__desc">Доставка по всій Україні</div>
+                <div class="payment-opt__name" data-i18n="co.del.ukr">🔵 Укрпошта</div>
+                <div class="payment-opt__desc" data-i18n="co.del.nova.d">Доставка по всій Україні</div>
               </div>
             </label>
           </div>
           <div class="form-group">
-            <label for="city">Місто *</label>
-            <input type="text" id="city" class="form-control" placeholder="Київ" required>
+            <label for="city" data-i18n="co.city">Місто *</label>
+            <input type="text" id="city" class="form-control" data-i18n-ph="co.city.ph" placeholder="Київ" required>
           </div>
           <div class="form-group">
-            <label for="branch" id="branchLabel">Відділення або адреса доставки *</label>
-            <input type="text" id="branch" class="form-control" placeholder="Відділення №1 або вул. Хрещатик, 1" required>
+            <label for="branch" id="branchLabel" data-i18n="co.branch.nova">Відділення або адреса доставки *</label>
+            <input type="text" id="branch" class="form-control" data-i18n-ph="co.branch.nova.ph" placeholder="Відділення №1 або вул. Хрещатик, 1" required>
           </div>
           <div class="form-group">
-            <label for="comment">Коментар до замовлення</label>
-            <textarea id="comment" class="form-control" rows="3" placeholder="Побажання, уточнення..."></textarea>
+            <label for="comment" data-i18n="co.comment">Коментар до замовлення</label>
+            <textarea id="comment" class="form-control" rows="3" data-i18n-ph="co.comment.ph" placeholder="Побажання, уточнення..."></textarea>
           </div>
         </div>
 
         <!-- Payment -->
         <div class="cf-section">
-          <div class="cf-section__title">Оплата</div>
+          <div class="cf-section__title" data-i18n="co.payment">Оплата</div>
           <div class="payment-opts">
             <label class="payment-opt">
               <input type="radio" name="payment" value="cod" checked>
               <div>
-                <div class="payment-opt__name">💵 Накладений платіж</div>
-                <div class="payment-opt__desc">Оплата при отриманні + комісія Нової Пошти</div>
+                <div class="payment-opt__name" data-i18n="co.cod">💵 Накладений платіж</div>
+                <div class="payment-opt__desc" data-i18n="co.cod_d">Оплата при отриманні + комісія Нової Пошти</div>
               </div>
             </label>
             <label class="payment-opt">
               <input type="radio" name="payment" value="prepay">
               <div>
-                <div class="payment-opt__name">💳 Передоплата на картку</div>
-                <div class="payment-opt__desc">Реквізити надішлемо після підтвердження</div>
+                <div class="payment-opt__name" data-i18n="co.prepay">💳 Передоплата на картку</div>
+                <div class="payment-opt__desc" data-i18n="co.prepay_d">Реквізити надішлемо після підтвердження</div>
               </div>
             </label>
           </div>
         </div>
 
-        <button type="submit" class="btn btn--dark btn--full" style="font-size:1rem;padding:16px">Оформити замовлення →</button>
-        <p style="font-size:.8125rem;color:var(--gray);text-align:center;margin-top:10px">Натискаючи кнопку, ви погоджуєтеся з умовами магазину</p>
+        <button type="submit" class="btn btn--dark btn--full" style="font-size:1rem;padding:16px" data-i18n="co.sub">Оформити замовлення →</button>
+        <p style="font-size:.8125rem;color:var(--gray);text-align:center;margin-top:10px" data-i18n="co.agree">Натискаючи кнопку, ви погоджуєтеся з умовами магазину</p>
       </form>
 
       <!-- Order Summary -->
       <div>
         <div class="checkout-items">
-          <div class="checkout-items__title">Ваше замовлення</div>
+          <div class="checkout-items__title" data-i18n="co.order">Ваше замовлення</div>
           <div id="orderItems"></div>
         </div>
         <div class="order-summary">
-          <div class="sum-row"><span>Товари</span><span id="sumGoods">₴0</span></div>
-          <div class="sum-row total"><span>Разом</span><span id="sumTotal">₴0</span></div>
+          <div class="sum-row"><span data-i18n="cart.items">Товари</span><span id="sumGoods">₴0</span></div>
+          <div class="sum-row total"><span data-i18n="cart.total">Разом</span><span id="sumTotal">₴0</span></div>
         </div>
       </div>
     </div>
@@ -149,9 +149,9 @@
 <!-- Success -->
 <div class="success-page container" id="successPage">
   <div class="success-page__icon">🎉</div>
-  <h2 class="success-page__title">Замовлення прийнято!</h2>
-  <p class="success-page__sub">Дякуємо за покупку! Ми зв'яжемось з вами найближчим часом для підтвердження замовлення.</p>
-  <a href="catalog.html" class="btn btn--dark">Продовжити покупки</a>
+  <h2 class="success-page__title" data-i18n="co.ok.t">Замовлення прийнято!</h2>
+  <p class="success-page__sub" data-i18n="co.ok.p">Дякуємо за покупку! Ми зв'яжемось з вами найближчим часом для підтвердження замовлення.</p>
+  <a href="catalog.html" class="btn btn--dark" data-i18n="co.ok.btn">Продовжити покупки</a>
 </div>
 
 <footer class="footer" style="margin-top:48px">
@@ -280,12 +280,8 @@ document.getElementById('checkoutForm').addEventListener('submit', function(e) {
 
 function updateBranchLabel() {
   var isNova = document.querySelector('input[name="delivery"]:checked').value === 'nova';
-  document.getElementById('branchLabel').textContent = isNova
-    ? 'Відділення або адреса доставки *'
-    : 'Поштовий індекс або відділення *';
-  document.getElementById('branch').placeholder = isNova
-    ? 'Відділення №1 або вул. Хрещатик, 1'
-    : 'Індекс 01001 або відділення №5';
+  document.getElementById('branchLabel').textContent = window.i18n(isNova ? 'co.branch.nova' : 'co.branch.ukr');
+  document.getElementById('branch').placeholder = window.i18n(isNova ? 'co.branch.nova.ph' : 'co.branch.ukr.ph');
 }
 
 document.getElementById('menuToggle').addEventListener('click', function() {

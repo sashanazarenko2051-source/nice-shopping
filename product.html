@@ -104,7 +104,7 @@ if (product) {
 
   var colorsHtml = '';
   if (product.colors && product.colors.length) {
-    colorsHtml = '<div class="pd-label">Колір</div>' +
+    colorsHtml = '<div class="pd-label">' + window.i18n('pd.color') + '</div>' +
       '<div class="color-swatches">' +
         product.colors.map(function(c, i) {
           return '<div class="color-swatch' + (i === 0 ? ' active' : '') + '" style="background:' + c.hex + '" data-color="' + c.name + '" title="' + c.name + '"></div>';
