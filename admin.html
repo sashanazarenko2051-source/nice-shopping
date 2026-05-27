@@ -203,6 +203,14 @@
     /* ── INLINE EDIT ── */
     .inline-price{background:#061008;border:1px solid var(--gbd);border-radius:6px;color:var(--green);font-weight:700;font-size:.855rem;padding:4px 8px;width:80px;text-align:center}
     .inline-price:focus{outline:none;border-color:var(--green)}
+    .stock-cell{display:flex;align-items:center;gap:5px;white-space:nowrap}
+    .inline-stock{background:#061008;border:1px solid var(--gbd);border-radius:6px;color:var(--green);font-weight:700;font-size:.855rem;padding:4px 6px;width:58px;text-align:center}
+    .inline-stock:focus{outline:none;border-color:var(--green)}
+    .stock-toggle{font-size:.7rem;padding:3px 7px;border-radius:5px;cursor:pointer;border:1px solid;font-weight:600;transition:all .15s}
+    .stock-toggle.avail{background:rgba(74,222,128,.1);border-color:rgba(74,222,128,.3);color:#4ade80}
+    .stock-toggle.avail:hover{background:rgba(74,222,128,.25)}
+    .stock-toggle.out{background:rgba(248,113,113,.1);border-color:rgba(248,113,113,.3);color:#f87171}
+    .stock-toggle.out:hover{background:rgba(248,113,113,.25)}
 
     /* ── CAT FORM MODAL ── */
     .cat-modal{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:300;display:flex;align-items:center;justify-content:center}
@@ -802,8 +810,12 @@ function renderList(list,el){
       var cat=catById(productCatId(p));
       var catLabel=cat?(cat.icon+' '+cat.label):(p.category||'-');
       var priceCell='<input class="inline-price" type="number" value="'+p.price+'" onchange="quickPrice('+p.id+',this.value)" title="Змінити ціну">';
-      var stock=p.stock!=null?p.stock:null;
-      var stockBadge=stock===null?'<span style="color:var(--dim)">—</span>':stock===0?'<span style="color:var(--red);font-weight:600">Немає</span>':'<span style="color:var(--green);font-weight:600">'+stock+' шт.</span>';
+      var stock=p.stock!=null?p.stock:0;
+      var isOut=stock===0;
+      var stockBadge='<div class="stock-cell">'+
+        '<input class="inline-stock" type="number" min="0" value="'+stock+'" onchange="quickStock('+p.id+',this.value)" title="Кількість">'+
+        '<button class="stock-toggle '+(isOut?'avail':'out')+'" onclick="quickStock('+p.id+','+(isOut?'1':'0')+',true)" title="'+(isOut?'Позначити як є в наявності':'Позначити як немає')+'">'+(isOut?'✓ Є':'✕ Немає')+'</button>'+
+      '</div>';
       return '<tr>'+
         '<td style="width:56px">'+thumb(p)+'</td>'+
         '<td style="font-weight:500;max-width:200px"><div style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+p.name+'</div>'+(p.oldPrice?'<div style="font-size:.72rem;color:var(--dim);text-decoration:line-through">₴'+p.oldPrice+'</div>':'')+'</td>'+
@@ -846,6 +858,18 @@ async function quickPrice(id,val){
     p.price=parseFloat(val)||p.price;
     try { await API.updateProduct(id,p); toast('Ціну оновлено'); } catch(e){ toast('❌ Помилка'); }
   }
+}
+async function quickStock(id,val,rerender){
+  var list=getProducts();
+  var p=list.find(function(x){return x.id===id;});
+  if(!p) return;
+  var newStock=Math.max(0,parseInt(val)||0);
+  p.stock=newStock;
+  try {
+    await API.updateProduct(id,p);
+    toast(newStock===0?'Позначено: немає в наявності':'Залишок: '+newStock+' шт.');
+    if(rerender) renderProducts();
+  } catch(e){ toast('❌ Помилка збереження'); }
 }
 
 /* ─────────── PRODUCT FORM ─────────── */
