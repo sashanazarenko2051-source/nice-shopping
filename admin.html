@@ -1087,7 +1087,11 @@ async function renderOrders(){
   el.innerHTML='<div class="tbl-wrap"><table class="data-table"><thead><tr><th>Дата</th><th>Клієнт</th><th>Телефон</th><th>Місто</th><th>Оплата</th><th>Товари</th><th>Сума</th><th></th></tr></thead><tbody>'+
     orders.map(function(o,idx){
       var items=(o.items||[]).map(function(i){return i.name+' ×'+i.qty;}).join(', ');
-      var itemsDetail=(o.items||[]).map(function(i){return '<li>'+i.name+(i.size?' ('+i.size+')':'')+' — ×'+i.qty+' — ₴'+(i.price*i.qty)+'</li>';}).join('');
+      var itemsDetail=(o.items||[]).map(function(i){
+        var meta=i.size||'';
+        if(i.color) meta+=(meta?', ':'')+i.color;
+        return '<li>'+i.name+(meta?' ('+meta+')':'')+' — ×'+i.qty+' — ₴'+(i.price*i.qty)+'</li>';
+      }).join('');
       var detailHtml=
         '<tr id="ord-detail-'+idx+'" style="display:none"><td colspan="8" style="padding:0">'+
           '<div style="background:#0a1a0c;border:1px solid rgba(74,222,128,.15);border-radius:12px;margin:0 8px 12px;padding:20px 24px;font-size:.85rem;line-height:1.8">'+

@@ -66,6 +66,8 @@ function showToast(message, type) {
   toast._t = setTimeout(function() { toast.className = 'toast'; }, 3000);
 }
 
+var _cardColors = {};
+
 function renderProductCard(product) {
   var discount = product.oldPrice ? Math.round((1 - product.price / product.oldPrice) * 100) : null;
   var fullStars = Math.round(product.rating);
@@ -77,13 +79,31 @@ function renderProductCard(product) {
     ? '<img src="' + imgSrc + '" alt="' + displayName + '"' + (isData ? '' : ' loading="lazy"') + ' onerror="this.onerror=null;this.style.display=\'none\'">'
     : '<div style="width:100%;height:100%;background:linear-gradient(135deg,#f0e8e8,#e0d0d0)"></div>';
   var quickLabel = (window.i18n && window.i18n('quick.add')) || 'Швидко додати';
+
+  // Color swatches for catalog cards
+  var colorsHtml = '';
+  if (product.colors && product.colors.length > 1) {
+    var selectedColor = _cardColors[product.id] || product.colors[0].name;
+    colorsHtml = '<div class="card-colors">' +
+      product.colors.map(function(c) {
+        var isActive = c.name === selectedColor;
+        return '<div class="card-swatch' + (isActive ? ' active' : '') + '" style="background:' + c.hex + '" data-pid="' + product.id + '" data-color="' + c.name.replace(/"/g,'&quot;') + '" title="' + c.name.replace(/"/g,'&quot;') + '" onclick="selectCardColor(this)"></div>';
+      }).join('') +
+    '</div>';
+  }
+
+  var productUrl = 'product.html?id=' + product.id;
+  var selColor = _cardColors[product.id] || (product.colors && product.colors.length ? product.colors[0].name : '');
+  if (selColor) productUrl += '&color=' + encodeURIComponent(selColor);
+
   return '<div class="product-card">' +
     '<div class="product-card__img-wrap">' +
-      '<a href="product.html?id=' + product.id + '">' + imgHtml + '</a>' +
+      '<a href="' + productUrl + '">' + imgHtml + '</a>' +
       (discount ? '<span class="badge-sale">-' + discount + '%</span>' : '') +
       '<div class="product-card__quick" onclick="quickAdd(' + product.id + ')">' + quickLabel + '</div>' +
     '</div>' +
-    '<div class="product-card__name"><a href="product.html?id=' + product.id + '">' + displayName + '</a></div>' +
+    '<div class="product-card__name"><a href="' + productUrl + '">' + displayName + '</a></div>' +
+    colorsHtml +
     '<div class="product-card__prices">' +
       '<span class="price">' + CONFIG.currency + product.price + '</span>' +
       (product.oldPrice ? '<span class="price-old">' + CONFIG.currency + product.oldPrice + '</span>' : '') +
@@ -93,9 +113,27 @@ function renderProductCard(product) {
   '</div>';
 }
 
+function selectCardColor(el) {
+  var pid = parseInt(el.dataset.pid);
+  var colorName = el.dataset.color;
+  _cardColors[pid] = colorName;
+  // Update swatch active state
+  var siblings = el.parentNode.querySelectorAll('.card-swatch');
+  siblings.forEach(function(s) { s.classList.remove('active'); });
+  el.classList.add('active');
+  // Update card links to pass selected color
+  var card = el.closest('.product-card');
+  if (card) {
+    var url = 'product.html?id=' + pid + '&color=' + encodeURIComponent(colorName);
+    card.querySelectorAll('a[href*="product.html"]').forEach(function(a) { a.href = url; });
+  }
+}
+
 function quickAdd(productId) {
   var product = PRODUCTS.find(function(p) { return p.id === productId; });
-  if (product) addToCart(productId, product.sizes[0]);
+  if (!product) return;
+  var color = _cardColors[productId] || (product.colors && product.colors.length ? product.colors[0].name : '');
+  addToCart(productId, product.sizes[0], 1, color);
 }
 
 document.addEventListener('DOMContentLoaded', function() {

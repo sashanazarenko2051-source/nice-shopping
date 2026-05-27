@@ -222,10 +222,17 @@ html.dark .size-btn.active{background:#E0E0E0;color:#0D0D0D;border-color:#E0E0E0
 
 /* ─── Color swatches (product page) ─── */
 .color-swatches{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:8px}
-.color-swatch{width:28px;height:28px;border-radius:50%;cursor:pointer;border:3px solid transparent;transition:all .2s;flex-shrink:0;box-shadow:0 1px 4px rgba(0,0,0,.2)}
+.color-swatch{width:28px;height:28px;border-radius:50%;cursor:pointer;border:3px solid rgba(0,0,0,.15);transition:all .2s;flex-shrink:0;box-shadow:0 1px 4px rgba(0,0,0,.3)}
+html.dark .color-swatch{border-color:rgba(255,255,255,.25)}
 .color-swatch:hover{transform:scale(1.12)}
-.color-swatch.active{border-color:var(--dark);transform:scale(1.12)}
-html.dark .color-swatch.active{border-color:#fff}
+.color-swatch.active{border-color:var(--dark);transform:scale(1.12);box-shadow:0 0 0 2px var(--dark)}
+html.dark .color-swatch.active{border-color:#fff;box-shadow:0 0 0 2px #fff}
+/* ─── Card color swatches (catalog) ─── */
+.card-colors{display:flex;flex-wrap:wrap;gap:5px;padding:8px 12px 2px}
+.card-swatch{width:16px;height:16px;border-radius:50%;cursor:pointer;border:2px solid rgba(0,0,0,.15);transition:all .15s;flex-shrink:0}
+html.dark .card-swatch{border-color:rgba(255,255,255,.25)}
+.card-swatch.active{border-color:var(--dark);transform:scale(1.2)}
+html.dark .card-swatch.active{border-color:#fff}
 .color-swatch-label{font-size:.82rem;color:var(--gray);margin-bottom:14px}
 
 /* ─── Responsive ─── */

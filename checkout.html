@@ -218,7 +218,9 @@ document.getElementById('checkoutForm').addEventListener('submit', function(e) {
 
   var itemsText = cart.map(function(item) {
     var p = PRODUCTS.find(function(x) { return x.id === item.productId; });
-    return p ? '• ' + p.name + ' (' + item.size + ') × ' + item.qty + ' = ' + CONFIG.currency + (p.price * item.qty) : '';
+    if (!p) return '';
+    var meta = item.size + (item.color ? ', ' + item.color : '');
+    return '• ' + p.name + ' (' + meta + ') × ' + item.qty + ' = ' + CONFIG.currency + (p.price * item.qty);
   }).filter(Boolean).join('\n');
 
   var message = '🛍 *Нове замовлення — Файні покупки*\n\n' +
@@ -243,7 +245,7 @@ document.getElementById('checkoutForm').addEventListener('submit', function(e) {
       city: city, branch: branch, payment: payment, comment: comment,
       items: cart.map(function(item) {
         var p = PRODUCTS.find(function(x) { return x.id === item.productId; });
-        return { name: p ? p.name : '?', size: item.size, qty: item.qty, price: p ? p.price : 0 };
+        return { name: p ? p.name : '?', size: item.size, color: item.color || '', qty: item.qty, price: p ? p.price : 0 };
       }),
       subtotal: total, delivery: 0, total: total
     };

@@ -67,7 +67,9 @@
 <script src="js/cart.js"></script>
 <script src="js/translate.js"></script>
 <script>
-var productId = parseInt(new URLSearchParams(location.search).get('id'));
+var _pdParams = new URLSearchParams(location.search);
+var productId = parseInt(_pdParams.get('id'));
+var _preColor = _pdParams.get('color') || '';
 
 onProductsReady(function() {
 var product = PRODUCTS.find(function(p) { return p.id === productId; });
@@ -91,7 +93,8 @@ if (product) {
   var qty = 1;
 
   var images = (product.images && product.images.length) ? product.images : (product.imageUrl ? [product.imageUrl] : []);
-  var selectedColor = (product.colors && product.colors.length) ? product.colors[0].name : '';
+  var _defaultColor = (product.colors && product.colors.length) ? product.colors[0].name : '';
+  var selectedColor = (_preColor && product.colors && product.colors.some(function(c){return c.name===_preColor;})) ? _preColor : _defaultColor;
 
   var sizeBtns = product.sizes.map(function(s) {
     return '<button class="size-btn" data-size="' + s + '">' + s + '</button>';
@@ -107,11 +110,12 @@ if (product) {
   if (product.colors && product.colors.length) {
     colorsHtml = '<div class="pd-label">' + window.i18n('pd.color') + '</div>' +
       '<div class="color-swatches">' +
-        product.colors.map(function(c, i) {
-          return '<div class="color-swatch' + (i === 0 ? ' active' : '') + '" style="background:' + c.hex + '" data-color="' + c.name + '" title="' + c.name + '"></div>';
+        product.colors.map(function(c) {
+          var isActive = c.name === selectedColor;
+          return '<div class="color-swatch' + (isActive ? ' active' : '') + '" style="background:' + c.hex + '" data-color="' + c.name + '" title="' + c.name + '"></div>';
         }).join('') +
       '</div>' +
-      '<div class="color-swatch-label" id="colorLabel">' + product.colors[0].name + '</div>';
+      '<div class="color-swatch-label" id="colorLabel">' + selectedColor + '</div>';
   }
 
   document.getElementById('pdLayout').innerHTML =
