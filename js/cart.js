@@ -131,7 +131,7 @@ function selectCardColor(el) {
 
 function quickAdd(productId) {
   var product = PRODUCTS.find(function(p) { return p.id === productId; });
-  if (!product) return;
+  if (!product || !product.sizes || !product.sizes.length) return;
   var color = _cardColors[productId] || (product.colors && product.colors.length ? product.colors[0].name : '');
   addToCart(productId, product.sizes[0], 1, color);
 }

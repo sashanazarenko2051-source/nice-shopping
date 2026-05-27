@@ -9,6 +9,8 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:wght@400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/style.css">
   <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <link rel="preload" href="/api/products" as="fetch" crossorigin>
+  <style>@keyframes spin{to{transform:rotate(360deg)}}</style>
   <script>if(localStorage.getItem('fp_theme')==='dark')document.documentElement.classList.add('dark')</script>
 </head>
 <body>
@@ -39,7 +41,9 @@
       <a href="index.html">Головна</a> / <a href="catalog.html">Каталог</a> / <span id="pdBreadcrumb">Товар</span>
     </div>
     <div class="pd-layout" id="pdLayout">
-      <p style="color:var(--gray)" data-i18n="product.not.found">Товар не знайдено.</p>
+      <div id="pdLoading" style="grid-column:1/-1;text-align:center;padding:60px 0;color:var(--gray)">
+        <div style="width:32px;height:32px;border:3px solid var(--border);border-top-color:var(--dark);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 12px"></div>
+      </div>
     </div>
 
     <!-- Related -->
@@ -73,6 +77,7 @@ var _preColor = _pdParams.get('color') || '';
 
 onProductsReady(function() {
 var product = PRODUCTS.find(function(p) { return p.id === productId; });
+document.getElementById('pdLoading').style.display = 'none';
 
 if (product) {
   document.title = product.name + ' — ' + window.i18n('logo');
@@ -97,7 +102,7 @@ if (product) {
   var _defaultColor = (product.colors && product.colors.length) ? product.colors[0].name : '';
   var selectedColor = (_preColor && product.colors && product.colors.some(function(c){return c.name===_preColor;})) ? _preColor : _defaultColor;
 
-  var sizeBtns = product.sizes.map(function(s) {
+  var sizeBtns = (product.sizes || []).map(function(s) {
     var isAuto = s === selectedSize;
     return '<button class="size-btn' + (isAuto ? ' active' : '') + '" data-size="' + s + '">' + s + '</button>';
   }).join('');
@@ -224,6 +229,8 @@ if (product) {
 
   // Related products
   window._renderRelated();
+} else {
+  document.getElementById('pdLayout').innerHTML = '<p style="color:var(--gray)" data-i18n="product.not.found">' + window.i18n('product.not.found') + '</p>';
 }
 }); // onProductsReady
 

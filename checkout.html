@@ -177,15 +177,14 @@
 onProductsReady(function() {
   var cart = getCart();
   var total = getCartTotal();
-  var itemsEl = document.getElementById('orderItems');
-  cart.forEach(function(item) {
+  document.getElementById('orderItems').innerHTML = cart.map(function(item) {
     var p = PRODUCTS.find(function(x) { return x.id === item.productId; });
-    if (!p) return;
-    itemsEl.innerHTML += '<div class="co-item">' +
-      '<div><div class="co-item__name">' + p.name + '</div><div class="co-item__meta">Розмір: ' + item.size + ' × ' + item.qty + '</div></div>' +
+    if (!p) return '';
+    return '<div class="co-item">' +
+      '<div><div class="co-item__name">' + p.name + '</div><div class="co-item__meta">' + window.i18n('cart.size') + ': ' + item.size + ' × ' + item.qty + '</div></div>' +
       '<div>' + CONFIG.currency + (p.price * item.qty) + '</div>' +
     '</div>';
-  });
+  }).join('');
   document.getElementById('sumGoods').textContent = CONFIG.currency + total;
   document.getElementById('sumTotal').textContent = CONFIG.currency + total;
 });

@@ -9,6 +9,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/style.css">
   <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <link rel="preload" href="/api/products" as="fetch" crossorigin>
   <style>
     .catalog-page { padding: 40px 0 80px; }
     .catalog-grid { display: grid; grid-template-columns: 256px 1fr; gap: 40px; align-items: start; }
@@ -39,8 +40,7 @@
     .catalog-sort { padding: 9px 14px; border: 1.5px solid var(--border); border-radius: var(--r); font-size: .875rem; cursor: pointer; background: var(--white); color: var(--dark); transition: border-color var(--tr); }
     .catalog-sort:focus { outline: none; border-color: #111; }
 
-    /* Grid */
-    .catalog .products__grid { grid-template-columns: repeat(3, 1fr); }
+    /* Grid — handled by style.css (.products__grid.catalog) */
 
     /* Empty state */
     .catalog-empty { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 80px 24px; text-align: center; color: var(--gray); grid-column: 1/-1; }
@@ -59,7 +59,7 @@
     html.dark .catalog-sort:focus { border-color: #E0E0E0; }
 
     @media(max-width:1024px) { .catalog-grid { grid-template-columns: 1fr; } .filters { position: static; } .filter-tags { flex-direction: row; flex-wrap: wrap; } .filter-tag { width: auto; } }
-    @media(max-width:640px) { .catalog .products__grid { grid-template-columns: repeat(2,1fr); } }
+    @keyframes spin { to { transform: rotate(360deg); } }
   </style>
 </head>
 <body>
@@ -125,7 +125,12 @@
             <option value="discount" data-i18n="sort.discount">Зі знижкою</option>
           </select>
         </div>
-        <div class="products__grid catalog" id="grid"></div>
+        <div class="products__grid catalog" id="grid">
+          <div class="catalog-loading" id="catalogLoading" style="grid-column:1/-1;text-align:center;padding:60px 0;color:var(--gray)">
+            <div class="spinner" style="width:32px;height:32px;border:3px solid var(--border);border-top-color:var(--dark);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 12px"></div>
+            <div>Завантаження...</div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -197,7 +202,7 @@ var sizeEl = document.getElementById('sizeFilters');
 
 function renderSizes(cat, gender) {
   var key = (cat === 'all') ? 'all:' : (cat + ':' + (gender || ''));
-  var sizes = SIZE_MAP[key] || [];
+  var sizes = SIZE_MAP[key] || SIZE_MAP[cat + ':'] || [];
   activeSize = '';
   sizeEl.innerHTML = sizes.map(function(s) {
     return '<button class="filter-tag" data-size="' + s + '">' + s + '</button>';
@@ -214,7 +219,7 @@ function render() {
   var products = PRODUCTS.filter(function(p) {
     if (activeCat !== 'all' && p.category !== activeCat) return false;
     if (activeGender && p.gender !== activeGender) return false;
-    if (activeSize && p.sizes.indexOf(activeSize) === -1) return false;
+    if (activeSize && (p.sizes || []).indexOf(activeSize) === -1) return false;
     if (activePrice !== 'all') {
       var parts = activePrice.split('-'), mn = +parts[0], mx = +parts[1];
       if (p.price < mn || p.price > mx) return false;
