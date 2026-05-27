@@ -59,6 +59,7 @@
 
     /* ── STAT CARDS ── */
     .stat-cards{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:22px}
+    .stat-cards.row2{grid-template-columns:repeat(3,1fr);margin-top:14px}
     .stat-card{background:var(--bg2);border:1px solid var(--gbd);border-radius:14px;padding:20px 18px}
     .stat-card__ico{font-size:1.5rem;margin-bottom:8px}
     .stat-card__val{font-family:var(--serif);font-size:1.8rem;color:var(--green);line-height:1;margin-bottom:4px}
@@ -261,6 +262,7 @@
 
       /* Stat cards: 2 per row */
       .stat-cards{grid-template-columns:repeat(2,1fr);gap:10px}
+      .stat-cards.row2{grid-template-columns:repeat(2,1fr)}
       .stat-card{padding:16px 14px}
       .stat-card__val{font-size:1.5rem}
 
@@ -378,7 +380,13 @@
         <div class="stat-card"><div class="stat-card__ico">💰</div><div class="stat-card__val" id="sRevenue">₴0</div><div class="stat-card__lbl">Виручка</div></div>
         <div class="stat-card"><div class="stat-card__ico">📦</div><div class="stat-card__val" id="sProducts">0</div><div class="stat-card__lbl">Товарів</div></div>
       </div>
+      <div class="stat-cards row2">
+        <div class="stat-card"><div class="stat-card__ico">🏷</div><div class="stat-card__val" id="sStockQty">0</div><div class="stat-card__lbl">Залишок (шт.)</div></div>
+        <div class="stat-card"><div class="stat-card__ico">💎</div><div class="stat-card__val" id="sStockVal">₴0</div><div class="stat-card__lbl">Вартість залишку</div></div>
+        <div class="stat-card"><div class="stat-card__ico">🛒</div><div class="stat-card__val" id="sSold">0</div><div class="stat-card__lbl">Продано одиниць</div></div>
+      </div>
       <div class="box"><h2>Відвідування за 7 днів</h2><div class="chart" id="visitsChart"></div></div>
+      <div class="box"><h2>Залишки та продажі по товарах</h2><div id="inventoryTable"></div></div>
       <div class="box"><h2>Останні замовлення</h2><div id="recentOrders"></div></div>
     </div>
 
@@ -670,12 +678,56 @@ async function loadStats(){
   var orders = [];
   try { orders = await API.getOrders(); } catch(e) {}
   var revenue = orders.reduce(function(s,o){return s+(o.total||0);},0);
+
+  // Stock totals
+  var stockQty = _products.reduce(function(s,p){return s+(p.stock||0);},0);
+  var stockVal = _products.reduce(function(s,p){return s+(p.price||0)*(p.stock||0);},0);
+
+  // Sold per product (count from order items)
+  var soldMap = {};
+  orders.forEach(function(o){
+    (o.items||[]).forEach(function(i){
+      soldMap[i.name] = (soldMap[i.name]||0) + (i.qty||1);
+    });
+  });
+  var totalSold = Object.values(soldMap).reduce(function(a,b){return a+b;},0);
+
   document.getElementById('sVisits').textContent   = totalV;
   document.getElementById('sOrders').textContent   = orders.length;
   document.getElementById('sRevenue').textContent  = '₴'+revenue.toLocaleString('uk-UA');
   document.getElementById('sProducts').textContent = _products.length;
+  document.getElementById('sStockQty').textContent = stockQty;
+  document.getElementById('sStockVal').textContent = '₴'+stockVal.toLocaleString('uk-UA');
+  document.getElementById('sSold').textContent     = totalSold;
+
   renderChart(visits);
+  renderInventoryTable(soldMap);
   renderRecentOrders(orders.slice(0,5));
+}
+
+function renderInventoryTable(soldMap){
+  var el = document.getElementById('inventoryTable');
+  if(!_products.length){ el.innerHTML='<div class="empty"><div class="empty-ico">📦</div><p>Немає товарів</p></div>'; return; }
+  var rows = _products.map(function(p){
+    var sold = soldMap[p.name] || 0;
+    var val  = (p.price||0)*(p.stock||0);
+    var stockCls = p.stock===0 ? 'color:#f87171' : p.stock<=3 ? 'color:#fbbf24' : 'color:#4ade80';
+    return '<tr>'+
+      '<td>'+p.name+'</td>'+
+      '<td style="text-align:center">₴'+p.price+'</td>'+
+      '<td style="text-align:center;font-weight:600;'+stockCls+'">'+p.stock+'</td>'+
+      '<td style="text-align:center">₴'+val+'</td>'+
+      '<td style="text-align:center;font-weight:600;color:#4ade80">'+sold+'</td>'+
+    '</tr>';
+  }).join('');
+  el.innerHTML='<div class="tbl-wrap"><table class="data-table">'+
+    '<thead><tr>'+
+      '<th>Товар</th>'+
+      '<th style="text-align:center">Ціна</th>'+
+      '<th style="text-align:center">Залишок</th>'+
+      '<th style="text-align:center">Сума залишку</th>'+
+      '<th style="text-align:center">Продано</th>'+
+    '</tr></thead><tbody>'+rows+'</tbody></table></div>';
 }
 function renderChart(visits){
   var days=[];
