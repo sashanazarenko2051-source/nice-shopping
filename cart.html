@@ -128,7 +128,7 @@ function changeQty(key, delta) {
   if (delta > 0) {
     var p = PRODUCTS.find(function(x) { return x.id === item.productId; });
     if (p && p.stock != null && newQty > p.stock) {
-      showToast('В наявності лише ' + p.stock + ' шт.');
+      showToast(window.i18n('stock.only') + ' ' + p.stock + ' ' + window.i18n('stock.pcs'));
       return;
     }
   }

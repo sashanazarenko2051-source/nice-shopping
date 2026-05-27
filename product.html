@@ -39,12 +39,12 @@
       <a href="index.html">Головна</a> / <a href="catalog.html">Каталог</a> / <span id="pdBreadcrumb">Товар</span>
     </div>
     <div class="pd-layout" id="pdLayout">
-      <p style="color:var(--gray)">Товар не знайдено.</p>
+      <p style="color:var(--gray)" data-i18n="product.not.found">Товар не знайдено.</p>
     </div>
 
     <!-- Related -->
     <div style="margin-top:64px">
-      <h2 class="section__title" style="text-align:left">Схожі товари</h2>
+      <h2 class="section__title" style="text-align:left" data-i18n="pd.related">Схожі товари</h2>
       <div class="products__grid" id="related"></div>
     </div>
   </div>
@@ -202,7 +202,7 @@ if (product) {
   });
   document.getElementById('qtyPlus').addEventListener('click', function() {
     if (product.stock != null && qty >= product.stock) {
-      showToast('В наявності лише ' + product.stock + ' шт.');
+      showToast(window.i18n('stock.only') + ' ' + product.stock + ' ' + window.i18n('stock.pcs'));
       return;
     }
     qty++;
@@ -216,7 +216,7 @@ if (product) {
       return;
     }
     if (product.stock != null && qty > product.stock) {
-      showToast('В наявності лише ' + product.stock + ' шт.');
+      showToast(window.i18n('stock.only') + ' ' + product.stock + ' ' + window.i18n('stock.pcs'));
       return;
     }
     addToCart(product.id, selectedSize, qty, selectedColor);

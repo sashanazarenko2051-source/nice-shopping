@@ -41,7 +41,7 @@
 <div class="page-hero">
   <div class="container">
     <h1 class="page-hero__title">Оформлення замовлення</h1>
-    <div class="breadcrumb"><a href="index.html">Головна</a> / <a href="cart.html">Кошик</a> / Оформлення</div>
+    <div class="breadcrumb"><a href="index.html" data-i18n="bc.home">Головна</a> / <a href="cart.html" data-i18n="bc.cart">Кошик</a> / <span data-i18n="bc.checkout">Оформлення</span></div>
   </div>
 </div>
 
@@ -88,7 +88,7 @@
               <input type="radio" name="delivery" value="ukr" onchange="updateBranchLabel()">
               <div>
                 <div class="payment-opt__name" data-i18n="co.del.ukr">🔵 Укрпошта</div>
-                <div class="payment-opt__desc" data-i18n="co.del.nova.d">Доставка по всій Україні</div>
+                <div class="payment-opt__desc" data-i18n="co.del.ukr.d">Доставка по всій Україні</div>
               </div>
             </label>
           </div>
@@ -171,7 +171,7 @@
 <script src="js/i18n.js"></script>
 <script src="js/cart.js"></script>
 <script src="js/translate.js"></script>
-<script src="js/analytics.js"></script>
+<script src="js/analytics.js" defer></script>
 <script>
 // Render order items
 onProductsReady(function() {
@@ -208,7 +208,7 @@ document.getElementById('checkoutForm').addEventListener('submit', function(e) {
     if (!pair[1]) { el.classList.add('error'); errors = true; }
     else el.classList.remove('error');
   });
-  if (errors) { showToast('Заповніть усі обов\'язкові поля'); return; }
+  if (errors) { showToast(window.i18n('err.fill.required')); return; }
 
   var cart = getCart();
   var total = getCartTotal();
@@ -236,7 +236,7 @@ document.getElementById('checkoutForm').addEventListener('submit', function(e) {
 
   var btn = e.target.querySelector('[type="submit"]');
   btn.disabled = true;
-  btn.textContent = 'Відправляємо...';
+  btn.textContent = window.i18n('co.sending');
 
   function onSuccess() {
     var order = {
@@ -257,7 +257,7 @@ document.getElementById('checkoutForm').addEventListener('submit', function(e) {
     }).catch(function() {
       showToast('Помилка збереження замовлення. Зателефонуйте нам: ' + CONFIG.phone);
       btn.disabled = false;
-      btn.textContent = 'Оформити замовлення →';
+      btn.textContent = window.i18n('co.sub');
     });
   }
 
@@ -268,11 +268,11 @@ document.getElementById('checkoutForm').addEventListener('submit', function(e) {
       body: JSON.stringify({ chat_id: CONFIG.telegramChatId, text: message, parse_mode: 'Markdown' })
     }).then(function(r) {
       if (r.ok) { onSuccess(); }
-      else { showToast('Помилка відправки. Зателефонуйте нам.'); btn.disabled = false; btn.textContent = 'Оформити замовлення →'; }
+      else { showToast('Помилка відправки. Зателефонуйте нам.'); btn.disabled = false; btn.textContent = window.i18n('co.sub'); }
     }).catch(function() {
       showToast('Помилка мережі. Зателефонуйте нам.');
       btn.disabled = false;
-      btn.textContent = 'Оформити замовлення →';
+      btn.textContent = window.i18n('co.sub');
     });
   } else {
     // Telegram not configured — show success anyway (for testing)

@@ -211,7 +211,7 @@ document.getElementById('revForm').addEventListener('submit', function(e) {
   var text = document.getElementById('revText').value.trim();
 
   if (!name || !ratingEl || !text) {
-    showToast('Заповніть усі поля та оберіть оцінку');
+    showToast(window.i18n('err.fill.rating'));
     return;
   }
 

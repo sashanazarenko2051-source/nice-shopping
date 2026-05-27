@@ -198,7 +198,7 @@
 <script src="js/i18n.js"></script>
 <script src="js/cart.js"></script>
 <script src="js/translate.js"></script>
-<script src="js/analytics.js"></script>
+<script src="js/analytics.js" defer></script>
 <script>
 document.getElementById('menuToggle').addEventListener('click', function() {
   document.getElementById('nav').classList.toggle('open');
@@ -211,10 +211,10 @@ document.getElementById('contactForm').addEventListener('submit', function(e) {
   var name = document.getElementById('cName').value.trim();
   var phone = document.getElementById('cPhone').value.trim();
   var msg = document.getElementById('cMsg').value.trim();
-  if (!name || !phone || !msg) { showToast('Заповніть усі поля'); return; }
+  if (!name || !phone || !msg) { showToast(window.i18n('err.fill.all')); return; }
 
   var btn = document.getElementById('submitBtn');
-  btn.disabled = true; btn.textContent = 'Надсилаємо...';
+  btn.disabled = true; btn.textContent = window.i18n('form.sending');
 
   var text = '📩 *Нове повідомлення — Файні покупки*\n\n' +
     '*Ім\'я:* ' + name + '\n*Телефон:* ' + phone + '\n\n*Повідомлення:*\n' + msg;
@@ -230,7 +230,7 @@ document.getElementById('contactForm').addEventListener('submit', function(e) {
       body: JSON.stringify({ chat_id: CONFIG.telegramChatId, text: text, parse_mode: 'Markdown' })
     }).then(function(r) {
       if (r.ok) onDone();
-      else { showToast('Помилка. Напишіть нам напряму.'); btn.disabled = false; btn.textContent = 'Надіслати →'; }
+      else { showToast('Помилка. Напишіть нам напряму.'); btn.disabled = false; btn.textContent = window.i18n('form.sub'); }
     }).catch(function() { onDone(); }); // show success anyway on network error
   } else {
     console.log('Contact form (Telegram not set):\n' + text);

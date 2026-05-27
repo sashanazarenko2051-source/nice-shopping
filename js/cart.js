@@ -17,7 +17,7 @@ function addToCart(productId, size, qty, color) {
   if (existing) { existing.qty += qty; }
   else { cart.push({ key: key, productId: productId, size: size, qty: qty, color: color || '' }); }
   saveCart(cart);
-  showToast('"' + product.name + '" додано до кошика');
+  showToast('"' + product.name + '" ' + window.i18n('cart.added'));
 }
 
 function removeFromCart(key) {

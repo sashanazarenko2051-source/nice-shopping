@@ -90,6 +90,15 @@
       'co.order': 'Ваше замовлення', 'co.sending': 'Відправляємо...',
       'co.ok.t': 'Замовлення прийнято!', 'co.ok.p': "Дякуємо за покупку! Ми зв'яжемось з вами найближчим часом.", 'co.ok.btn': 'Продовжити покупки',
       'pd.color': 'Колір', 'pd.select_color': 'Оберіть колір',
+      'pd.related': 'Схожі товари',
+      'stock.only': 'В наявності лише',
+      'cart.added': 'додано до кошика',
+      'product.not.found': 'Товар не знайдено.',
+      'err.fill.all': 'Заповніть усі поля',
+      'err.fill.required': "Заповніть усі обов'язкові поля",
+      'err.fill.rating': 'Заповніть усі поля та оберіть оцінку',
+      'form.sending': 'Надсилаємо...',
+      'co.del.ukr.d': 'Доставка по всій Україні',
     },
     en: {
       logo: 'Nice Shopping',
@@ -179,6 +188,15 @@
       'co.order': 'Your order', 'co.sending': 'Sending...',
       'co.ok.t': 'Order placed!', 'co.ok.p': "Thank you! We'll contact you shortly to confirm.", 'co.ok.btn': 'Continue shopping',
       'pd.color': 'Color', 'pd.select_color': 'Select color',
+      'pd.related': 'Related products',
+      'stock.only': 'Only',
+      'cart.added': 'added to cart',
+      'product.not.found': 'Product not found.',
+      'err.fill.all': 'Fill in all fields',
+      'err.fill.required': 'Fill in all required fields',
+      'err.fill.rating': 'Fill in all fields and select a rating',
+      'form.sending': 'Sending...',
+      'co.del.ukr.d': 'Delivery across Ukraine',
     }
   };
 
