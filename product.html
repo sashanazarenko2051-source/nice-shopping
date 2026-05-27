@@ -89,7 +89,8 @@ if (product) {
   var discount = product.oldPrice ? Math.round((1 - product.price / product.oldPrice) * 100) : null;
   var fullStars = Math.round(product.rating);
   var stars = '★'.repeat(fullStars) + '☆'.repeat(5 - fullStars);
-  var selectedSize = '';
+  // Auto-select size if only one option exists
+  var selectedSize = (product.sizes && product.sizes.length === 1) ? product.sizes[0] : '';
   var qty = 1;
 
   var images = (product.images && product.images.length) ? product.images : (product.imageUrl ? [product.imageUrl] : []);
@@ -97,7 +98,8 @@ if (product) {
   var selectedColor = (_preColor && product.colors && product.colors.some(function(c){return c.name===_preColor;})) ? _preColor : _defaultColor;
 
   var sizeBtns = product.sizes.map(function(s) {
-    return '<button class="size-btn" data-size="' + s + '">' + s + '</button>';
+    var isAuto = s === selectedSize;
+    return '<button class="size-btn' + (isAuto ? ' active' : '') + '" data-size="' + s + '">' + s + '</button>';
   }).join('');
 
   var thumbsHtml = images.map(function(img, idx) {
