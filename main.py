@@ -276,11 +276,34 @@ def get_orders(token: str = Depends(require_admin)):
     return result
 
 @app.post("/api/orders")
-async def create_order(req: Request):
+async def create_order(req: Request, background_tasks: BackgroundTasks):
     body = await req.json()
     conn = get_db()
     conn.execute("INSERT INTO orders (data) VALUES (?)", (json.dumps(body),))
-    conn.commit(); conn.close()
+
+    # Decrement stock for each ordered item
+    items = body.get("items", [])
+    if items:
+        prod_rows = conn.execute("SELECT id, data FROM products").fetchall()
+        updated = False
+        for item in items:
+            item_name = item.get("name", "")
+            item_qty  = max(1, int(item.get("qty", 1)))
+            for row in prod_rows:
+                p = json.loads(row["data"])
+                if p.get("name") == item_name:
+                    p["stock"] = max(0, int(p.get("stock") or 0) - item_qty)
+                    conn.execute("UPDATE products SET data = ? WHERE id = ?",
+                                 (json.dumps(p), row["id"]))
+                    updated = True
+                    break
+        if updated:
+            all_products = [json.loads(r["data"]) for r in
+                            conn.execute("SELECT data FROM products ORDER BY id ASC").fetchall()]
+            background_tasks.add_task(_gist_save, all_products)
+
+    conn.commit()
+    conn.close()
     return {"ok": True}
 
 @app.delete("/api/orders/{oid}")
