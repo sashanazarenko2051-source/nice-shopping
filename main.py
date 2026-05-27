@@ -307,8 +307,32 @@ async def create_order(req: Request, background_tasks: BackgroundTasks):
     return {"ok": True}
 
 @app.delete("/api/orders/{oid}")
-def delete_order_api(oid: int, token: str = Depends(require_admin)):
+def delete_order_api(oid: int, background_tasks: BackgroundTasks,
+                     token: str = Depends(require_admin)):
     conn = get_db()
+    # Restore stock before deleting
+    row = conn.execute("SELECT data FROM orders WHERE id = ?", (oid,)).fetchone()
+    if row:
+        order = json.loads(row["data"])
+        items = order.get("items", [])
+        if items:
+            prod_rows = conn.execute("SELECT id, data FROM products").fetchall()
+            updated = False
+            for item in items:
+                item_name = item.get("name", "")
+                item_qty  = max(1, int(item.get("qty", 1)))
+                for pr in prod_rows:
+                    p = json.loads(pr["data"])
+                    if p.get("name") == item_name:
+                        p["stock"] = int(p.get("stock") or 0) + item_qty
+                        conn.execute("UPDATE products SET data = ? WHERE id = ?",
+                                     (json.dumps(p), pr["id"]))
+                        updated = True
+                        break
+            if updated:
+                all_products = [json.loads(r["data"]) for r in
+                                conn.execute("SELECT data FROM products ORDER BY id ASC").fetchall()]
+                background_tasks.add_task(_gist_save, all_products)
     conn.execute("DELETE FROM orders WHERE id = ?", (oid,))
     conn.commit(); conn.close()
     return {"ok": True}
