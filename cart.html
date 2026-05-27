@@ -122,10 +122,18 @@ function renderCart() {
 function changeQty(key, delta) {
   var cart = getCart();
   var item = cart.find(function(i) { return i.key === key; });
-  if (item) {
-    updateQty(key, item.qty + delta);
-    renderCart();
+  if (!item) return;
+  var newQty = item.qty + delta;
+  if (newQty < 1) return;
+  if (delta > 0) {
+    var p = PRODUCTS.find(function(x) { return x.id === item.productId; });
+    if (p && p.stock != null && newQty > p.stock) {
+      showToast('В наявності лише ' + p.stock + ' шт.');
+      return;
+    }
   }
+  updateQty(key, newQty);
+  renderCart();
 }
 
 function removeItem(key) {

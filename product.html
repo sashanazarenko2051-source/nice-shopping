@@ -195,6 +195,10 @@ if (product) {
     if (qty > 1) { qty--; document.getElementById('qtyVal').textContent = qty; }
   });
   document.getElementById('qtyPlus').addEventListener('click', function() {
+    if (product.stock != null && qty >= product.stock) {
+      showToast('В наявності лише ' + product.stock + ' шт.');
+      return;
+    }
     qty++;
     document.getElementById('qtyVal').textContent = qty;
   });
@@ -203,6 +207,10 @@ if (product) {
   document.getElementById('addBtn').addEventListener('click', function() {
     if (!selectedSize) {
       showToast(window.i18n('pd.select_size'));
+      return;
+    }
+    if (product.stock != null && qty > product.stock) {
+      showToast('В наявності лише ' + product.stock + ' шт.');
       return;
     }
     addToCart(product.id, selectedSize, qty, selectedColor);
