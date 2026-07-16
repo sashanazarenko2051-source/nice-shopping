@@ -21,7 +21,7 @@ GITHUB_REPO  = os.getenv("GITHUB_REPO", "sashanazarenko2051-source/nice-shopping
 # persistence goes through the Gist instead. Set AUTO_COMMIT=1 to re-enable.
 AUTO_COMMIT  = os.getenv("AUTO_COMMIT", "").lower() in ("1", "true", "yes")
 TOKEN_TTL    = int(os.getenv("TOKEN_TTL", str(7 * 24 * 3600)))   # admin session lifetime
-MAX_BODY     = int(os.getenv("MAX_BODY", str(8 * 1024 * 1024)))  # 8 MB request cap
+MAX_BODY     = int(os.getenv("MAX_BODY", str(32 * 1024 * 1024)))  # 32 MB request cap (base64 photos)
 _tokens: dict = {}                # token -> issued_ts
 _login_attempts: dict = {}        # ip -> (count, window_start_ts)
 security = HTTPBearer(auto_error=False)
@@ -356,16 +356,26 @@ def get_products():
     conn.close()
     return [json.loads(r["data"]) for r in rows]
 
+async def _json_body(req: Request):
+    try:
+        return await req.json()
+    except Exception:
+        raise HTTPException(status_code=400, detail="Invalid JSON body")
+
 @app.put("/api/products")
 async def set_all_products(req: Request, background_tasks: BackgroundTasks,
                            token: str = Depends(require_admin)):
-    products = await req.json()
+    products = await _json_body(req)
+    if not isinstance(products, list):
+        raise HTTPException(status_code=400, detail="Expected a list of products")
     conn = get_db()
     conn.execute("DELETE FROM products")
     for i, p in enumerate(products):
+        if not isinstance(p, dict):
+            continue
         pid = int(p.get("id") or int(time.time() * 1000) + i)
         p["id"] = pid
-        conn.execute("INSERT INTO products (id, data) VALUES (?, ?)", (pid, json.dumps(p)))
+        conn.execute("INSERT INTO products (id, data) VALUES (?, ?)", (pid, json.dumps(p, ensure_ascii=False)))
     conn.commit(); conn.close()
     background_tasks.add_task(_gist_save, products)
     return {"ok": True, "count": len(products)}
@@ -373,11 +383,13 @@ async def set_all_products(req: Request, background_tasks: BackgroundTasks,
 @app.post("/api/products/one")
 async def add_one_product(req: Request, background_tasks: BackgroundTasks,
                           token: str = Depends(require_admin)):
-    data = await req.json()
+    data = await _json_body(req)
+    if not isinstance(data, dict) or not str(data.get("name") or "").strip():
+        raise HTTPException(status_code=400, detail="Product name required")
     pid = int(data.get("id") or int(time.time() * 1000))
     data["id"] = pid
     conn = get_db()
-    conn.execute("INSERT OR REPLACE INTO products (id, data) VALUES (?, ?)", (pid, json.dumps(data)))
+    conn.execute("INSERT OR REPLACE INTO products (id, data) VALUES (?, ?)", (pid, json.dumps(data, ensure_ascii=False)))
     conn.commit()
     products = [json.loads(r["data"]) for r in
                 conn.execute("SELECT data FROM products ORDER BY id ASC").fetchall()]
@@ -388,14 +400,16 @@ async def add_one_product(req: Request, background_tasks: BackgroundTasks,
 @app.put("/api/products/{pid}")
 async def update_one_product(pid: int, req: Request, background_tasks: BackgroundTasks,
                              token: str = Depends(require_admin)):
-    data = await req.json()
+    data = await _json_body(req)
+    if not isinstance(data, dict):
+        raise HTTPException(status_code=400, detail="Invalid product")
     data["id"] = pid
     conn = get_db()
     row = conn.execute("SELECT id FROM products WHERE id = ?", (pid,)).fetchone()
     if not row:
         conn.close()
         raise HTTPException(status_code=404, detail="Product not found")
-    conn.execute("UPDATE products SET data = ? WHERE id = ?", (json.dumps(data), pid))
+    conn.execute("UPDATE products SET data = ? WHERE id = ?", (json.dumps(data, ensure_ascii=False), pid))
     conn.commit()
     products = [json.loads(r["data"]) for r in
                 conn.execute("SELECT data FROM products ORDER BY id ASC").fetchall()]

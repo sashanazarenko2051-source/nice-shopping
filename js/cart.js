@@ -138,9 +138,6 @@ function quickAdd(productId) {
 
 document.addEventListener('DOMContentLoaded', function() {
   updateCartCount();
-  var toggle = document.getElementById('menuToggle');
-  var nav = document.querySelector('.nav');
-  if (toggle && nav) {
-    toggle.addEventListener('click', function() { nav.classList.toggle('open'); });
-  }
+  // NOTE: the mobile menu toggle is bound per-page (inline). Do NOT bind it here
+  // as well — a double binding makes each tap fire twice and the menu never opens.
 });
