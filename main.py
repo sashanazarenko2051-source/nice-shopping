@@ -1,19 +1,46 @@
 from fastapi import FastAPI, HTTPException, Depends, Request, BackgroundTasks
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 import sqlite3, json, os, time, secrets
 from pathlib import Path
 
 app = FastAPI(docs_url=None, redoc_url=None)
-app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
+
+# CORS: restrict to configured site origin(s) when provided, else allow all.
+# ALLOWED_ORIGINS = "https://your-shop.com,https://www.your-shop.com"
+_origins = [o.strip() for o in os.getenv("ALLOWED_ORIGINS", "").split(",") if o.strip()] or ["*"]
+app.add_middleware(CORSMiddleware, allow_origins=_origins, allow_methods=["*"], allow_headers=["*"])
 
 ADMIN_PASS   = os.getenv("ADMIN_PASS", "admin2025")
 GITHUB_TOKEN = os.getenv("GITHUB_TOKEN", "")
 GIST_ID      = os.getenv("GIST_ID", "")
 GITHUB_REPO  = os.getenv("GITHUB_REPO", "sashanazarenko2051-source/nice-shopping")
-_tokens: set = set()
+# Committing products.json back to the git repo triggers a Render auto-deploy,
+# which wipes the ephemeral SQLite DB (losing orders/reviews). Off by default —
+# persistence goes through the Gist instead. Set AUTO_COMMIT=1 to re-enable.
+AUTO_COMMIT  = os.getenv("AUTO_COMMIT", "").lower() in ("1", "true", "yes")
+TOKEN_TTL    = int(os.getenv("TOKEN_TTL", str(7 * 24 * 3600)))   # admin session lifetime
+MAX_BODY     = int(os.getenv("MAX_BODY", str(8 * 1024 * 1024)))  # 8 MB request cap
+_tokens: dict = {}                # token -> issued_ts
+_login_attempts: dict = {}        # ip -> (count, window_start_ts)
 security = HTTPBearer(auto_error=False)
+
+if ADMIN_PASS == "admin2025":
+    print("[SECURITY] WARNING: ADMIN_PASS is still the default 'admin2025'. "
+          "Set a strong ADMIN_PASS env var in the Render dashboard.")
+
+
+@app.middleware("http")
+async def _limit_body_size(request: Request, call_next):
+    cl = request.headers.get("content-length")
+    if cl:
+        try:
+            if int(cl) > MAX_BODY:
+                return JSONResponse({"detail": "Payload too large"}, status_code=413)
+        except ValueError:
+            pass
+    return await call_next(request)
 
 # ── SQLite ────────────────────────────────────────────────
 DB_PATH = os.getenv("DB_PATH", "shop.db")
@@ -35,10 +62,19 @@ def init_db():
 
 def _load_tokens():
     conn = get_db()
-    rows = conn.execute("SELECT token FROM tokens").fetchall()
-    conn.close()
+    rows = conn.execute("SELECT token, ts FROM tokens").fetchall()
+    now = int(time.time())
+    expired = []
     for r in rows:
-        _tokens.add(r["token"])
+        if now - r["ts"] < TOKEN_TTL:
+            _tokens[r["token"]] = r["ts"]
+        else:
+            expired.append(r["token"])
+    for t in expired:
+        conn.execute("DELETE FROM tokens WHERE token = ?", (t,))
+    if expired:
+        conn.commit()
+    conn.close()
 
 init_db()
 _load_tokens()
@@ -58,6 +94,83 @@ def _insert_products(products):
         p["id"] = pid
         conn.execute("INSERT INTO products (id, data) VALUES (?, ?)", (pid, json.dumps(p)))
     conn.commit(); conn.close()
+
+def _gist_fetch_file(filename):
+    """Fetch and parse a single file from the configured Gist (via raw_url to avoid truncation)."""
+    if not (GITHUB_TOKEN and GIST_ID):
+        return None
+    try:
+        import urllib.request
+        req = urllib.request.Request(f"https://api.github.com/gists/{GIST_ID}", headers=_gist_headers())
+        meta = json.loads(urllib.request.urlopen(req, timeout=15).read())
+        info = meta.get("files", {}).get(filename, {})
+        raw_url = info.get("raw_url", "")
+        if not raw_url:
+            return None
+        raw_req = urllib.request.Request(raw_url, headers={"User-Agent": "nice-shopping"})
+        return json.loads(urllib.request.urlopen(raw_req, timeout=15).read())
+    except Exception as e:
+        print(f"[Gist] fetch {filename} error: {e}")
+        return None
+
+
+def _gist_patch_files(files: dict):
+    """PATCH one or more files into the Gist. files = {filename: content_str}"""
+    if not (GITHUB_TOKEN and GIST_ID):
+        return
+    try:
+        import urllib.request
+        body = json.dumps({"files": {n: {"content": c} for n, c in files.items()}}).encode()
+        req = urllib.request.Request(f"https://api.github.com/gists/{GIST_ID}",
+                                     data=body, headers=_gist_headers(), method="PATCH")
+        urllib.request.urlopen(req, timeout=15)
+    except Exception as e:
+        print(f"[Gist] patch error: {e}")
+
+
+def _backup_orders():
+    """Snapshot all orders to the Gist so they survive DB resets on redeploy/spin-down."""
+    conn = get_db()
+    rows = conn.execute("SELECT data FROM orders ORDER BY id ASC").fetchall()
+    conn.close()
+    data = [json.loads(r["data"]) for r in rows]
+    _gist_patch_files({"orders.json": json.dumps(data, ensure_ascii=False, indent=2)})
+
+
+def _backup_reviews():
+    """Snapshot all reviews to the Gist so they survive DB resets on redeploy/spin-down."""
+    conn = get_db()
+    rows = conn.execute("SELECT data FROM reviews ORDER BY id ASC").fetchall()
+    conn.close()
+    data = [json.loads(r["data"]) for r in rows]
+    _gist_patch_files({"reviews.json": json.dumps(data, ensure_ascii=False, indent=2)})
+
+
+def _restore_orders_reviews():
+    """On start: if the (ephemeral) SQLite tables are empty, restore from the Gist backup."""
+    conn = get_db()
+    o_count = conn.execute("SELECT COUNT(*) FROM orders").fetchone()[0]
+    r_count = conn.execute("SELECT COUNT(*) FROM reviews").fetchone()[0]
+    conn.close()
+
+    if o_count == 0:
+        orders = _gist_fetch_file("orders.json")
+        if orders:
+            conn = get_db()
+            for o in orders:
+                conn.execute("INSERT INTO orders (data) VALUES (?)", (json.dumps(o, ensure_ascii=False),))
+            conn.commit(); conn.close()
+            print(f"[Gist] Restored {len(orders)} orders")
+
+    if r_count == 0:
+        reviews = _gist_fetch_file("reviews.json")
+        if reviews:
+            conn = get_db()
+            for rv in reviews:
+                conn.execute("INSERT INTO reviews (data) VALUES (?)", (json.dumps(rv, ensure_ascii=False),))
+            conn.commit(); conn.close()
+            print(f"[Gist] Restored {len(reviews)} reviews")
+
 
 def _gist_load():
     """На старті: якщо SQLite порожній — завантажити товари з Gist, потім з products.json"""
@@ -148,8 +261,11 @@ def _gist_save(products):
     except Exception as e:
         print(f"[File] Save error: {e}")
 
-    # 2) Commit slim version (no base64 images) to git repo — survives every Render deploy
-    _github_commit(products)
+    # 2) Optionally commit slim version to git repo. Disabled by default because a repo
+    #    commit triggers a Render auto-deploy that wipes the DB (and thus orders/reviews).
+    #    Product persistence is handled by the Gist backup below instead.
+    if AUTO_COMMIT:
+        _github_commit(products)
 
     if not GITHUB_TOKEN or not GIST_ID:
         return
@@ -168,23 +284,68 @@ def _gist_save(products):
         print(f"[Gist] Save error: {e}")
 
 _gist_load()
+_restore_orders_reviews()
 
 # ── Auth ──────────────────────────────────────────────────
 def require_admin(creds: HTTPAuthorizationCredentials = Depends(security)):
-    if not creds or creds.credentials not in _tokens:
+    if not creds:
+        raise HTTPException(status_code=401, detail="Unauthorized")
+    issued = _tokens.get(creds.credentials)
+    if issued is None or int(time.time()) - issued > TOKEN_TTL:
+        # expired or unknown → drop it
+        if creds.credentials in _tokens:
+            _tokens.pop(creds.credentials, None)
+            conn = get_db()
+            conn.execute("DELETE FROM tokens WHERE token = ?", (creds.credentials,))
+            conn.commit(); conn.close()
         raise HTTPException(status_code=401, detail="Unauthorized")
     return creds.credentials
 
+
+def _client_ip(req: Request) -> str:
+    fwd = req.headers.get("x-forwarded-for", "")
+    if fwd:
+        return fwd.split(",")[0].strip()
+    return req.client.host if req.client else "unknown"
+
+
+def _login_allowed(ip: str) -> bool:
+    """Simple 5-minute sliding window: max 8 failed attempts per IP."""
+    now = time.time()
+    count, start = _login_attempts.get(ip, (0, now))
+    if now - start > 300:
+        return True
+    return count < 8
+
+
+def _record_login_fail(ip: str):
+    now = time.time()
+    count, start = _login_attempts.get(ip, (0, now))
+    if now - start > 300:
+        count, start = 0, now
+    _login_attempts[ip] = (count + 1, start)
+
+
 @app.post("/api/admin/login")
 async def admin_login(req: Request):
-    body = await req.json()
-    if body.get("password") == ADMIN_PASS:
+    ip = _client_ip(req)
+    if not _login_allowed(ip):
+        raise HTTPException(status_code=429, detail="Too many attempts. Try again in a few minutes.")
+    try:
+        body = await req.json()
+    except Exception:
+        raise HTTPException(status_code=400, detail="Invalid request")
+    password = str(body.get("password") or "")
+    if secrets.compare_digest(password, ADMIN_PASS):
+        _login_attempts.pop(ip, None)
         token = secrets.token_urlsafe(32)
-        _tokens.add(token)
+        now = int(time.time())
+        _tokens[token] = now
         conn = get_db()
-        conn.execute("INSERT OR REPLACE INTO tokens (token, ts) VALUES (?, ?)", (token, int(time.time())))
+        conn.execute("INSERT OR REPLACE INTO tokens (token, ts) VALUES (?, ?)", (token, now))
         conn.commit(); conn.close()
         return {"token": token}
+    _record_login_fail(ip)
     raise HTTPException(status_code=401, detail="Invalid password")
 
 # ── Products ──────────────────────────────────────────────
@@ -277,12 +438,21 @@ def get_orders(token: str = Depends(require_admin)):
 
 @app.post("/api/orders")
 async def create_order(req: Request, background_tasks: BackgroundTasks):
-    body = await req.json()
+    try:
+        body = await req.json()
+    except Exception:
+        raise HTTPException(status_code=400, detail="Invalid request")
+    if not isinstance(body, dict):
+        raise HTTPException(status_code=400, detail="Invalid order")
+    items = body.get("items", [])
+    if not isinstance(items, list) or not items:
+        raise HTTPException(status_code=400, detail="Empty order")
+    if len(items) > 200:
+        raise HTTPException(status_code=400, detail="Too many items")
     conn = get_db()
-    conn.execute("INSERT INTO orders (data) VALUES (?)", (json.dumps(body),))
+    conn.execute("INSERT INTO orders (data) VALUES (?)", (json.dumps(body, ensure_ascii=False),))
 
     # Decrement stock for each ordered item
-    items = body.get("items", [])
     if items:
         prod_rows = conn.execute("SELECT id, data FROM products").fetchall()
         updated = False
@@ -304,6 +474,7 @@ async def create_order(req: Request, background_tasks: BackgroundTasks):
 
     conn.commit()
     conn.close()
+    background_tasks.add_task(_backup_orders)
     return {"ok": True}
 
 @app.delete("/api/orders/{oid}")
@@ -335,6 +506,7 @@ def delete_order_api(oid: int, background_tasks: BackgroundTasks,
                 background_tasks.add_task(_gist_save, all_products)
     conn.execute("DELETE FROM orders WHERE id = ?", (oid,))
     conn.commit(); conn.close()
+    background_tasks.add_task(_backup_orders)
     return {"ok": True}
 
 # ── Reviews ───────────────────────────────────────────────
@@ -346,22 +518,55 @@ def get_reviews():
     return [json.loads(r["data"]) for r in rows]
 
 @app.post("/api/reviews")
-async def create_review(req: Request):
-    body = await req.json()
+async def create_review(req: Request, background_tasks: BackgroundTasks):
+    try:
+        body = await req.json()
+    except Exception:
+        raise HTTPException(status_code=400, detail="Invalid request")
+    if not isinstance(body, dict):
+        raise HTTPException(status_code=400, detail="Invalid review")
+    # Sanitise / bound the customer-supplied fields
+    name = str(body.get("name") or "").strip()[:60]
+    text = str(body.get("text") or "").strip()[:1000]
+    try:
+        rating = int(body.get("rating") or 0)
+    except (TypeError, ValueError):
+        rating = 0
+    rating = max(1, min(5, rating))
+    if not name or not text:
+        raise HTTPException(status_code=400, detail="Name and text required")
+    try:
+        ts = int(body.get("ts") or int(time.time() * 1000))
+    except (TypeError, ValueError):
+        ts = int(time.time() * 1000)
+    review = {"name": name, "rating": rating, "text": text, "ts": ts}
     conn = get_db()
-    conn.execute("INSERT INTO reviews (data) VALUES (?)", (json.dumps(body),))
+    conn.execute("INSERT INTO reviews (data) VALUES (?)", (json.dumps(review, ensure_ascii=False),))
     conn.commit(); conn.close()
+    background_tasks.add_task(_backup_reviews)
     return {"ok": True}
 
 # ── Static files ──────────────────────────────────────────
-BLOCKED = {"main.py", "shop.db", "requirements.txt"}
+BLOCKED = {"main.py", "shop.db", "requirements.txt", "render.yaml"}
+BLOCKED_SUFFIXES = (".py", ".db", ".db-wal", ".db-shm")
+_BASE_DIR = Path.cwd().resolve()
 
 @app.get("/{full_path:path}")
 async def catch_all(full_path: str):
-    name = Path(full_path).name
-    if name in BLOCKED:
+    if not full_path:
+        return FileResponse("index.html")
+
+    # Resolve and confine to the app directory (blocks ../ traversal)
+    candidate = (_BASE_DIR / full_path).resolve()
+    try:
+        candidate.relative_to(_BASE_DIR)
+    except ValueError:
+        return FileResponse("index.html")
+
+    name = candidate.name
+    if name in BLOCKED or name.startswith(".") or name.endswith(BLOCKED_SUFFIXES):
         raise HTTPException(status_code=404)
-    path = Path(full_path) if full_path else Path("index.html")
-    if path.exists() and path.is_file():
-        return FileResponse(path)
+
+    if candidate.exists() and candidate.is_file():
+        return FileResponse(candidate)
     return FileResponse("index.html")

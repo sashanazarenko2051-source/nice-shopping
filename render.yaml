@@ -5,6 +5,14 @@ services:
     buildCommand: pip install -r requirements.txt
     startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
     envVars:
-      - key: ADMIN_PASS
-        value: admin2025
+      # Set these in the Render dashboard (Environment) — never commit secrets to a public repo.
+      - key: ADMIN_PASS        # strong admin password
+        sync: false
+      - key: GITHUB_TOKEN      # PAT with "gist" scope — backups for orders/reviews/products
+        sync: false
+      - key: GIST_ID           # id of the Gist storing products.json / orders.json / reviews.json
+        sync: false
+      # Optional:
+      # - key: ALLOWED_ORIGINS  # e.g. https://your-shop.com  (defaults to * if unset)
+      #   sync: false
     pullRequestPreviewsEnabled: false

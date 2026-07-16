@@ -397,6 +397,12 @@
         <div class="stat-card"><div class="stat-card__ico">🛒</div><div class="stat-card__val" id="sSold">0</div><div class="stat-card__lbl">Продано одиниць</div></div>
         <div class="stat-card"><div class="stat-card__ico">📈</div><div class="stat-card__val" id="sSoldVal">₴0</div><div class="stat-card__lbl">На суму продано</div></div>
       </div>
+      <div class="stat-cards row2">
+        <div class="stat-card"><div class="stat-card__ico">🧾</div><div class="stat-card__val" id="sCostVal">₴0</div><div class="stat-card__lbl">Собівартість залишку</div></div>
+        <div class="stat-card"><div class="stat-card__ico">💹</div><div class="stat-card__val" id="sStockProfit">₴0</div><div class="stat-card__lbl">Потенц. прибуток (залишок)</div></div>
+        <div class="stat-card"><div class="stat-card__ico">🤑</div><div class="stat-card__val" id="sSoldProfit">₴0</div><div class="stat-card__lbl">Прибуток (продано)</div></div>
+        <div class="stat-card"><div class="stat-card__ico">📊</div><div class="stat-card__val" id="sMargin">—</div><div class="stat-card__lbl">Середня маржа</div></div>
+      </div>
       <div class="box"><h2>Відвідування за 7 днів</h2><div class="chart" id="visitsChart"></div></div>
       <div class="box"><h2>Залишки та продажі по товарах</h2><div id="inventoryTable"></div></div>
       <div class="box"><h2>Останні замовлення</h2><div id="recentOrders"></div></div>
@@ -484,13 +490,14 @@
 
       <div class="fsep">Ціна та кількість</div>
       <div class="fr2">
-        <div class="fg"><label>Ціна (₴) *</label><input type="number" id="pPrice" class="fi" placeholder="450"></div>
+        <div class="fg"><label>Ціна продажу (₴) *</label><input type="number" id="pPrice" class="fi" placeholder="450" oninput="updateMarginHint()"></div>
         <div class="fg"><label>Стара ціна (₴)</label><input type="number" id="pOldPrice" class="fi" placeholder="600"></div>
       </div>
       <div class="fr2">
+        <div class="fg"><label>Закупівельна ціна (₴)</label><input type="number" id="pPurchase" class="fi" placeholder="200" min="0" oninput="updateMarginHint()"></div>
         <div class="fg"><label>Кількість (шт.) *</label><input type="number" id="pStock" class="fi" placeholder="10" min="0"></div>
-        <div class="fg"><label style="opacity:0">—</label><div style="padding:9px 13px;background:#061008;border:1.5px solid #1f3522;border-radius:var(--r);font-size:.8rem;color:var(--dim)">0 = немає в наявності</div></div>
       </div>
+      <div id="marginHint" style="font-size:.8rem;color:var(--dim);margin:-2px 0 6px">Прибуток з одиниці: —&nbsp;·&nbsp;0 = немає в наявності</div>
 
       <div class="fsep">Розміри та опис</div>
       <div class="fg"><label>Розміри (через кому)</label><input type="text" id="pSizes" class="fi" placeholder="XS, S, M, L, XL"></div>
@@ -580,6 +587,13 @@ var DEF_CATS = [
   {id:'summer-men',     key:'summer',   gender:'men',   label:'Чоловічі літні шкарпетки', icon:'☀️', editable:false},
 ];
 var ICONS = ['🧦','👙','🩲','✨','🧣','🧤','🩱','🩳','👗','👔','💎','🎀','💍','🌸','🌺','⭐'];
+
+/* ─────────── HELPERS ─────────── */
+function esc(s){
+  return String(s==null?'':s)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
 
 /* ─────────── DATA HELPERS ─────────── */
 function getCustomCats(){ try{ return JSON.parse(localStorage.getItem('ns_categories'))||[]; }catch(e){ return []; } }
@@ -696,16 +710,33 @@ async function loadStats(){
   var stockQty = _products.reduce(function(s,p){return s+(p.stock||0);},0);
   var stockVal = _products.reduce(function(s,p){return s+(p.price||0)*(p.stock||0);},0);
 
+  // Cost / profit totals (only products with a purchase price counted)
+  var costByName = {};
+  var costVal = 0, stockProfit = 0, costedStockVal = 0, costedStockCost = 0;
+  _products.forEach(function(p){
+    if(p.purchasePrice!=null && p.purchasePrice!==''){
+      var c=p.purchasePrice||0, st=p.stock||0;
+      costByName[p.name]=c;
+      costVal      += c*st;
+      stockProfit  += ((p.price||0)-c)*st;
+      costedStockVal += (p.price||0)*st;
+      costedStockCost += c*st;
+    }
+  });
+
   // Sold per product (count and value from order items)
   var soldMap = {};
-  var totalSoldVal = 0;
+  var totalSoldVal = 0, soldProfit = 0;
   orders.forEach(function(o){
     (o.items||[]).forEach(function(i){
-      soldMap[i.name] = (soldMap[i.name]||0) + (i.qty||1);
-      totalSoldVal += (i.price||0) * (i.qty||1);
+      var qty=i.qty||1;
+      soldMap[i.name] = (soldMap[i.name]||0) + qty;
+      totalSoldVal += (i.price||0) * qty;
+      if(costByName[i.name]!=null) soldProfit += ((i.price||0)-costByName[i.name])*qty;
     });
   });
   var totalSold = Object.values(soldMap).reduce(function(a,b){return a+b;},0);
+  var avgMargin = costedStockVal>0 ? Math.round((costedStockVal-costedStockCost)/costedStockVal*100) : null;
 
   document.getElementById('sVisits').textContent   = totalV;
   document.getElementById('sOrders').textContent   = orders.length;
@@ -715,6 +746,10 @@ async function loadStats(){
   document.getElementById('sStockVal').textContent = '₴'+stockVal.toLocaleString('uk-UA');
   document.getElementById('sSold').textContent     = totalSold;
   document.getElementById('sSoldVal').textContent  = '₴'+totalSoldVal.toLocaleString('uk-UA');
+  document.getElementById('sCostVal').textContent    = '₴'+costVal.toLocaleString('uk-UA');
+  document.getElementById('sStockProfit').textContent= '₴'+stockProfit.toLocaleString('uk-UA');
+  document.getElementById('sSoldProfit').textContent = '₴'+soldProfit.toLocaleString('uk-UA');
+  document.getElementById('sMargin').textContent     = avgMargin==null?'—':avgMargin+'%';
 
   renderChart(visits);
   renderInventoryTable(soldMap);
@@ -726,23 +761,35 @@ function renderInventoryTable(soldMap){
   if(!_products.length){ el.innerHTML='<div class="empty"><div class="empty-ico">📦</div><p>Немає товарів</p></div>'; return; }
   var rows = _products.map(function(p){
     var sold = soldMap[p.name] || 0;
-    var val  = (p.price||0)*(p.stock||0);
-    var stockCls = p.stock===0 ? 'color:#f87171' : p.stock<=3 ? 'color:#fbbf24' : 'color:#4ade80';
+    var stock = p.stock||0;
+    var val  = (p.price||0)*stock;
+    var hasCost = p.purchasePrice!=null && p.purchasePrice!=='';
+    var cost = hasCost ? (p.purchasePrice||0) : null;
+    var unitProfit = hasCost ? (p.price||0)-cost : null;
+    var soldProfit = hasCost ? unitProfit*sold : null;
+    var stockCls = stock===0 ? 'color:#f87171' : stock<=3 ? 'color:#fbbf24' : 'color:#4ade80';
+    var profCls = unitProfit!=null ? (unitProfit>=0?'color:#4ade80':'color:#f87171') : 'color:var(--dim)';
     return '<tr>'+
-      '<td>'+p.name+'</td>'+
-      '<td style="text-align:center">₴'+p.price+'</td>'+
-      '<td style="text-align:center;font-weight:600;'+stockCls+'">'+p.stock+'</td>'+
+      '<td>'+esc(p.name)+'</td>'+
+      '<td style="text-align:center">₴'+(p.price||0)+'</td>'+
+      '<td style="text-align:center;color:var(--dim)">'+(hasCost?'₴'+cost:'—')+'</td>'+
+      '<td style="text-align:center;font-weight:600;'+profCls+'">'+(unitProfit!=null?'₴'+unitProfit:'—')+'</td>'+
+      '<td style="text-align:center;font-weight:600;'+stockCls+'">'+stock+'</td>'+
       '<td style="text-align:center">₴'+val+'</td>'+
       '<td style="text-align:center;font-weight:600;color:#4ade80">'+sold+'</td>'+
+      '<td style="text-align:center;font-weight:600;'+profCls+'">'+(soldProfit!=null?'₴'+soldProfit:'—')+'</td>'+
     '</tr>';
   }).join('');
   el.innerHTML='<div class="tbl-wrap"><table class="data-table">'+
     '<thead><tr>'+
       '<th>Товар</th>'+
       '<th style="text-align:center">Ціна</th>'+
+      '<th style="text-align:center">Закупівля</th>'+
+      '<th style="text-align:center">Приб./од</th>'+
       '<th style="text-align:center">Залишок</th>'+
       '<th style="text-align:center">Сума залишку</th>'+
       '<th style="text-align:center">Продано</th>'+
+      '<th style="text-align:center">Прибуток</th>'+
     '</tr></thead><tbody>'+rows+'</tbody></table></div>';
 }
 function renderChart(visits){
@@ -763,7 +810,7 @@ function renderRecentOrders(orders){
   if(!orders.length){ el.innerHTML='<div class="empty" style="padding:20px 0"><div class="empty-ico">📋</div><p>Замовлень ще немає</p></div>'; return; }
   el.innerHTML='<div class="tbl-wrap"><table class="data-table"><thead><tr><th>Дата</th><th>Клієнт</th><th>Телефон</th><th>Сума</th></tr></thead><tbody>'+
     orders.map(function(o){
-      return '<tr><td>'+( o.date||'-')+'</td><td>'+(o.firstName||'')+' '+(o.lastName||'')+'</td><td>'+(o.phone||'-')+'</td><td style="color:var(--green);font-weight:600">₴'+(o.total||0)+'</td></tr>';
+      return '<tr><td>'+esc(o.date||'-')+'</td><td>'+esc(o.firstName||'')+' '+esc(o.lastName||'')+'</td><td>'+esc(o.phone||'-')+'</td><td style="color:var(--green);font-weight:600">₴'+(o.total||0)+'</td></tr>';
     }).join('')+'</tbody></table></div>';
 }
 
@@ -887,7 +934,7 @@ function onCatChange(){
 function openForm(id){
   S.editingId=id||null;
   document.getElementById('formTitle').textContent=id?'Редагувати товар':'Новий товар';
-  var fields=['pName','pNameEn','pPrice','pOldPrice','pStock','pSizes','pDesc','pDetails','pImageUrl'];
+  var fields=['pName','pNameEn','pPrice','pOldPrice','pPurchase','pStock','pSizes','pDesc','pDetails','pImageUrl'];
   fields.forEach(function(f){document.getElementById(f).value='';});
   document.getElementById('pGender').value='women';
   buildCatSelect(null);
@@ -902,6 +949,7 @@ function openForm(id){
       document.getElementById('pNameEn').value=p.nameEn||'';
       document.getElementById('pPrice').value=p.price||'';
       document.getElementById('pOldPrice').value=p.oldPrice||'';
+      document.getElementById('pPurchase').value=p.purchasePrice!=null?p.purchasePrice:'';
       document.getElementById('pStock').value=p.stock!=null?p.stock:'';
       document.getElementById('pSizes').value=(p.sizes||[]).join(', ');
       document.getElementById('pDesc').value=p.description||'';
@@ -914,7 +962,23 @@ function openForm(id){
   }
   renderImgSlots();
   renderColorTags();
+  updateMarginHint();
   document.getElementById('overlay').style.display='flex';
+}
+function updateMarginHint(){
+  var el=document.getElementById('marginHint');
+  if(!el) return;
+  var price=parseFloat(document.getElementById('pPrice').value);
+  var cost=parseFloat(document.getElementById('pPurchase').value);
+  if(!price||isNaN(cost)){
+    el.innerHTML='Прибуток з одиниці: —&nbsp;·&nbsp;0 = немає в наявності';
+    el.style.color='var(--dim)';
+    return;
+  }
+  var profit=price-cost;
+  var margin=price>0?Math.round(profit/price*100):0;
+  el.innerHTML='Прибуток з одиниці: <strong>₴'+profit+'</strong> ('+margin+'%)&nbsp;·&nbsp;0 = немає в наявності';
+  el.style.color=profit>=0?'var(--green)':'#f87171';
 }
 var _editImages=[];
 var _editColors=[];
@@ -1018,6 +1082,7 @@ async function saveProduct(){
     gender:document.getElementById('pGender').value,
     price:price,
     oldPrice:parseFloat(document.getElementById('pOldPrice').value)||null,
+    purchasePrice:parseFloat(document.getElementById('pPurchase').value)||null,
     stock:parseInt(document.getElementById('pStock').value)||0,
     rating:(existing&&existing.rating)||5.0,
     reviews:(existing&&existing.reviews)||0,
@@ -1199,21 +1264,21 @@ function displayOrders(orders, el){
     return '<div class="tbl-wrap"><table class="data-table"><thead><tr><th>Дата</th><th>Клієнт</th><th>Телефон</th><th>Місто</th><th>Оплата</th><th>Товари</th><th>Сума</th><th></th></tr></thead><tbody>'+
       list.map(function(o,i){
         var idx=offset+i;
-        var items=(o.items||[]).map(function(it){return it.name+' ×'+it.qty;}).join(', ');
+        var items=(o.items||[]).map(function(it){return esc(it.name)+' ×'+(it.qty||1);}).join(', ');
         var itemsDetail=(o.items||[]).map(function(it){
           var meta=it.size||'';
           if(it.color) meta+=(meta?', ':'')+it.color;
-          return '<li>'+it.name+(meta?' ('+meta+')':'')+' — ×'+it.qty+' — ₴'+(it.price*it.qty)+'</li>';
+          return '<li>'+esc(it.name)+(meta?' ('+esc(meta)+')':'')+' — ×'+(it.qty||1)+' — ₴'+((it.price||0)*(it.qty||1))+'</li>';
         }).join('');
         var detail='<tr id="ord-detail-'+idx+'" style="display:none"><td colspan="8" style="padding:0">'+
           '<div style="background:#0a1a0c;border:1px solid rgba(74,222,128,.15);border-radius:12px;margin:0 8px 12px;padding:20px 24px;font-size:.85rem;line-height:1.8">'+
             '<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px 32px">'+
-              '<div><span style="color:var(--dim);font-size:.75rem;text-transform:uppercase">Клієнт</span><br><strong>'+(o.firstName||'')+' '+(o.lastName||'')+'</strong></div>'+
-              '<div><span style="color:var(--dim);font-size:.75rem;text-transform:uppercase">Телефон</span><br><a href="tel:'+(o.phone||'')+'" style="color:var(--green)">'+(o.phone||'-')+'</a></div>'+
-              '<div><span style="color:var(--dim);font-size:.75rem;text-transform:uppercase">Місто</span><br>'+(o.city||'-')+'</div>'+
-              '<div><span style="color:var(--dim);font-size:.75rem;text-transform:uppercase">Відділення / адреса</span><br>'+(o.branch||'-')+'</div>'+
-              '<div><span style="color:var(--dim);font-size:.75rem;text-transform:uppercase">Оплата</span><br>'+(payN[o.payment]||o.payment||'-')+'</div>'+
-              (o.comment?'<div style="grid-column:1/-1"><span style="color:var(--dim);font-size:.75rem;text-transform:uppercase">Коментар</span><br>'+o.comment+'</div>':'')+
+              '<div><span style="color:var(--dim);font-size:.75rem;text-transform:uppercase">Клієнт</span><br><strong>'+esc(o.firstName||'')+' '+esc(o.lastName||'')+'</strong></div>'+
+              '<div><span style="color:var(--dim);font-size:.75rem;text-transform:uppercase">Телефон</span><br><a href="tel:'+encodeURIComponent(o.phone||'')+'" style="color:var(--green)">'+esc(o.phone||'-')+'</a></div>'+
+              '<div><span style="color:var(--dim);font-size:.75rem;text-transform:uppercase">Місто</span><br>'+esc(o.city||'-')+'</div>'+
+              '<div><span style="color:var(--dim);font-size:.75rem;text-transform:uppercase">Відділення / адреса</span><br>'+esc(o.branch||'-')+'</div>'+
+              '<div><span style="color:var(--dim);font-size:.75rem;text-transform:uppercase">Оплата</span><br>'+esc(payN[o.payment]||o.payment||'-')+'</div>'+
+              (o.comment?'<div style="grid-column:1/-1"><span style="color:var(--dim);font-size:.75rem;text-transform:uppercase">Коментар</span><br>'+esc(o.comment)+'</div>':'')+
             '</div>'+
             '<div style="margin-top:16px;border-top:1px solid rgba(74,222,128,.1);padding-top:14px">'+
               '<span style="color:var(--dim);font-size:.75rem;text-transform:uppercase">Товари</span>'+
@@ -1225,11 +1290,11 @@ function displayOrders(orders, el){
             '</div>'+
           '</div></td></tr>';
         var row='<tr style="cursor:pointer" onclick="toggleOrderDetail('+idx+')">'+
-          '<td style="white-space:nowrap">'+(o.date||'-')+'</td>'+
-          '<td style="font-weight:500">'+(o.firstName||'')+' '+(o.lastName||'')+'</td>'+
-          '<td>'+(o.phone||'-')+'</td>'+
-          '<td>'+(o.city||'-')+'</td>'+
-          '<td>'+(payN[o.payment]||o.payment||'-')+'</td>'+
+          '<td style="white-space:nowrap">'+esc(o.date||'-')+'</td>'+
+          '<td style="font-weight:500">'+esc(o.firstName||'')+' '+esc(o.lastName||'')+'</td>'+
+          '<td>'+esc(o.phone||'-')+'</td>'+
+          '<td>'+esc(o.city||'-')+'</td>'+
+          '<td>'+esc(payN[o.payment]||o.payment||'-')+'</td>'+
           '<td style="font-size:.78rem;color:var(--dim);max-width:180px">'+(items||'-')+'</td>'+
           '<td style="color:var(--green);font-weight:700">₴'+(o.total||0)+'</td>'+
           '<td style="color:var(--dim);font-size:.8rem" id="ord-arrow-'+idx+'">▼</td></tr>';
