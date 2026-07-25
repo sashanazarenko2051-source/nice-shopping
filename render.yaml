@@ -16,3 +16,5 @@ services:
       # - key: ALLOWED_ORIGINS  # e.g. https://your-shop.com  (defaults to * if unset)
       #   sync: false
     pullRequestPreviewsEnabled: false
+    ignoredFiles:
+      - products.json   # auto-committed by the server; must NOT trigger a redeploy

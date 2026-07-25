@@ -182,7 +182,8 @@ def _gist_load():
     if count > 0:
         return
 
-    # 1) Try Gist — if it responds (even with []), trust it and skip fallback
+    # 1) Try Gist first (fastest, always up-to-date)
+    gist_ok = False
     if GITHUB_TOKEN and GIST_ID:
         try:
             import urllib.request
@@ -196,26 +197,27 @@ def _gist_load():
             if raw_url:
                 raw_req = urllib.request.Request(raw_url, headers={"User-Agent": "nice-shopping"})
                 products = json.loads(urllib.request.urlopen(raw_req, timeout=15).read())
-                if isinstance(products, list):
-                    if products:
-                        _insert_products(products)
-                        print(f"[Gist] Loaded {len(products)} products")
-                    else:
-                        print("[Gist] products.json is empty — no products loaded")
-                    return  # Gist responded successfully, do not fall through to file fallback
+                if isinstance(products, list) and products:
+                    _insert_products(products)
+                    print(f"[Gist] Loaded {len(products)} products")
+                    return  # success — skip fallback
+                gist_ok = True  # Gist responded but was empty (admin cleared all products)
         except Exception as e:
             print(f"[Gist] Load error: {e}")
 
-    # 2) Fallback: products.json in git repo (only used when Gist is unavailable)
-    try:
-        fb = Path("products.json")
-        if fb.exists():
-            products = json.loads(fb.read_text(encoding="utf-8"))
-            if products:
-                _insert_products(products)
-                print(f"[Fallback] Loaded {len(products)} products from products.json")
-    except Exception as e:
-        print(f"[Fallback] Load error: {e}")
+    # 2) Fallback: products.json committed to git repo by _github_commit.
+    #    If Gist returned empty (gist_ok=True), we trust that and skip fallback.
+    #    If Gist failed entirely (gist_ok=False), repo file is our safety net.
+    if not gist_ok:
+        try:
+            fb = Path("products.json")
+            if fb.exists():
+                products = json.loads(fb.read_text(encoding="utf-8"))
+                if products:
+                    _insert_products(products)
+                    print(f"[Fallback] Loaded {len(products)} products from products.json")
+        except Exception as e:
+            print(f"[Fallback] Load error: {e}")
 
 def _slim_products(products):
     """Strip base64 images (keep only URL images) to keep git file small"""
@@ -259,19 +261,18 @@ def _github_commit(products):
         print(f"[GitHub] Commit error: {e}")
 
 def _gist_save(products):
-    """Зберегти товари в Gist + комітити products.json в git-репо"""
-    # 1) Always update local file
+    """Зберегти товари: локальний файл + git repo + Gist (три шари надійності)."""
+    # 1) Local file (ephemeral, survives only within the same container lifetime)
     try:
         Path("products.json").write_text(json.dumps(products, ensure_ascii=False, indent=2), encoding="utf-8")
     except Exception as e:
         print(f"[File] Save error: {e}")
 
-    # 2) Optionally commit slim version to git repo. Disabled by default because a repo
-    #    commit triggers a Render auto-deploy that wipes the DB (and thus orders/reviews).
-    #    Product persistence is handled by the Gist backup below instead.
-    if AUTO_COMMIT:
-        _github_commit(products)
+    # 2) Commit to git repo — render.yaml ignoredFiles prevents this from triggering
+    #    a redeploy. This makes products survive ANY redeploy even without Gist.
+    _github_commit(products)
 
+    # 3) Gist backup (fastest restore on startup)
     if not GITHUB_TOKEN or not GIST_ID:
         return
     try:
