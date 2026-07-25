@@ -59,10 +59,25 @@
     .form-success .btn-again:hover { background: rgba(74,222,128,.2); }
 
     @media(max-width:768px) {
-      .reviews-layout { grid-template-columns: 1fr; gap: 28px; }
-      .reviews-page { padding: 36px 0 52px; }
-      .rev-form-wrap { padding: 24px 20px; }
-      .rev-list-wrap h3 { font-size: 1.25rem; }
+      .reviews-layout { grid-template-columns: 1fr; gap: 24px; }
+      .reviews-page { padding: 28px 0 48px; }
+      .rev-form-wrap { padding: 22px 18px; border-radius: 16px; }
+      .rev-form-wrap h3 { font-size: 1.3rem; }
+      .rev-list-wrap h3 { font-size: 1.25rem; margin-bottom: 16px; }
+      /* Show existing reviews first so visitors read them without scrolling past the form */
+      .rev-list-wrap { order: -1; }
+      .rev-card { padding: 18px 18px; border-radius: 14px; }
+      .rev-text { font-size: .9rem; }
+      /* Bigger, touch-friendly controls */
+      .form-control { padding: 13px 15px; font-size: 1rem; }
+      .star-row label { font-size: 2.3rem; padding: 2px; }
+      .submit-btn { padding: 15px; font-size: 1rem; }
+      .rev-empty { padding: 36px 20px; }
+    }
+    @media(max-width:400px) {
+      .rev-form-wrap { padding: 18px 14px; }
+      .rev-head { gap: 10px; }
+      .rev-avatar { width: 38px; height: 38px; }
     }
   </style>
 </head>
@@ -136,7 +151,7 @@
 
       <!-- Reviews list -->
       <div class="rev-list-wrap">
-        <h3 data-i18n="rev.list.title">Відгуки покупців</h3>
+        <h3><span data-i18n="rev.list.title">Відгуки покупців</span><span id="revCount" style="color:rgba(74,222,128,.7);font-family:var(--font,inherit);font-size:1rem"></span></h3>
         <div id="revList"></div>
       </div>
 
@@ -162,7 +177,13 @@
 <script src="js/cart.js"></script>
 <script src="js/translate.js"></script>
 <script>
+function esc(s) {
+  return String(s == null ? '' : s)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
 function starsHtml(n) {
+  n = Math.max(0, Math.min(5, parseInt(n) || 0));
   return '★'.repeat(n) + '☆'.repeat(5 - n);
 }
 
@@ -171,29 +192,27 @@ function formatDate(ts) {
   return d.getDate() + '.' + (d.getMonth()+1) + '.' + d.getFullYear();
 }
 
-function escHtml(s) {
-  return (s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
-
 function renderList(list) {
   if (list === undefined) return; // called by translate.js on lang toggle — ignore
   var el = document.getElementById('revList');
+  var cnt = document.getElementById('revCount');
+  if (cnt) cnt.textContent = (list && list.length) ? '  ·  ' + list.length : '';
   if (!list || list.length === 0) {
     el.innerHTML = '<div class="rev-empty"><div class="rev-empty__icon">💬</div><div class="rev-empty__text">' + window.i18n('rev.empty') + '</div></div>';
     return;
   }
   el.innerHTML = '<div class="rev-list">' + list.map(function(r) {
-    var name = escHtml(r.name);
+    var nm = (r.name || '').trim() || '—';
     return '<div class="rev-card">' +
       '<div class="rev-head">' +
-        '<div class="rev-avatar">' + (name.charAt(0) || '?').toUpperCase() + '</div>' +
+        '<div class="rev-avatar">' + esc(nm.charAt(0).toUpperCase()) + '</div>' +
         '<div class="rev-meta">' +
-          '<div class="rev-name">' + name + '</div>' +
+          '<div class="rev-name">' + esc(nm) + '</div>' +
           '<div class="rev-stars">' + starsHtml(r.rating) + '</div>' +
         '</div>' +
-        '<div class="rev-date">' + formatDate(r.ts) + '</div>' +
+        '<div class="rev-date">' + esc(formatDate(r.ts)) + '</div>' +
       '</div>' +
-      '<div class="rev-text">«' + escHtml(r.text) + '»</div>' +
+      '<div class="rev-text">«' + esc(r.text) + '»</div>' +
     '</div>';
   }).join('') + '</div>';
 }

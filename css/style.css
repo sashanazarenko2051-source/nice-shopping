@@ -210,7 +210,8 @@ html.dark .payment-opt{border-color:#2A2A2A}
 html.dark .payment-opt:has(input:checked){border-color:#9B7B6E}
 html.dark .checkout-items{background:#141414}
 html.dark .co-item{border-color:#222}
-html.dark .cart-empty__title,.html.dark .cart-empty__sub{color:#E0E0E0}
+html.dark .cart-empty__title{color:#E0E0E0}
+html.dark .cart-empty__sub{color:rgba(224,224,224,.6)}
 html.dark .theme-btn:hover{background:#1A1A1A}
 html.dark .lang-btn{border-color:#4ade80;color:#4ade80;background:rgba(74,222,128,.08)}
 html.dark .lang-btn:hover{border-color:#4ade80;background:#4ade80;color:#020d04}
