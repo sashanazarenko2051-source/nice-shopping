@@ -180,7 +180,7 @@ def _gist_load():
     if count > 0:
         return
 
-    # 1) Try Gist via raw_url (avoids content-field truncation for large files)
+    # 1) Try Gist — if it responds (even with []), trust it and skip fallback
     if GITHUB_TOKEN and GIST_ID:
         try:
             import urllib.request
@@ -194,14 +194,17 @@ def _gist_load():
             if raw_url:
                 raw_req = urllib.request.Request(raw_url, headers={"User-Agent": "nice-shopping"})
                 products = json.loads(urllib.request.urlopen(raw_req, timeout=15).read())
-                if products:
-                    _insert_products(products)
-                    print(f"[Gist] Loaded {len(products)} products")
-                    return
+                if isinstance(products, list):
+                    if products:
+                        _insert_products(products)
+                        print(f"[Gist] Loaded {len(products)} products")
+                    else:
+                        print("[Gist] products.json is empty — no products loaded")
+                    return  # Gist responded successfully, do not fall through to file fallback
         except Exception as e:
             print(f"[Gist] Load error: {e}")
 
-    # 2) Permanent fallback: products.json committed to git repo (always present after deploy)
+    # 2) Fallback: products.json in git repo (only used when Gist is unavailable)
     try:
         fb = Path("products.json")
         if fb.exists():
