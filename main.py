@@ -2,7 +2,9 @@ from fastapi import FastAPI, HTTPException, Depends, Request, BackgroundTasks
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-import sqlite3, json, os, time, secrets
+import sqlite3, json, os, time, secrets, asyncio
+from concurrent.futures import ThreadPoolExecutor
+_backup_executor = ThreadPoolExecutor(max_workers=2, thread_name_prefix="backup")
 from pathlib import Path
 
 app = FastAPI(docs_url=None, redoc_url=None)
@@ -444,13 +446,14 @@ def delete_product(pid: int, background_tasks: BackgroundTasks,
 
 # ── Orders ────────────────────────────────────────────────
 @app.get("/api/orders")
-def get_orders(token: str = Depends(require_admin)):
+def get_orders(background_tasks: BackgroundTasks, token: str = Depends(require_admin)):
     conn = get_db()
     rows = conn.execute("SELECT id, data FROM orders ORDER BY id DESC").fetchall()
     conn.close()
     result = []
     for r in rows:
         d = json.loads(r["data"]); d["_id"] = r["id"]; result.append(d)
+    background_tasks.add_task(_backup_orders)  # keep Gist in sync on every admin fetch
     return result
 
 @app.post("/api/orders")
@@ -494,7 +497,13 @@ async def create_order(req: Request, background_tasks: BackgroundTasks):
 
     conn.commit()
     conn.close()
-    background_tasks.add_task(_backup_orders)
+    # Backup synchronously in thread pool — waits up to 8s before returning success.
+    # This guarantees the order survives a Render free-tier spin-down restart.
+    loop = asyncio.get_event_loop()
+    try:
+        await asyncio.wait_for(loop.run_in_executor(_backup_executor, _backup_orders), timeout=8)
+    except Exception as e:
+        print(f"[Backup] Orders backup error (order saved to DB): {e}")
     return {"ok": True}
 
 @app.delete("/api/orders/{oid}")
@@ -529,7 +538,7 @@ def delete_order_api(oid: int, background_tasks: BackgroundTasks,
                 background_tasks.add_task(_gist_save, all_products)
     conn.execute("DELETE FROM orders WHERE id = ?", (oid,))
     conn.commit(); conn.close()
-    background_tasks.add_task(_backup_orders)
+    background_tasks.add_task(_backup_orders)  # fire-and-forget is fine for delete
     return {"ok": True}
 
 # ── Reviews ───────────────────────────────────────────────
@@ -566,7 +575,11 @@ async def create_review(req: Request, background_tasks: BackgroundTasks):
     conn = get_db()
     conn.execute("INSERT INTO reviews (data) VALUES (?)", (json.dumps(review, ensure_ascii=False),))
     conn.commit(); conn.close()
-    background_tasks.add_task(_backup_reviews)
+    loop = asyncio.get_event_loop()
+    try:
+        await asyncio.wait_for(loop.run_in_executor(_backup_executor, _backup_reviews), timeout=8)
+    except Exception as e:
+        print(f"[Backup] Reviews backup error (review saved to DB): {e}")
     return {"ok": True}
 
 # ── Static files ──────────────────────────────────────────
