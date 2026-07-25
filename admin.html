@@ -228,8 +228,11 @@
     .toast.show{transform:translateY(0);opacity:1}
 
     /* ── FILTER BAR ── */
-    .filter-bar{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px}
-    .filter-pill{padding:5px 12px;border-radius:20px;font-size:.78rem;border:1px solid var(--gbd);color:var(--dim);background:none;transition:all var(--tr);cursor:pointer}
+    .filter-bar{display:flex;gap:6px;flex-wrap:nowrap;overflow-x:auto;margin-bottom:16px;padding-bottom:4px;scrollbar-width:thin;scrollbar-color:rgba(74,222,128,.2) transparent}
+    .filter-bar::-webkit-scrollbar{height:3px}
+    .filter-bar::-webkit-scrollbar-track{background:transparent}
+    .filter-bar::-webkit-scrollbar-thumb{background:rgba(74,222,128,.25);border-radius:2px}
+    .filter-pill{padding:5px 12px;border-radius:20px;font-size:.78rem;border:1px solid var(--gbd);color:var(--dim);background:none;transition:all var(--tr);cursor:pointer;white-space:nowrap;flex-shrink:0}
     .filter-pill:hover{border-color:var(--green);color:var(--green)}
     .filter-pill.active{background:rgba(74,222,128,.15);border-color:rgba(74,222,128,.4);color:var(--green);font-weight:600}
 
