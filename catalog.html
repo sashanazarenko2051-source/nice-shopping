@@ -103,7 +103,12 @@
             <button class="filter-tag" data-cat="lingerie" data-gender="women" data-i18n="filter.wl">Жіноча нижня білизна</button>
             <button class="filter-tag" data-cat="winter" data-gender="women" data-i18n="filter.wws">Жіночі зимові шкарпетки</button>
             <button class="filter-tag" data-cat="summer" data-gender="women" data-i18n="filter.sws">Жіночі літні шкарпетки</button>
+            <button class="filter-tag" data-cat="stockings" data-gender="women" data-i18n="filter.stockings">Чулки</button>
+            <button class="filter-tag" data-cat="tshirts" data-gender="women" data-i18n="filter.wts">Футболки жіночі</button>
+            <button class="filter-tag" data-cat="peignoirs" data-gender="women" data-i18n="filter.peignoirs">Пенюари</button>
+            <button class="filter-tag" data-cat="jewelry" data-gender="" data-i18n="filter.jewelry">Ювелірні вироби</button>
             <button class="filter-tag" data-cat="lingerie" data-gender="men" data-i18n="filter.ml">Чоловіча нижня білизна</button>
+            <button class="filter-tag" data-cat="tshirts" data-gender="men" data-i18n="filter.mts">Футболки чоловічі</button>
             <button class="filter-tag" data-cat="winter" data-gender="men" data-i18n="filter.wms">Чоловічі зимові шкарпетки</button>
             <button class="filter-tag" data-cat="summer" data-gender="men" data-i18n="filter.sms">Чоловічі літні шкарпетки</button>
           </div>
@@ -164,16 +169,22 @@ var activeSize = '';
 var activeSort = 'default';
 
 var catNames = {
-  'lingerie:women': window.i18n('filter.wl'),
-  'lingerie:men':   window.i18n('filter.ml'),
-  'bras:':          window.i18n('filter.br'),
-  'bras:women':     window.i18n('filter.br'),
-  'winter:women':   '❄️ ' + window.i18n('filter.wws'),
-  'winter:men':     '❄️ ' + window.i18n('filter.wms'),
-  'summer:women':   '☀️ ' + window.i18n('filter.sws'),
-  'summer:men':     '☀️ ' + window.i18n('filter.sms'),
-  'socks:women':    window.i18n('filter.ws'),
-  'socks:men':      window.i18n('filter.ms'),
+  'lingerie:women':  window.i18n('filter.wl'),
+  'lingerie:men':    window.i18n('filter.ml'),
+  'bras:':           window.i18n('filter.br'),
+  'bras:women':      window.i18n('filter.br'),
+  'winter:women':    '❄️ ' + window.i18n('filter.wws'),
+  'winter:men':      '❄️ ' + window.i18n('filter.wms'),
+  'summer:women':    '☀️ ' + window.i18n('filter.sws'),
+  'summer:men':      '☀️ ' + window.i18n('filter.sms'),
+  'socks:women':     window.i18n('filter.ws'),
+  'socks:men':       window.i18n('filter.ms'),
+  'stockings:women': window.i18n('filter.stockings'),
+  'tshirts:women':   window.i18n('filter.wts'),
+  'tshirts:men':     window.i18n('filter.mts'),
+  'peignoirs:women': window.i18n('filter.peignoirs'),
+  'jewelry:':        window.i18n('filter.jewelry'),
+  'jewelry:women':   window.i18n('filter.jewelry'),
 };
 
 var urlParams = new URLSearchParams(location.search);
@@ -195,14 +206,17 @@ if (urlCat) {
 
 // Sizes per category
 var SIZE_MAP = {
-  'socks:women':   ['35-38', '38-40', '40-42'],
-  'socks:men':     ['39-41', '41-43', '43-45', '45-47'],
-  'lingerie:women':['XS', 'S', 'M', 'L', 'XL', 'XXL'],
-  'lingerie:men':  ['S', 'M', 'L', 'XL', 'XXL'],
-  'bras:':         ['70A', '70B', '70C', '75A', '75B', '75C', '80B', '80C', '85C', '80D', '85D'],
-  'winter:':       ['XS', 'S', 'M', 'L', 'XL', 'XXL'],
-  'summer:':       ['XS', 'S', 'M', 'L', 'XL', 'XXL'],
-  'all:':          ['XS', 'S', 'M', 'L', 'XL', '35-38', '38-40', '39-41', '43-45', '45-47', '70B', '75C', '80C']
+  'socks:women':     ['35-38', '38-40', '40-42'],
+  'socks:men':       ['39-41', '41-43', '43-45', '45-47'],
+  'lingerie:women':  ['XS', 'S', 'M', 'L', 'XL', 'XXL'],
+  'lingerie:men':    ['S', 'M', 'L', 'XL', 'XXL'],
+  'bras:':           ['70A', '70B', '70C', '75A', '75B', '75C', '80B', '80C', '85C', '80D', '85D'],
+  'winter:':         ['XS', 'S', 'M', 'L', 'XL', 'XXL'],
+  'summer:':         ['XS', 'S', 'M', 'L', 'XL', 'XXL'],
+  'stockings:women': ['S/M', 'L/XL', '36-39', '40-44'],
+  'tshirts:':        ['XS', 'S', 'M', 'L', 'XL', 'XXL'],
+  'peignoirs:women': ['S/M', 'L/XL', 'XL/XXL'],
+  'all:':            ['XS', 'S', 'M', 'L', 'XL', '35-38', '38-40', '39-41', '43-45', '45-47', '70B', '75C', '80C']
 };
 var sizeEl = document.getElementById('sizeFilters');
 

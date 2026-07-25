@@ -483,7 +483,10 @@
       </div>
       <div class="fr2">
         <div class="fg"><label>Категорія *</label>
-          <select id="pCatId" class="fi" onchange="onCatChange()"></select>
+          <div style="display:flex;gap:6px">
+            <select id="pCatId" class="fi" onchange="onCatChange()" style="flex:1;min-width:0"></select>
+            <button type="button" class="btn-outline" style="padding:7px 13px;font-size:1.1rem;font-weight:700;flex-shrink:0" onclick="openCatForm(true)" title="Нова категорія">+</button>
+          </div>
         </div>
         <div class="fg"><label>Стать</label>
           <select id="pGender" class="fi">
@@ -553,13 +556,12 @@
 <!-- CATALOG FORM MODAL -->
 <div id="catFormModal" class="cat-modal" style="display:none">
   <div class="cat-modal-box">
-    <h3>Новий каталог</h3>
+    <h3 id="catFormTitle">Нова категорія</h3>
     <div class="fg"><label>Іконка</label>
       <div class="icon-grid" id="iconGrid"></div>
       <input type="hidden" id="catIcon" value="🏷️">
     </div>
-    <div class="fg"><label>Назва каталогу *</label><input type="text" id="catName" class="fi" placeholder="Наприклад: Термо шкарпетки"></div>
-    <div class="fg"><label>Ключ (латиницею, без пробілів) *</label><input type="text" id="catKey" class="fi" placeholder="thermo-socks"></div>
+    <div class="fg"><label>Назва категорії *</label><input type="text" id="catName" class="fi" placeholder="Наприклад: Термо шкарпетки" oninput="autoCatKey(this.value)"><input type="hidden" id="catKey"></div>
     <div class="fg"><label>Стать</label>
       <select id="catGender" class="fi">
         <option value="women">Жіноче</option>
@@ -569,7 +571,7 @@
     </div>
     <div style="display:flex;gap:8px;margin-top:4px">
       <button class="btn-cancel" style="flex:1;padding:10px;border-radius:var(--r);font-size:.855rem;background:var(--gb);border:1px solid var(--gbd);color:var(--dim)" onclick="closeCatForm()">Скасувати</button>
-      <button class="btn-save"   style="flex:2;padding:10px;border-radius:var(--r);font-size:.855rem;font-weight:700;background:var(--green);color:#020d04" onclick="saveCat()">Створити каталог</button>
+      <button class="btn-save"   style="flex:2;padding:10px;border-radius:var(--r);font-size:.855rem;font-weight:700;background:var(--green);color:#020d04" onclick="saveCat()">Створити</button>
     </div>
   </div>
 </div>
@@ -585,15 +587,20 @@ var _products = [];
 
 /* ─────────── DEFAULT CATEGORIES ─────────── */
 var DEF_CATS = [
-  {id:'bras',           key:'bras',     gender:'',      label:'Бюстгальтери',             icon:'✨', editable:false},
-  {id:'lingerie-women', key:'lingerie', gender:'women', label:'Жіноча нижня білизна',    icon:'👙', editable:false},
-  {id:'winter-women',   key:'winter',   gender:'women', label:'Жіночі зимові шкарпетки', icon:'❄️', editable:false},
-  {id:'summer-women',   key:'summer',   gender:'women', label:'Жіночі літні шкарпетки',  icon:'☀️', editable:false},
-  {id:'lingerie-men',   key:'lingerie', gender:'men',   label:'Чоловіча нижня білизна',  icon:'🩲', editable:false},
-  {id:'winter-men',     key:'winter',   gender:'men',   label:'Чоловічі зимові шкарпетки',icon:'❄️', editable:false},
-  {id:'summer-men',     key:'summer',   gender:'men',   label:'Чоловічі літні шкарпетки', icon:'☀️', editable:false},
+  {id:'bras',           key:'bras',      gender:'',      label:'Бюстгальтери',             icon:'✨', editable:false},
+  {id:'lingerie-women', key:'lingerie',  gender:'women', label:'Жіноча нижня білизна',    icon:'👙', editable:false},
+  {id:'winter-women',   key:'winter',    gender:'women', label:'Жіночі зимові шкарпетки', icon:'❄️', editable:false},
+  {id:'summer-women',   key:'summer',    gender:'women', label:'Жіночі літні шкарпетки',  icon:'☀️', editable:false},
+  {id:'stockings',      key:'stockings', gender:'women', label:'Чулки',                   icon:'🧦', editable:false},
+  {id:'tshirts-women',  key:'tshirts',   gender:'women', label:'Футболки жіночі',          icon:'👗', editable:false},
+  {id:'peignoirs',      key:'peignoirs', gender:'women', label:'Пенюари',                  icon:'🌸', editable:false},
+  {id:'jewelry',        key:'jewelry',   gender:'',      label:'Ювелірні вироби',          icon:'💍', editable:false},
+  {id:'lingerie-men',   key:'lingerie',  gender:'men',   label:'Чоловіча нижня білизна',  icon:'🩲', editable:false},
+  {id:'winter-men',     key:'winter',    gender:'men',   label:'Чоловічі зимові шкарпетки',icon:'❄️', editable:false},
+  {id:'summer-men',     key:'summer',    gender:'men',   label:'Чоловічі літні шкарпетки', icon:'☀️', editable:false},
+  {id:'tshirts-men',    key:'tshirts',   gender:'men',   label:'Футболки чоловічі',        icon:'👔', editable:false},
 ];
-var ICONS = ['🧦','👙','🩲','✨','🧣','🧤','🩱','🩳','👗','👔','💎','🎀','💍','🌸','🌺','⭐'];
+var ICONS = ['🧦','👙','🩲','✨','🧣','🧤','🩱','🩳','👗','👔','💎','🎀','💍','🌸','🌺','⭐','🎽','🩰','👑','🛍️'];
 
 /* ─────────── HELPERS ─────────── */
 function esc(s){
@@ -1216,16 +1223,25 @@ function deleteCat(id){
 
 /* ─────────── CATALOG FORM ─────────── */
 var selectedIcon='🏷️';
-function openCatForm(){
+var _catFormFromProduct=false;
+function slugify(s){
+  var m={'а':'a','б':'b','в':'v','г':'h','ґ':'g','д':'d','е':'e','є':'ye','ж':'zh','з':'z','и':'y','і':'i','ї':'yi','й':'y','к':'k','л':'l','м':'m','н':'n','о':'o','п':'p','р':'r','с':'s','т':'t','у':'u','ф':'f','х':'kh','ц':'ts','ч':'ch','ш':'sh','щ':'shch','ь':'','ю':'yu','я':'ya',' ':'-'};
+  return s.toLowerCase().split('').map(function(c){return m[c]!==undefined?m[c]:c;}).join('').replace(/[^a-z0-9-]/g,'').replace(/-+/g,'-').replace(/^-|-$/g,'')||('cat'+Date.now());
+}
+function autoCatKey(val){ document.getElementById('catKey').value=slugify(val); }
+function openCatForm(fromProduct){
+  _catFormFromProduct=!!fromProduct;
   selectedIcon='🏷️';
   document.getElementById('catName').value='';
   document.getElementById('catKey').value='';
   document.getElementById('catGender').value='women';
+  document.getElementById('catFormTitle').textContent='Нова категорія';
   var grid=document.getElementById('iconGrid');
   grid.innerHTML=ICONS.map(function(ic){
     return '<div class="icon-opt'+(ic===selectedIcon?' selected':'')+'" onclick="selectIcon(this,\''+ic+'\')">'+ic+'</div>';
   }).join('');
   document.getElementById('catFormModal').style.display='flex';
+  setTimeout(function(){document.getElementById('catName').focus();},100);
 }
 function closeCatForm(){ document.getElementById('catFormModal').style.display='none'; }
 function selectIcon(el,ic){
@@ -1235,17 +1251,22 @@ function selectIcon(el,ic){
 }
 function saveCat(){
   var name=document.getElementById('catName').value.trim();
-  var key=document.getElementById('catKey').value.trim().toLowerCase().replace(/\s+/g,'-');
-  if(!name||!key){toast('Заповніть назву та ключ');return;}
+  var key=document.getElementById('catKey').value||slugify(name);
+  if(!name){toast('Введіть назву категорії');return;}
   var custom=getCustomCats();
-  if(custom.find(function(c){return c.id==='custom-'+key;})||DEF_CATS.find(function(c){return c.id===key;})){
-    toast('Каталог з таким ключем вже існує');return;
+  if(custom.find(function(c){return c.key===key&&c.gender===document.getElementById('catGender').value;})){
+    toast('Така категорія вже існує');return;
   }
-  custom.push({id:'custom-'+key,key:key,gender:document.getElementById('catGender').value,label:name,icon:selectedIcon,editable:true});
+  var newId='custom-'+key+'-'+document.getElementById('catGender').value;
+  custom.push({id:newId,key:key,gender:document.getElementById('catGender').value,label:name,icon:selectedIcon,editable:true});
   setCustomCats(custom);
   closeCatForm();
-  renderCatalogs();
-  toast('✅ Каталог «'+name+'» створено!');
+  if(_catFormFromProduct){
+    buildCatSelect(newId);
+  } else {
+    renderCatalogs();
+  }
+  toast('✅ Категорія «'+name+'» створена!');
 }
 
 /* ─────────── ORDERS ─────────── */
