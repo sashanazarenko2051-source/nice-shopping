@@ -40,7 +40,7 @@
 
 <div class="page-hero">
   <div class="container">
-    <h1 class="page-hero__title">Оформлення замовлення</h1>
+    <h1 class="page-hero__title" data-i18n="page.checkout">Оформлення замовлення</h1>
     <div class="breadcrumb"><a href="index.html" data-i18n="bc.home">Головна</a> / <a href="cart.html" data-i18n="bc.cart">Кошик</a> / <span data-i18n="bc.checkout">Оформлення</span></div>
   </div>
 </div>
@@ -254,7 +254,7 @@ document.getElementById('checkoutForm').addEventListener('submit', function(e) {
       document.getElementById('successPage').style.display = 'block';
       window.scrollTo(0, 0);
     }).catch(function() {
-      showToast('Помилка збереження замовлення. Зателефонуйте нам: ' + CONFIG.phone);
+      showToast(window.i18n('err.save') + ' ' + CONFIG.phone);
       btn.disabled = false;
       btn.textContent = window.i18n('co.sub');
     });
@@ -267,9 +267,9 @@ document.getElementById('checkoutForm').addEventListener('submit', function(e) {
       body: JSON.stringify({ chat_id: CONFIG.telegramChatId, text: message, parse_mode: 'Markdown' })
     }).then(function(r) {
       if (r.ok) { onSuccess(); }
-      else { showToast('Помилка відправки. Зателефонуйте нам.'); btn.disabled = false; btn.textContent = window.i18n('co.sub'); }
+      else { showToast(window.i18n('err.send')); btn.disabled = false; btn.textContent = window.i18n('co.sub'); }
     }).catch(function() {
-      showToast('Помилка мережі. Зателефонуйте нам.');
+      showToast(window.i18n('err.network'));
       btn.disabled = false;
       btn.textContent = window.i18n('co.sub');
     });
@@ -282,8 +282,14 @@ document.getElementById('checkoutForm').addEventListener('submit', function(e) {
 
 function updateBranchLabel() {
   var isNova = document.querySelector('input[name="delivery"]:checked').value === 'nova';
-  document.getElementById('branchLabel').textContent = window.i18n(isNova ? 'co.branch.nova' : 'co.branch.ukr');
-  document.getElementById('branch').placeholder = window.i18n(isNova ? 'co.branch.nova.ph' : 'co.branch.ukr.ph');
+  var labelKey = isNova ? 'co.branch.nova' : 'co.branch.ukr';
+  var phKey = isNova ? 'co.branch.nova.ph' : 'co.branch.ukr.ph';
+  var lbl = document.getElementById('branchLabel');
+  lbl.textContent = window.i18n(labelKey);
+  lbl.setAttribute('data-i18n', labelKey);
+  var inp = document.getElementById('branch');
+  inp.placeholder = window.i18n(phKey);
+  inp.setAttribute('data-i18n-ph', phKey);
 }
 
 document.getElementById('menuToggle').addEventListener('click', function() {

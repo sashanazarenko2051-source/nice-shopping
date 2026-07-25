@@ -11,7 +11,6 @@
   <link rel="icon" type="image/svg+xml" href="favicon.svg">
   <link rel="preload" href="/api/products" as="fetch" crossorigin>
   <style>@keyframes spin{to{transform:rotate(360deg)}}</style>
-  <script>if(localStorage.getItem('fp_theme')==='dark')document.documentElement.classList.add('dark')</script>
 </head>
 <body>
 
@@ -38,7 +37,7 @@
 <div class="product-detail">
   <div class="container">
     <div class="breadcrumb" style="margin-bottom:28px">
-      <a href="index.html">Головна</a> / <a href="catalog.html">Каталог</a> / <span id="pdBreadcrumb">Товар</span>
+      <a href="index.html" data-i18n="bc.home">Головна</a> / <a href="catalog.html" data-i18n="bc.catalog">Каталог</a> / <span id="pdBreadcrumb">Товар</span>
     </div>
     <div class="pd-layout" id="pdLayout">
       <div id="pdLoading" style="grid-column:1/-1;text-align:center;padding:60px 0;color:var(--gray)">
@@ -84,11 +83,11 @@ if (product) {
   document.getElementById('pdBreadcrumb').textContent = product.name;
 
   var catMap = {
-    bras: 'Бюстгальтери',
-    lingerie: product.gender === 'men' ? 'Чоловіча нижня білизна' : 'Жіноча нижня білизна',
-    winter: product.gender === 'men' ? 'Чоловічі зимові шкарпетки' : 'Жіночі зимові шкарпетки',
-    summer: product.gender === 'men' ? 'Чоловічі літні шкарпетки' : 'Жіночі літні шкарпетки',
-    socks: product.gender === 'men' ? 'Чоловічі шкарпетки' : 'Жіночі шкарпетки',
+    bras: window.i18n('filter.br'),
+    lingerie: product.gender === 'men' ? window.i18n('filter.ml') : window.i18n('filter.wl'),
+    winter: product.gender === 'men' ? window.i18n('filter.wms') : window.i18n('filter.wws'),
+    summer: product.gender === 'men' ? window.i18n('filter.sms') : window.i18n('filter.sws'),
+    socks: product.gender === 'men' ? window.i18n('filter.ms') : window.i18n('filter.ws'),
   };
   var catLabel = catMap[product.category] || product.category || '';
   var discount = product.oldPrice ? Math.round((1 - product.price / product.oldPrice) * 100) : null;
@@ -152,7 +151,7 @@ if (product) {
       '<div class="pd-label" data-i18n="pd.desc">Опис</div>' +
       '<div class="pd-desc" id="pdDesc">' + product.description + '</div>' +
       '<div class="pd-label" data-i18n="pd.specs">Характеристики</div>' +
-      '<ul class="pd-details" id="pdDetails">' + product.details.map(function(d) { return '<li>' + d + '</li>'; }).join('') + '</ul>' +
+      '<ul class="pd-details" id="pdDetails">' + (product.details || []).map(function(d) { return '<li>' + d + '</li>'; }).join('') + '</ul>' +
     '</div>';
 
   // Expose for translate.js re-render on language toggle

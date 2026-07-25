@@ -331,7 +331,7 @@
 <body>
 
 <!-- LOGIN -->
-<div id="loginScreen">
+<div id="loginScreen" class="login-screen">
   <div class="login-card">
     <div class="login-logo">Nice Shopping</div>
     <div class="login-sub">Адміністративна панель</div>
@@ -1185,6 +1185,10 @@ async function renderOrders(silent){
   displayOrders(orders, el);
 }
 
+function escHtml(s) {
+  return (s || '').toString().replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
 function displayOrders(orders, el){
   var ob=document.getElementById('sbOrdCount');
   ob.textContent=orders.length; ob.style.display=orders.length?'inline-block':'none';
@@ -1199,21 +1203,22 @@ function displayOrders(orders, el){
     return '<div class="tbl-wrap"><table class="data-table"><thead><tr><th>Дата</th><th>Клієнт</th><th>Телефон</th><th>Місто</th><th>Оплата</th><th>Товари</th><th>Сума</th><th></th></tr></thead><tbody>'+
       list.map(function(o,i){
         var idx=offset+i;
-        var items=(o.items||[]).map(function(it){return it.name+' ×'+it.qty;}).join(', ');
+        var items=(o.items||[]).map(function(it){return escHtml(it.name)+' ×'+escHtml(it.qty);}).join(', ');
         var itemsDetail=(o.items||[]).map(function(it){
-          var meta=it.size||'';
-          if(it.color) meta+=(meta?', ':'')+it.color;
-          return '<li>'+it.name+(meta?' ('+meta+')':'')+' — ×'+it.qty+' — ₴'+(it.price*it.qty)+'</li>';
+          var meta=escHtml(it.size||'');
+          if(it.color) meta+=(meta?', ':'')+escHtml(it.color);
+          var lineTotal = ((+it.price||0) * (+it.qty||1));
+          return '<li>'+escHtml(it.name)+(meta?' ('+meta+')':'')+' — ×'+escHtml(it.qty)+' — ₴'+lineTotal+'</li>';
         }).join('');
         var detail='<tr id="ord-detail-'+idx+'" style="display:none"><td colspan="8" style="padding:0">'+
           '<div style="background:#0a1a0c;border:1px solid rgba(74,222,128,.15);border-radius:12px;margin:0 8px 12px;padding:20px 24px;font-size:.85rem;line-height:1.8">'+
             '<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px 32px">'+
-              '<div><span style="color:var(--dim);font-size:.75rem;text-transform:uppercase">Клієнт</span><br><strong>'+(o.firstName||'')+' '+(o.lastName||'')+'</strong></div>'+
-              '<div><span style="color:var(--dim);font-size:.75rem;text-transform:uppercase">Телефон</span><br><a href="tel:'+(o.phone||'')+'" style="color:var(--green)">'+(o.phone||'-')+'</a></div>'+
-              '<div><span style="color:var(--dim);font-size:.75rem;text-transform:uppercase">Місто</span><br>'+(o.city||'-')+'</div>'+
-              '<div><span style="color:var(--dim);font-size:.75rem;text-transform:uppercase">Відділення / адреса</span><br>'+(o.branch||'-')+'</div>'+
-              '<div><span style="color:var(--dim);font-size:.75rem;text-transform:uppercase">Оплата</span><br>'+(payN[o.payment]||o.payment||'-')+'</div>'+
-              (o.comment?'<div style="grid-column:1/-1"><span style="color:var(--dim);font-size:.75rem;text-transform:uppercase">Коментар</span><br>'+o.comment+'</div>':'')+
+              '<div><span style="color:var(--dim);font-size:.75rem;text-transform:uppercase">Клієнт</span><br><strong>'+escHtml(o.firstName)+' '+escHtml(o.lastName)+'</strong></div>'+
+              '<div><span style="color:var(--dim);font-size:.75rem;text-transform:uppercase">Телефон</span><br><a href="tel:'+escHtml(o.phone)+'" style="color:var(--green)">'+escHtml(o.phone||'-')+'</a></div>'+
+              '<div><span style="color:var(--dim);font-size:.75rem;text-transform:uppercase">Місто</span><br>'+escHtml(o.city||'-')+'</div>'+
+              '<div><span style="color:var(--dim);font-size:.75rem;text-transform:uppercase">Відділення / адреса</span><br>'+escHtml(o.branch||'-')+'</div>'+
+              '<div><span style="color:var(--dim);font-size:.75rem;text-transform:uppercase">Оплата</span><br>'+(payN[o.payment]||escHtml(o.payment)||'-')+'</div>'+
+              (o.comment?'<div style="grid-column:1/-1"><span style="color:var(--dim);font-size:.75rem;text-transform:uppercase">Коментар</span><br>'+escHtml(o.comment)+'</div>':'')+
             '</div>'+
             '<div style="margin-top:16px;border-top:1px solid rgba(74,222,128,.1);padding-top:14px">'+
               '<span style="color:var(--dim);font-size:.75rem;text-transform:uppercase">Товари</span>'+

@@ -99,6 +99,12 @@
       'err.fill.rating': 'Заповніть усі поля та оберіть оцінку',
       'form.sending': 'Надсилаємо...',
       'co.del.ukr.d': 'Доставка по всій Україні',
+      'catalog.loading': 'Завантаження...',
+      'catalog.empty.t': 'Товарів поки немає',
+      'catalog.empty.p': "Незабаром тут з'являться нові позиції. Напишіть нам, і ми підберемо потрібне.",
+      'err.send': 'Помилка відправки. Зателефонуйте нам.',
+      'err.network': 'Помилка мережі. Зателефонуйте нам.',
+      'err.save': 'Помилка збереження замовлення. Зателефонуйте нам:',
     },
     en: {
       logo: 'Nice Shopping',
@@ -197,6 +203,12 @@
       'err.fill.rating': 'Fill in all fields and select a rating',
       'form.sending': 'Sending...',
       'co.del.ukr.d': 'Delivery across Ukraine',
+      'catalog.loading': 'Loading...',
+      'catalog.empty.t': 'No products yet',
+      'catalog.empty.p': 'New items coming soon. Write to us and we\'ll find what you need.',
+      'err.send': 'Failed to send. Please call us.',
+      'err.network': 'Network error. Please call us.',
+      'err.save': 'Order save error. Call us:',
     }
   };
 

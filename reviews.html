@@ -171,23 +171,29 @@ function formatDate(ts) {
   return d.getDate() + '.' + (d.getMonth()+1) + '.' + d.getFullYear();
 }
 
+function escHtml(s) {
+  return (s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
 function renderList(list) {
+  if (list === undefined) return; // called by translate.js on lang toggle — ignore
   var el = document.getElementById('revList');
   if (!list || list.length === 0) {
     el.innerHTML = '<div class="rev-empty"><div class="rev-empty__icon">💬</div><div class="rev-empty__text">' + window.i18n('rev.empty') + '</div></div>';
     return;
   }
   el.innerHTML = '<div class="rev-list">' + list.map(function(r) {
+    var name = escHtml(r.name);
     return '<div class="rev-card">' +
       '<div class="rev-head">' +
-        '<div class="rev-avatar">' + r.name.charAt(0).toUpperCase() + '</div>' +
+        '<div class="rev-avatar">' + (name.charAt(0) || '?').toUpperCase() + '</div>' +
         '<div class="rev-meta">' +
-          '<div class="rev-name">' + r.name + '</div>' +
+          '<div class="rev-name">' + name + '</div>' +
           '<div class="rev-stars">' + starsHtml(r.rating) + '</div>' +
         '</div>' +
         '<div class="rev-date">' + formatDate(r.ts) + '</div>' +
       '</div>' +
-      '<div class="rev-text">«' + r.text + '»</div>' +
+      '<div class="rev-text">«' + escHtml(r.text) + '»</div>' +
     '</div>';
   }).join('') + '</div>';
 }

@@ -288,7 +288,10 @@ async def create_order(req: Request, background_tasks: BackgroundTasks):
         updated = False
         for item in items:
             item_name = item.get("name", "")
-            item_qty  = max(1, int(item.get("qty", 1)))
+            try:
+                item_qty = max(1, int(item.get("qty", 1)))
+            except (ValueError, TypeError):
+                item_qty = 1
             for row in prod_rows:
                 p = json.loads(row["data"])
                 if p.get("name") == item_name:
@@ -320,7 +323,10 @@ def delete_order_api(oid: int, background_tasks: BackgroundTasks,
             updated = False
             for item in items:
                 item_name = item.get("name", "")
-                item_qty  = max(1, int(item.get("qty", 1)))
+                try:
+                    item_qty = max(1, int(item.get("qty", 1)))
+                except (ValueError, TypeError):
+                    item_qty = 1
                 for pr in prod_rows:
                     p = json.loads(pr["data"])
                     if p.get("name") == item_name:
@@ -354,7 +360,7 @@ async def create_review(req: Request):
     return {"ok": True}
 
 # ── Static files ──────────────────────────────────────────
-BLOCKED = {"main.py", "shop.db", "requirements.txt"}
+BLOCKED = {"main.py", "shop.db", "requirements.txt", "products.json"}
 
 @app.get("/{full_path:path}")
 async def catch_all(full_path: str):

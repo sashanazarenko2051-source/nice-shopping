@@ -128,7 +128,7 @@
         <div class="products__grid catalog" id="grid">
           <div class="catalog-loading" id="catalogLoading" style="grid-column:1/-1;text-align:center;padding:60px 0;color:var(--gray)">
             <div class="spinner" style="width:32px;height:32px;border:3px solid var(--border);border-top-color:var(--dark);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 12px"></div>
-            <div>Завантаження...</div>
+            <div data-i18n="catalog.loading">Завантаження...</div>
           </div>
         </div>
       </div>
@@ -164,10 +164,16 @@ var activeSize = '';
 var activeSort = 'default';
 
 var catNames = {
-  'lingerie:women':'Жіноча нижня білизна', 'lingerie:men':'Чоловіча нижня білизна',
-  'bras:':'Бюстгальтери',
-  'winter:women':'❄️ Жіночі зимові шкарпетки', 'winter:men':'❄️ Чоловічі зимові шкарпетки',
-  'summer:women':'☀️ Жіночі літні шкарпетки', 'summer:men':'☀️ Чоловічі літні шкарпетки'
+  'lingerie:women': window.i18n('filter.wl'),
+  'lingerie:men':   window.i18n('filter.ml'),
+  'bras:':          window.i18n('filter.br'),
+  'bras:women':     window.i18n('filter.br'),
+  'winter:women':   '❄️ ' + window.i18n('filter.wws'),
+  'winter:men':     '❄️ ' + window.i18n('filter.wms'),
+  'summer:women':   '☀️ ' + window.i18n('filter.sws'),
+  'summer:men':     '☀️ ' + window.i18n('filter.sms'),
+  'socks:women':    window.i18n('filter.ws'),
+  'socks:men':      window.i18n('filter.ms'),
 };
 
 var urlParams = new URLSearchParams(location.search);
@@ -235,8 +241,8 @@ function render() {
     document.getElementById('grid').innerHTML =
       '<div class="catalog-empty">' +
         '<div class="catalog-empty__icon">🛍️</div>' +
-        '<div class="catalog-empty__title">Товарів поки немає</div>' +
-        '<div class="catalog-empty__sub">Незабаром тут з\'являться нові позиції.<br>Напишіть нам, і ми підберемо потрібне.</div>' +
+        '<div class="catalog-empty__title">' + window.i18n('catalog.empty.t') + '</div>' +
+        '<div class="catalog-empty__sub">' + window.i18n('catalog.empty.p') + '</div>' +
       '</div>';
     return;
   }

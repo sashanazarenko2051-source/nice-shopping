@@ -109,7 +109,7 @@ function renderProductCard(product) {
       (product.oldPrice ? '<span class="price-old">' + CONFIG.currency + product.oldPrice + '</span>' : '') +
     '</div>' +
     '<div class="product-card__rating"><span class="stars">' + stars + '</span><span class="reviews">(' + product.reviews + ')</span></div>' +
-    (product.stock != null ? '<div class="product-card__stock' + (product.stock === 0 ? ' out' : '') + '">' + (product.stock === 0 ? '❌ ' + (window.LANG==='en'?'Out of stock':'Немає в наявності') : '✅ ' + (window.LANG==='en'?'In stock':'В наявності') + ': ' + product.stock + ' ' + (window.LANG==='en'?'pcs.':'шт.')) + '</div>' : '') +
+    (product.stock != null ? '<div class="product-card__stock' + (product.stock === 0 ? ' out' : '') + '">' + (product.stock === 0 ? '❌ ' + window.i18n('stock.out') : '✅ ' + window.i18n('stock.in') + ': ' + product.stock + ' ' + window.i18n('stock.pcs')) + '</div>' : '') +
   '</div>';
 }
 
@@ -138,9 +138,4 @@ function quickAdd(productId) {
 
 document.addEventListener('DOMContentLoaded', function() {
   updateCartCount();
-  var toggle = document.getElementById('menuToggle');
-  var nav = document.querySelector('.nav');
-  if (toggle && nav) {
-    toggle.addEventListener('click', function() { nav.classList.toggle('open'); });
-  }
 });
