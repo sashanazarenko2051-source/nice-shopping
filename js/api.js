@@ -24,6 +24,17 @@ var API = (function() {
     setToken: function(t) { _token = t; localStorage.setItem('ns_admin_token', t); },
     clearToken: function() { _token = ''; localStorage.removeItem('ns_admin_token'); },
     hasToken: function() { return !!_token; },
+    logout: function() {
+      var t = _token;
+      _token = '';
+      localStorage.removeItem('ns_admin_token');
+      if (t) {
+        fetch('/api/admin/logout', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + t }
+        }).catch(function() {});
+      }
+    },
 
     login: function(pass) {
       return fetch('/api/admin/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ password: pass }) })

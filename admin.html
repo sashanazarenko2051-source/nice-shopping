@@ -682,7 +682,7 @@ async function doLogin(){
   err.style.display='block';
   btn.disabled=false; btn.textContent='Увійти →';
 }
-function doLogout(){ API.clearToken(); location.reload(); }
+function doLogout(){ API.logout(); location.reload(); }
 async function showAdmin(){
   document.getElementById('loginScreen').style.display='none';
   document.getElementById('adminApp').style.display='flex';

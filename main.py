@@ -12,7 +12,12 @@ app = FastAPI(docs_url=None, redoc_url=None)
 # CORS: restrict to configured site origin(s) when provided, else allow all.
 # ALLOWED_ORIGINS = "https://your-shop.com,https://www.your-shop.com"
 _origins = [o.strip() for o in os.getenv("ALLOWED_ORIGINS", "").split(",") if o.strip()] or ["*"]
-app.add_middleware(CORSMiddleware, allow_origins=_origins, allow_methods=["*"], allow_headers=["*"])
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=_origins,
+    allow_methods=["GET", "POST", "PUT", "DELETE"],
+    allow_headers=["Authorization", "Content-Type"],
+)
 
 ADMIN_PASS   = os.getenv("ADMIN_PASS", "admin2025")
 GITHUB_TOKEN = os.getenv("GITHUB_TOKEN", "")
@@ -26,7 +31,20 @@ TOKEN_TTL    = int(os.getenv("TOKEN_TTL", str(7 * 24 * 3600)))   # admin session
 MAX_BODY     = int(os.getenv("MAX_BODY", str(32 * 1024 * 1024)))  # 32 MB request cap (base64 photos)
 _tokens: dict = {}                # token -> issued_ts
 _login_attempts: dict = {}        # ip -> (count, window_start_ts)
+_rate_store: dict = {}            # key -> (count, window_start_ts)
 security = HTTPBearer(auto_error=False)
+
+def _rate_check(key: str, max_count: int, window_sec: int) -> bool:
+    """Generic sliding-window rate limiter. Returns False when limit exceeded."""
+    now = time.time()
+    count, start = _rate_store.get(key, (0, now))
+    if now - start > window_sec:
+        _rate_store[key] = (1, now)
+        return True
+    if count >= max_count:
+        return False
+    _rate_store[key] = (count + 1, start)
+    return True
 
 if ADMIN_PASS == "admin2025":
     print("[SECURITY] WARNING: ADMIN_PASS is still the default 'admin2025'. "
@@ -43,6 +61,24 @@ async def _limit_body_size(request: Request, call_next):
         except ValueError:
             pass
     return await call_next(request)
+
+@app.middleware("http")
+async def _security_headers(request: Request, call_next):
+    response = await call_next(request)
+    response.headers["X-Frame-Options"] = "DENY"
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+    response.headers["Permissions-Policy"] = "geolocation=(), microphone=(), camera=()"
+    response.headers["Content-Security-Policy"] = (
+        "default-src 'self'; "
+        "script-src 'self' 'unsafe-inline'; "
+        "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
+        "font-src 'self' https://fonts.gstatic.com; "
+        "img-src 'self' data: blob: https:; "
+        "connect-src 'self' https://translate.googleapis.com; "
+        "frame-ancestors 'none';"
+    )
+    return response
 
 # ── SQLite ────────────────────────────────────────────────
 DB_PATH = os.getenv("DB_PATH", "shop.db")
@@ -220,12 +256,17 @@ def _gist_load():
             print(f"[Fallback] Load error: {e}")
 
 def _slim_products(products):
-    """Strip base64 images (keep only URL images) to keep git file small"""
+    """Strip sensitive/heavy fields before committing to the public git repo."""
     result = []
     for p in products:
         s = dict(p)
+        # Remove base64 images (too large for git, use URL instead)
         if s.get("imageUrl", "").startswith("data:"):
             s["imageUrl"] = ""
+        if "images" in s:
+            s["images"] = [i for i in s.get("images", []) if not str(i).startswith("data:")]
+        # Remove purchase price — internal business data, must not be public
+        s.pop("pPurchase", None)
         result.append(s)
     return result
 
@@ -459,12 +500,19 @@ def get_orders(background_tasks: BackgroundTasks, token: str = Depends(require_a
 
 @app.post("/api/orders")
 async def create_order(req: Request, background_tasks: BackgroundTasks):
+    ip = _client_ip(req)
+    if not _rate_check(f"order:{ip}", 10, 3600):
+        raise HTTPException(status_code=429, detail="Забагато запитів. Спробуйте пізніше.")
     try:
         body = await req.json()
     except Exception:
         raise HTTPException(status_code=400, detail="Invalid request")
     if not isinstance(body, dict):
         raise HTTPException(status_code=400, detail="Invalid order")
+    # Sanitise string fields to prevent oversized payloads slipping past content-length check
+    for field in ("firstName", "lastName", "phone", "city", "branch", "comment", "payment", "delivery"):
+        if field in body:
+            body[field] = str(body[field] or "")[:200]
     items = body.get("items", [])
     if not isinstance(items, list) or not items:
         raise HTTPException(status_code=400, detail="Empty order")
@@ -552,6 +600,9 @@ def get_reviews():
 
 @app.post("/api/reviews")
 async def create_review(req: Request, background_tasks: BackgroundTasks):
+    ip = _client_ip(req)
+    if not _rate_check(f"review:{ip}", 5, 3600):
+        raise HTTPException(status_code=429, detail="Забагато відгуків. Спробуйте пізніше.")
     try:
         body = await req.json()
     except Exception:
@@ -581,6 +632,17 @@ async def create_review(req: Request, background_tasks: BackgroundTasks):
         await asyncio.wait_for(loop.run_in_executor(_backup_executor, _backup_reviews), timeout=8)
     except Exception as e:
         print(f"[Backup] Reviews backup error (review saved to DB): {e}")
+    return {"ok": True}
+
+@app.post("/api/admin/logout")
+def admin_logout(creds: HTTPAuthorizationCredentials = Depends(security)):
+    """Invalidate the admin token server-side so it can't be reused even if stolen."""
+    if creds and creds.credentials:
+        token = creds.credentials
+        _tokens.pop(token, None)
+        conn = get_db()
+        conn.execute("DELETE FROM tokens WHERE token = ?", (token,))
+        conn.commit(); conn.close()
     return {"ok": True}
 
 # ── Static files ──────────────────────────────────────────
