@@ -640,7 +640,9 @@ async def create_order(req: Request, background_tasks: BackgroundTasks):
         await asyncio.wait_for(loop.run_in_executor(_backup_executor, _backup_orders), timeout=8)
     except Exception as e:
         print(f"[Backup] Orders backup error (order saved to DB): {e}")
-    # Telegram notification (fire-and-forget)
+    # Telegram notification — build message then send synchronously in thread pool
+    # (not as background task, so it runs before response and is guaranteed to complete)
+    _tg_msg = None
     try:
         name = f"{body.get('firstName','')} {body.get('lastName','')}".strip() or "—"
         phone = body.get("phone", "—")
@@ -656,8 +658,9 @@ async def create_order(req: Request, background_tasks: BackgroundTasks):
             f"  • {i.get('name','?')} ({i.get('size','')}{', ' + i.get('color','') if i.get('color') else ''}) × {i.get('qty',1)} — {i.get('price',0)} грн"
             for i in items[:20]
         )
-        total = body.get("total") or sum(float(i.get("price", 0)) * int(i.get("qty", 1)) for i in items)
-        msg = (
+        raw_total = body.get("total")
+        total = float(raw_total) if raw_total is not None else sum(float(i.get("price", 0)) * int(i.get("qty", 1)) for i in items)
+        _tg_msg = (
             f"🛍 <b>Нове замовлення!</b>\n\n"
             f"👤 <b>{name}</b>\n"
             f"📞 {phone}\n"
@@ -669,9 +672,13 @@ async def create_order(req: Request, background_tasks: BackgroundTasks):
             f"\n<b>Товари:</b>\n{items_text}\n\n"
             f"💰 Разом: <b>{total:.0f} грн</b>"
         )
-        background_tasks.add_task(_send_telegram, msg)
-    except Exception:
-        pass
+    except Exception as e:
+        print(f"[TG] Message build error: {e}")
+    if _tg_msg:
+        try:
+            await asyncio.wait_for(loop.run_in_executor(_backup_executor, _send_telegram, _tg_msg), timeout=5)
+        except Exception as e:
+            print(f"[TG] Send timeout/error: {e}")
     return {"ok": True}
 
 @app.delete("/api/orders/{oid}")
