@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Адмін — Nice Shopping</title>
+<script>try{if(localStorage.getItem('ns_admin_token'))document.documentElement.setAttribute('data-auth','1');}catch(e){}</script>
 <style>
 :root{
   --bg:#08110a;--card:#0d1b10;--card2:#111e14;
@@ -19,6 +20,8 @@ input,select,textarea{font-family:inherit;font-size:14px}
 a{text-decoration:none;color:inherit}
 
 /* ── LOGIN ── */
+[data-auth="1"] #loginScreen{display:none!important}
+[data-auth="1"] #adminApp{display:block!important}
 #loginScreen{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:var(--bg);z-index:1000}
 .lbox{background:var(--card);border:1px solid var(--border);border-radius:18px;padding:40px 36px;width:340px;text-align:center}
 .llogo{font-size:1.8rem;font-weight:800;color:var(--green);margin-bottom:2px}

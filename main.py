@@ -2,7 +2,7 @@ from fastapi import FastAPI, HTTPException, Depends, Request, BackgroundTasks
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-import sqlite3, json, os, time, secrets, asyncio
+import sqlite3, json, os, time, secrets, asyncio, hmac, hashlib
 from concurrent.futures import ThreadPoolExecutor
 _backup_executor = ThreadPoolExecutor(max_workers=2, thread_name_prefix="backup")
 from pathlib import Path
@@ -27,10 +27,13 @@ GITHUB_REPO  = os.getenv("GITHUB_REPO", "sashanazarenko2051-source/nice-shopping
 # which wipes the ephemeral SQLite DB (losing orders/reviews). Off by default —
 # persistence goes through the Gist instead. Set AUTO_COMMIT=1 to re-enable.
 AUTO_COMMIT  = os.getenv("AUTO_COMMIT", "").lower() in ("1", "true", "yes")
-TOKEN_TTL    = int(os.getenv("TOKEN_TTL", str(7 * 24 * 3600)))   # admin session lifetime
 MAX_BODY     = int(os.getenv("MAX_BODY", str(32 * 1024 * 1024)))  # 32 MB request cap (base64 photos)
-_tokens: dict = {}                # token -> issued_ts
 _login_attempts: dict = {}        # ip -> (count, window_start_ts)
+# Stateless HMAC token — derived from password, survives restarts without DB
+_ADMIN_TOKEN = hmac.new(
+    hashlib.sha256(ADMIN_PASS.encode()).digest(),
+    b"ns-admin-session-v1", hashlib.sha256
+).hexdigest()
 _rate_store: dict = {}            # key -> (count, window_start_ts)
 security = HTTPBearer(auto_error=False)
 
@@ -98,24 +101,7 @@ def init_db():
     """)
     conn.commit(); conn.close()
 
-def _load_tokens():
-    conn = get_db()
-    rows = conn.execute("SELECT token, ts FROM tokens").fetchall()
-    now = int(time.time())
-    expired = []
-    for r in rows:
-        if now - r["ts"] < TOKEN_TTL:
-            _tokens[r["token"]] = r["ts"]
-        else:
-            expired.append(r["token"])
-    for t in expired:
-        conn.execute("DELETE FROM tokens WHERE token = ?", (t,))
-    if expired:
-        conn.commit()
-    conn.close()
-
 init_db()
-_load_tokens()
 
 # ── Gist backup ───────────────────────────────────────────
 def _gist_headers():
@@ -333,46 +319,48 @@ def _gist_save(products):
     _gist_save_fast(products)
     _github_commit(products)
 
+
+def _backup_all():
+    """Save products + orders + reviews to Gist in ONE API call. Fast, atomic."""
+    conn = get_db()
+    prod_rows = conn.execute("SELECT data FROM products ORDER BY id ASC").fetchall()
+    ord_rows  = conn.execute("SELECT data FROM orders  ORDER BY id ASC").fetchall()
+    rev_rows  = conn.execute("SELECT data FROM reviews ORDER BY id ASC").fetchall()
+    conn.close()
+    products = [json.loads(r["data"]) for r in prod_rows]
+    orders   = [json.loads(r["data"]) for r in ord_rows]
+    reviews  = [json.loads(r["data"]) for r in rev_rows]
+    # local file backup
+    try:
+        Path("products.json").write_text(json.dumps(products, ensure_ascii=False, indent=2), encoding="utf-8")
+    except Exception as e:
+        print(f"[File] Save error: {e}")
+    # single Gist PATCH — 3 files at once, much faster than 3 separate calls
+    _gist_patch_files({
+        "products.json": json.dumps(products, ensure_ascii=False, indent=2),
+        "orders.json":   json.dumps(orders,   ensure_ascii=False, indent=2),
+        "reviews.json":  json.dumps(reviews,  ensure_ascii=False, indent=2),
+    })
+    print(f"[Gist] Backup all: {len(products)} products, {len(orders)} orders, {len(reviews)} reviews")
+
 _gist_load()
 _restore_orders_reviews()
 
 
 @app.on_event("shutdown")
 def _on_shutdown():
-    """Flush all data to Gist when Render sends SIGTERM before a redeploy.
-    This guarantees the latest state is saved even if background tasks were pending."""
-    print("[Shutdown] Flushing data to Gist...")
+    """Flush all data in ONE Gist API call when Render sends SIGTERM before redeploy."""
+    print("[Shutdown] Flushing all data to Gist (single call)...")
     try:
-        conn = get_db()
-        rows = conn.execute("SELECT data FROM products ORDER BY id ASC").fetchall()
-        conn.close()
-        products = [json.loads(r["data"]) for r in rows]
-        _gist_save_fast(products)
+        _backup_all()
     except Exception as e:
-        print(f"[Shutdown] Products flush error: {e}")
-    try:
-        _backup_orders()
-    except Exception as e:
-        print(f"[Shutdown] Orders flush error: {e}")
-    try:
-        _backup_reviews()
-    except Exception as e:
-        print(f"[Shutdown] Reviews flush error: {e}")
+        print(f"[Shutdown] Backup error: {e}")
     print("[Shutdown] Done.")
 
 
 # ── Auth ──────────────────────────────────────────────────
 def require_admin(creds: HTTPAuthorizationCredentials = Depends(security)):
-    if not creds:
-        raise HTTPException(status_code=401, detail="Unauthorized")
-    issued = _tokens.get(creds.credentials)
-    if issued is None or int(time.time()) - issued > TOKEN_TTL:
-        # expired or unknown → drop it
-        if creds.credentials in _tokens:
-            _tokens.pop(creds.credentials, None)
-            conn = get_db()
-            conn.execute("DELETE FROM tokens WHERE token = ?", (creds.credentials,))
-            conn.commit(); conn.close()
+    if not creds or not hmac.compare_digest(creds.credentials, _ADMIN_TOKEN):
         raise HTTPException(status_code=401, detail="Unauthorized")
     return creds.credentials
 
@@ -413,13 +401,8 @@ async def admin_login(req: Request):
     password = str(body.get("password") or "")
     if secrets.compare_digest(password, ADMIN_PASS):
         _login_attempts.pop(ip, None)
-        token = secrets.token_urlsafe(32)
-        now = int(time.time())
-        _tokens[token] = now
-        conn = get_db()
-        conn.execute("INSERT OR REPLACE INTO tokens (token, ts) VALUES (?, ?)", (token, now))
-        conn.commit(); conn.close()
-        return {"token": token}
+        # Return stateless HMAC token — same token every time, survives server restarts
+        return {"token": _ADMIN_TOKEN}
     _record_login_fail(ip)
     raise HTTPException(status_code=401, detail="Invalid password")
 
@@ -686,12 +669,15 @@ async def create_review(req: Request, background_tasks: BackgroundTasks):
     return {"ok": True}
 
 @app.delete("/api/reviews/{rid}")
-async def delete_review(rid: int, background_tasks: BackgroundTasks,
-                        token: str = Depends(require_admin)):
+async def delete_review(rid: int, token: str = Depends(require_admin)):
     conn = get_db()
     conn.execute("DELETE FROM reviews WHERE id = ?", (rid,))
     conn.commit(); conn.close()
-    background_tasks.add_task(_backup_reviews)
+    loop = asyncio.get_running_loop()
+    try:
+        await asyncio.wait_for(loop.run_in_executor(_backup_executor, _backup_reviews), timeout=8)
+    except Exception as e:
+        print(f"[Backup] Reviews delete backup error: {e}")
     return {"ok": True}
 
 @app.post("/api/admin/restore")
@@ -733,14 +719,8 @@ async def admin_restore(token: str = Depends(require_admin)):
 
 
 @app.post("/api/admin/logout")
-def admin_logout(creds: HTTPAuthorizationCredentials = Depends(security)):
-    """Invalidate the admin token server-side so it can't be reused even if stolen."""
-    if creds and creds.credentials:
-        token = creds.credentials
-        _tokens.pop(token, None)
-        conn = get_db()
-        conn.execute("DELETE FROM tokens WHERE token = ?", (token,))
-        conn.commit(); conn.close()
+def admin_logout():
+    # Token is stateless (HMAC) — logout is handled client-side by clearing localStorage
     return {"ok": True}
 
 # ── Static files ──────────────────────────────────────────
