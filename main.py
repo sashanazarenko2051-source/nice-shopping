@@ -133,23 +133,26 @@ def _insert_products(products):
         conn.execute("INSERT INTO products (id, data) VALUES (?, ?)", (pid, json.dumps(p)))
     conn.commit(); conn.close()
 
-def _gist_fetch_file(filename):
-    """Fetch and parse a single file from the configured Gist (via raw_url to avoid truncation)."""
+def _gist_fetch_file(filename, retries=3):
+    """Fetch and parse a single file from the Gist. Retries up to `retries` times."""
     if not (GITHUB_TOKEN and GIST_ID):
         return None
-    try:
-        import urllib.request
-        req = urllib.request.Request(f"https://api.github.com/gists/{GIST_ID}", headers=_gist_headers())
-        meta = json.loads(urllib.request.urlopen(req, timeout=15).read())
-        info = meta.get("files", {}).get(filename, {})
-        raw_url = info.get("raw_url", "")
-        if not raw_url:
-            return None
-        raw_req = urllib.request.Request(raw_url, headers={"User-Agent": "nice-shopping"})
-        return json.loads(urllib.request.urlopen(raw_req, timeout=15).read())
-    except Exception as e:
-        print(f"[Gist] fetch {filename} error: {e}")
-        return None
+    import urllib.request
+    for attempt in range(1, retries + 1):
+        try:
+            req = urllib.request.Request(f"https://api.github.com/gists/{GIST_ID}", headers=_gist_headers())
+            meta = json.loads(urllib.request.urlopen(req, timeout=15).read())
+            info = meta.get("files", {}).get(filename, {})
+            raw_url = info.get("raw_url", "")
+            if not raw_url:
+                return None
+            raw_req = urllib.request.Request(raw_url, headers={"User-Agent": "nice-shopping"})
+            return json.loads(urllib.request.urlopen(raw_req, timeout=15).read())
+        except Exception as e:
+            print(f"[Gist] fetch {filename} attempt {attempt} error: {e}")
+            if attempt < retries:
+                time.sleep(2)
+    return None
 
 
 def _gist_patch_files(files: dict):
@@ -333,6 +336,31 @@ def _gist_save(products):
 _gist_load()
 _restore_orders_reviews()
 
+
+@app.on_event("shutdown")
+def _on_shutdown():
+    """Flush all data to Gist when Render sends SIGTERM before a redeploy.
+    This guarantees the latest state is saved even if background tasks were pending."""
+    print("[Shutdown] Flushing data to Gist...")
+    try:
+        conn = get_db()
+        rows = conn.execute("SELECT data FROM products ORDER BY id ASC").fetchall()
+        conn.close()
+        products = [json.loads(r["data"]) for r in rows]
+        _gist_save_fast(products)
+    except Exception as e:
+        print(f"[Shutdown] Products flush error: {e}")
+    try:
+        _backup_orders()
+    except Exception as e:
+        print(f"[Shutdown] Orders flush error: {e}")
+    try:
+        _backup_reviews()
+    except Exception as e:
+        print(f"[Shutdown] Reviews flush error: {e}")
+    print("[Shutdown] Done.")
+
+
 # ── Auth ──────────────────────────────────────────────────
 def require_admin(creds: HTTPAuthorizationCredentials = Depends(security)):
     if not creds:
@@ -424,7 +452,7 @@ async def set_all_products(req: Request, background_tasks: BackgroundTasks,
         p["id"] = pid
         conn.execute("INSERT INTO products (id, data) VALUES (?, ?)", (pid, json.dumps(p, ensure_ascii=False)))
     conn.commit(); conn.close()
-    loop = asyncio.get_event_loop()
+    loop = asyncio.get_running_loop()
     try:
         await asyncio.wait_for(loop.run_in_executor(_backup_executor, _gist_save_fast, products), timeout=15)
     except Exception as e:
@@ -446,7 +474,7 @@ async def add_one_product(req: Request, background_tasks: BackgroundTasks,
     products = [json.loads(r["data"]) for r in
                 conn.execute("SELECT data FROM products ORDER BY id ASC").fetchall()]
     conn.close()
-    loop = asyncio.get_event_loop()
+    loop = asyncio.get_running_loop()
     try:
         await asyncio.wait_for(loop.run_in_executor(_backup_executor, _gist_save_fast, products), timeout=15)
     except Exception as e:
@@ -471,7 +499,7 @@ async def update_one_product(pid: int, req: Request, background_tasks: Backgroun
     products = [json.loads(r["data"]) for r in
                 conn.execute("SELECT data FROM products ORDER BY id ASC").fetchall()]
     conn.close()
-    loop = asyncio.get_event_loop()
+    loop = asyncio.get_running_loop()
     try:
         await asyncio.wait_for(loop.run_in_executor(_backup_executor, _gist_save_fast, products), timeout=15)
     except Exception as e:
@@ -498,7 +526,7 @@ async def delete_product(pid: int, background_tasks: BackgroundTasks,
     products = [json.loads(r["data"]) for r in
                 conn.execute("SELECT data FROM products ORDER BY id ASC").fetchall()]
     conn.close()
-    loop = asyncio.get_event_loop()
+    loop = asyncio.get_running_loop()
     try:
         await asyncio.wait_for(loop.run_in_executor(_backup_executor, _gist_save_fast, products), timeout=15)
     except Exception as e:
@@ -568,7 +596,7 @@ async def create_order(req: Request, background_tasks: BackgroundTasks):
     conn.close()
     # Backup synchronously in thread pool — waits up to 8s before returning success.
     # This guarantees the order survives a Render free-tier spin-down restart.
-    loop = asyncio.get_event_loop()
+    loop = asyncio.get_running_loop()
     try:
         await asyncio.wait_for(loop.run_in_executor(_backup_executor, _backup_orders), timeout=8)
     except Exception as e:
@@ -647,7 +675,7 @@ async def create_review(req: Request, background_tasks: BackgroundTasks):
     conn = get_db()
     conn.execute("INSERT INTO reviews (data) VALUES (?)", (json.dumps(review, ensure_ascii=False),))
     conn.commit(); conn.close()
-    loop = asyncio.get_event_loop()
+    loop = asyncio.get_running_loop()
     try:
         await asyncio.wait_for(loop.run_in_executor(_backup_executor, _backup_reviews), timeout=8)
     except Exception as e:
