@@ -490,8 +490,8 @@ async def sync_products_file(token: str = Depends(require_admin)):
     return {"ok": True, "count": len(products)}
 
 @app.delete("/api/products/{pid}")
-def delete_product(pid: int, background_tasks: BackgroundTasks,
-                   token: str = Depends(require_admin)):
+async def delete_product(pid: int, background_tasks: BackgroundTasks,
+                         token: str = Depends(require_admin)):
     conn = get_db()
     conn.execute("DELETE FROM products WHERE id = ?", (pid,))
     conn.commit()
