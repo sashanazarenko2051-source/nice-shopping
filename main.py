@@ -792,10 +792,22 @@ async def admin_debug(token: str = Depends(require_admin)):
     else:
         gist_error = "GITHUB_TOKEN or GIST_ID not configured"
 
+    # Check which GitHub account the token belongs to
+    token_user = ""
+    try:
+        import urllib.request
+        req = urllib.request.Request("https://api.github.com/user", headers=_gist_headers())
+        user_data = json.loads(urllib.request.urlopen(req, timeout=10).read())
+        token_user = user_data.get("login", "unknown")
+    except Exception as e:
+        token_user = f"error: {e}"
+
     return {
         "sqlite": {"products": db_products, "orders": db_orders, "reviews": db_reviews},
         "gist": {"ok": gist_ok, "products": gist_products, "error": gist_error},
         "config": {"has_token": bool(GITHUB_TOKEN), "has_gist_id": bool(GIST_ID)},
+        "token_owner": token_user,
+        "gist_owner": GIST_ID and f"sashanazarenko2051-source/{GIST_ID[:8]}...",
     }
 
 # ── Static files ──────────────────────────────────────────

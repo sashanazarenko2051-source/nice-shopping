@@ -615,7 +615,9 @@ async function doDebug(){
       +'SQLite:\n  Товарів: '+d.sqlite.products+'\n  Замовлень: '+d.sqlite.orders+'\n  Відгуків: '+d.sqlite.reviews+'\n\n'
       +'Gist: '+gistStatus+'\n'
       +'Token: '+(d.config.has_token?'✅':'❌ немає')+'\n'
-      +'Gist ID: '+(d.config.has_gist_id?'✅':'❌ немає');
+      +'Gist ID: '+(d.config.has_gist_id?'✅':'❌ немає')+'\n\n'
+      +'Token належить: '+(d.token_owner||'?')+'\n'
+      +'Gist власник: sashanazarenko2051-source';
     alert(msg);
   }catch(e){ alert('❌ Помилка: '+e.message); }
 }
