@@ -230,19 +230,23 @@ def _gist_load():
         except Exception as e:
             print(f"[Gist] Load error: {e}")
 
-    # 2) Fallback: products.json committed to git repo by _github_commit.
-    #    If Gist returned empty (gist_ok=True), we trust that and skip fallback.
-    #    If Gist failed entirely (gist_ok=False), repo file is our safety net.
-    if not gist_ok:
-        try:
-            fb = Path("products.json")
-            if fb.exists():
-                products = json.loads(fb.read_text(encoding="utf-8"))
-                if products:
-                    _insert_products(products)
-                    print(f"[Fallback] Loaded {len(products)} products from products.json")
-        except Exception as e:
-            print(f"[Fallback] Load error: {e}")
+    # 2) Fallback: products.json in the repo (committed by _github_commit).
+    #    Always try this if Gist returned nothing — whether it failed OR returned [].
+    try:
+        fb = Path("products.json")
+        if fb.exists():
+            products = json.loads(fb.read_text(encoding="utf-8"))
+            if products:
+                _insert_products(products)
+                print(f"[Fallback] Loaded {len(products)} products from products.json")
+                # Also push them into the Gist so future restarts don't need the file
+                try:
+                    _gist_patch_files({"products.json": json.dumps(products, ensure_ascii=False, indent=2)})
+                    print(f"[Fallback] Synced {len(products)} products to Gist")
+                except Exception as ge:
+                    print(f"[Fallback] Gist sync error: {ge}")
+    except Exception as e:
+        print(f"[Fallback] Load error: {e}")
 
 def _slim_products(products):
     """Strip sensitive/heavy fields before committing to the public git repo."""
