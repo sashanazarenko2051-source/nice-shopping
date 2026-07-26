@@ -141,6 +141,51 @@ def _gist_fetch_file(filename, retries=3):
     return None
 
 
+def _github_fetch_raw(filename):
+    """Read a file from the public GitHub repo without authentication."""
+    if not GITHUB_REPO:
+        return None
+    import urllib.request
+    url = f"https://raw.githubusercontent.com/{GITHUB_REPO}/master/{filename}"
+    try:
+        req = urllib.request.Request(url, headers={"User-Agent": "nice-shopping"})
+        data = json.loads(urllib.request.urlopen(req, timeout=10).read())
+        print(f"[GitHub raw] Loaded {filename}")
+        return data
+    except Exception as e:
+        print(f"[GitHub raw] fetch {filename} error: {e}")
+        return None
+
+
+def _github_commit_file(filename, content_str):
+    """Commit any data file to the GitHub repo (must be in render.yaml ignoredFiles)."""
+    if not GITHUB_TOKEN or not GITHUB_REPO:
+        return
+    try:
+        import urllib.request, base64 as b64
+        encoded = b64.b64encode(content_str.encode()).decode()
+        api_url = f"https://api.github.com/repos/{GITHUB_REPO}/contents/{filename}"
+        headers = {**_gist_headers(), "Content-Type": "application/json"}
+        sha = ""
+        try:
+            req = urllib.request.Request(api_url, headers=headers)
+            resp = json.loads(urllib.request.urlopen(req, timeout=10).read())
+            sha = resp.get("sha", "")
+        except Exception:
+            pass
+        body = json.dumps({
+            "message": f"chore: update {filename}",
+            "content": encoded,
+            **({"sha": sha} if sha else {}),
+            "committer": {"name": "Shop Bot", "email": "bot@shop.local"}
+        }).encode()
+        req = urllib.request.Request(api_url, data=body, headers=headers, method="PUT")
+        urllib.request.urlopen(req, timeout=20)
+        print(f"[GitHub] Committed {filename}")
+    except Exception as e:
+        print(f"[GitHub] Commit {filename} error: {e}")
+
+
 def _gist_patch_files(files: dict):
     """PATCH one or more files into the Gist. files = {filename: content_str}"""
     if not (GITHUB_TOKEN and GIST_ID):
@@ -156,97 +201,88 @@ def _gist_patch_files(files: dict):
 
 
 def _backup_orders():
-    """Snapshot all orders to the Gist so they survive DB resets on redeploy/spin-down."""
+    """Snapshot orders to Gist + GitHub repo."""
     conn = get_db()
     rows = conn.execute("SELECT data FROM orders ORDER BY id ASC").fetchall()
     conn.close()
     data = [json.loads(r["data"]) for r in rows]
-    _gist_patch_files({"orders.json": json.dumps(data, ensure_ascii=False, indent=2)})
+    content = json.dumps(data, ensure_ascii=False, indent=2)
+    _gist_patch_files({"orders.json": content})
+    _github_commit_file("orders.json", content)
 
 
 def _backup_reviews():
-    """Snapshot all reviews to the Gist so they survive DB resets on redeploy/spin-down."""
+    """Snapshot reviews to Gist + GitHub repo."""
     conn = get_db()
     rows = conn.execute("SELECT data FROM reviews ORDER BY id ASC").fetchall()
     conn.close()
     data = [json.loads(r["data"]) for r in rows]
-    _gist_patch_files({"reviews.json": json.dumps(data, ensure_ascii=False, indent=2)})
+    content = json.dumps(data, ensure_ascii=False, indent=2)
+    _gist_patch_files({"reviews.json": content})
+    _github_commit_file("reviews.json", content)
+
+
+def _fetch_with_fallback(filename):
+    """Try Gist → GitHub repo raw → local file."""
+    # 1. Gist
+    data = _gist_fetch_file(filename)
+    if isinstance(data, list):
+        return data
+    # 2. GitHub raw (no auth needed for public repo)
+    data = _github_fetch_raw(filename)
+    if isinstance(data, list):
+        return data
+    # 3. Local file
+    try:
+        fb = Path(filename)
+        if fb.exists():
+            data = json.loads(fb.read_text(encoding="utf-8"))
+            if isinstance(data, list):
+                print(f"[Local] Loaded {filename}")
+                return data
+    except Exception as e:
+        print(f"[Local] {filename} error: {e}")
+    return None
 
 
 def _restore_orders_reviews():
-    """On start: if the (ephemeral) SQLite tables are empty, restore from the Gist backup."""
+    """On start: restore orders/reviews from Gist → GitHub repo → local file."""
     conn = get_db()
     o_count = conn.execute("SELECT COUNT(*) FROM orders").fetchone()[0]
     r_count = conn.execute("SELECT COUNT(*) FROM reviews").fetchone()[0]
     conn.close()
 
     if o_count == 0:
-        orders = _gist_fetch_file("orders.json")
+        orders = _fetch_with_fallback("orders.json")
         if orders:
             conn = get_db()
             for o in orders:
                 conn.execute("INSERT INTO orders (data) VALUES (?)", (json.dumps(o, ensure_ascii=False),))
             conn.commit(); conn.close()
-            print(f"[Gist] Restored {len(orders)} orders")
+            print(f"[Restore] {len(orders)} orders")
 
     if r_count == 0:
-        reviews = _gist_fetch_file("reviews.json")
+        reviews = _fetch_with_fallback("reviews.json")
         if reviews:
             conn = get_db()
             for rv in reviews:
                 conn.execute("INSERT INTO reviews (data) VALUES (?)", (json.dumps(rv, ensure_ascii=False),))
             conn.commit(); conn.close()
-            print(f"[Gist] Restored {len(reviews)} reviews")
+            print(f"[Restore] {len(reviews)} reviews")
 
 
 def _gist_load():
-    """На старті: якщо SQLite порожній — завантажити товари з Gist, потім з products.json"""
+    """На старті: завантажити товари з Gist → GitHub repo → local file."""
     conn = get_db()
     count = conn.execute("SELECT COUNT(*) FROM products").fetchone()[0]
     conn.close()
     if count > 0:
         return
 
-    # 1) Try Gist first (fastest, always up-to-date)
-    gist_ok = False
-    if GITHUB_TOKEN and GIST_ID:
-        try:
-            import urllib.request
-            req = urllib.request.Request(
-                f"https://api.github.com/gists/{GIST_ID}",
-                headers=_gist_headers()
-            )
-            meta = json.loads(urllib.request.urlopen(req, timeout=15).read())
-            file_info = meta.get("files", {}).get("products.json", {})
-            raw_url = file_info.get("raw_url", "")
-            if raw_url:
-                raw_req = urllib.request.Request(raw_url, headers={"User-Agent": "nice-shopping"})
-                products = json.loads(urllib.request.urlopen(raw_req, timeout=15).read())
-                if isinstance(products, list) and products:
-                    _insert_products(products)
-                    print(f"[Gist] Loaded {len(products)} products")
-                    return  # success — skip fallback
-                gist_ok = True  # Gist responded but was empty (admin cleared all products)
-        except Exception as e:
-            print(f"[Gist] Load error: {e}")
-
-    # 2) Fallback: products.json in the repo (committed by _github_commit).
-    #    Always try this if Gist returned nothing — whether it failed OR returned [].
-    try:
-        fb = Path("products.json")
-        if fb.exists():
-            products = json.loads(fb.read_text(encoding="utf-8"))
-            if products:
-                _insert_products(products)
-                print(f"[Fallback] Loaded {len(products)} products from products.json")
-                # Also push them into the Gist so future restarts don't need the file
-                try:
-                    _gist_patch_files({"products.json": json.dumps(products, ensure_ascii=False, indent=2)})
-                    print(f"[Fallback] Synced {len(products)} products to Gist")
-                except Exception as ge:
-                    print(f"[Fallback] Gist sync error: {ge}")
-    except Exception as e:
-        print(f"[Fallback] Load error: {e}")
+    products = _fetch_with_fallback("products.json")
+    if products:
+        _insert_products(products)
+        print(f"[Startup] Loaded {len(products)} products")
 
 def _slim_products(products):
     """Strip sensitive/heavy fields before committing to the public git repo."""

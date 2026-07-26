@@ -18,3 +18,5 @@ services:
     pullRequestPreviewsEnabled: false
     ignoredFiles:
       - products.json   # auto-committed by the server; must NOT trigger a redeploy
+      - orders.json
+      - reviews.json
