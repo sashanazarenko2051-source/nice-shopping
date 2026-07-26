@@ -1287,7 +1287,7 @@ var _ordersTimer = null;
 
 function startOrdersPolling(){
   stopOrdersPolling();
-  _ordersTimer = setInterval(function(){ renderOrders(true); }, 30000);
+  _ordersTimer = setInterval(function(){ renderOrders(true); }, 8000);
 }
 function stopOrdersPolling(){
   if(_ordersTimer){ clearInterval(_ordersTimer); _ordersTimer=null; }
