@@ -1,975 +1,828 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="uk">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Адмін — Nice Shopping</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;1,400&display=swap" rel="stylesheet">
-  <link rel="icon" type="image/svg+xml" href="favicon.svg">
-  <style>
-    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-    html,body{height:100%;width:100%}
-    :root{--bg:#020d04;--bg2:#0a1a0c;--bg3:#030f05;--green:#4ade80;--gl:#86efac;--gb:rgba(74,222,128,.1);--gbd:rgba(74,222,128,.14);--text:#E0E0E0;--dim:rgba(224,224,224,.55);--red:#f87171;--blue:#60a5fa;--serif:'Playfair Display',serif;--font:'Inter',sans-serif;--r:10px;--tr:.2s ease}
-    body{font-family:var(--font);background:var(--bg);color:var(--text);-webkit-font-smoothing:antialiased}
-    a{text-decoration:none;color:inherit}
-    button{cursor:pointer;border:none;font-family:inherit}
-    input,select,textarea{font-family:inherit}
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Адмін — Nice Shopping</title>
+<style>
+:root{
+  --bg:#08110a;--card:#0d1b10;--card2:#111e14;
+  --border:rgba(74,222,128,.11);--green:#2ecc71;--glow:rgba(46,204,113,.15);
+  --text:#dff0e4;--dim:#5d7f63;--danger:#f87171;--warn:#fbbf24;
+  --r:10px;--sb:218px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);font-size:14px;line-height:1.5}
+button{cursor:pointer;font-family:inherit}
+input,select,textarea{font-family:inherit;font-size:14px}
+a{text-decoration:none;color:inherit}
 
-    /* ── LOGIN ── */
-    .login-screen{position:fixed;top:0;left:0;right:0;bottom:0;background:linear-gradient(135deg,#010a03 0%,#051a0a 60%,#020810 100%);z-index:100}
-    .login-card{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:var(--bg2);border:1px solid var(--gbd);border-radius:20px;padding:48px 40px;width:380px;text-align:center}
-    .login-logo{font-family:var(--serif);font-size:1.9rem;color:var(--green);margin-bottom:6px}
-    .login-sub{font-size:.85rem;color:var(--dim);margin-bottom:32px}
-    .login-input{width:100%;padding:13px 44px 13px 16px;background:#061008;border:1.5px solid #1f3522;border-radius:var(--r);color:var(--text);font-size:1rem;margin-bottom:12px;transition:border-color var(--tr);text-align:center}
-    .login-input:focus{outline:none;border-color:var(--green)}
-    .pass-wrap{position:relative;margin-bottom:12px}
-    .pass-wrap .login-input{margin-bottom:0}
-    .pass-eye{position:absolute;right:14px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--dim);font-size:1.1rem;padding:4px;transition:color var(--tr)}
-    .pass-eye:hover{color:var(--green)}
-    .login-btn{width:100%;padding:13px;background:var(--green);color:#020d04;border-radius:var(--r);font-size:.95rem;font-weight:700;transition:all var(--tr)}
-    .login-btn:hover{background:var(--gl);transform:translateY(-1px)}
-    .login-error{color:var(--red);font-size:.82rem;margin-top:10px}
+/* ── LOGIN ── */
+#loginScreen{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:var(--bg);z-index:1000}
+.lbox{background:var(--card);border:1px solid var(--border);border-radius:18px;padding:40px 36px;width:340px;text-align:center}
+.llogo{font-size:1.8rem;font-weight:800;color:var(--green);margin-bottom:2px}
+.lsub{font-size:.75rem;color:var(--dim);letter-spacing:.08em;text-transform:uppercase;margin-bottom:28px}
+.linp{width:100%;padding:12px 14px;background:#0a1a0c;border:1px solid var(--border);border-radius:var(--r);color:var(--text);outline:none;margin-bottom:12px}
+.linp:focus{border-color:var(--green)}
+.lbtn{width:100%;padding:13px;background:var(--green);color:#020d04;border:none;border-radius:var(--r);font-weight:700;font-size:.95rem;transition:opacity .2s}
+.lbtn:disabled{opacity:.5}
+.lerr{color:var(--danger);font-size:.8rem;margin-top:10px;display:none}
 
-    /* ── APP LAYOUT ── */
-    .admin-app{display:flex;height:100vh;overflow:hidden}
+/* ── LAYOUT ── */
+#adminApp{display:none;height:100vh;overflow:hidden}
+#layout{display:flex;height:100vh}
 
-    /* ── SIDEBAR ── */
-    .sidebar{width:230px;background:var(--bg3);border-right:1px solid var(--gbd);display:flex;flex-direction:column;flex-shrink:0;height:100vh;overflow:hidden}
-    .sb-logo{padding:22px 20px 18px;border-bottom:1px solid var(--gbd)}
-    .sb-logo-main{font-family:var(--serif);font-size:1.2rem;color:var(--green);display:block}
-    .sb-logo-sub{font-size:.7rem;color:var(--dim);letter-spacing:.07em;text-transform:uppercase}
-    .sb-nav{flex:1;padding:10px 8px;overflow-y:auto}
-    .sb-item{width:100%;display:flex;align-items:center;gap:10px;padding:11px 12px;border-radius:var(--r);font-size:.875rem;color:var(--dim);transition:all var(--tr);margin-bottom:2px;background:none;text-align:left}
-    .sb-item:hover{background:var(--gb);color:var(--text)}
-    .sb-item.active{background:rgba(74,222,128,.15);color:var(--green);font-weight:600}
-    .sb-ico{font-size:1.1rem;width:22px;text-align:center;flex-shrink:0}
-    .sb-badge{margin-left:auto;background:var(--green);color:#020d04;border-radius:10px;font-size:.65rem;font-weight:700;padding:2px 7px;min-width:20px;text-align:center}
-    .sb-bottom{padding:14px 8px;border-top:1px solid var(--gbd)}
-    .sb-site-link{display:flex;align-items:center;gap:8px;padding:9px 12px;border-radius:var(--r);font-size:.82rem;color:var(--dim);margin-bottom:4px;transition:all var(--tr)}
-    .sb-site-link:hover{color:var(--green);background:var(--gb)}
-    .sb-logout{width:100%;padding:9px 12px;border-radius:var(--r);font-size:.82rem;color:var(--red);background:rgba(248,113,113,.07);border:1px solid rgba(248,113,113,.14);transition:all var(--tr);text-align:left}
-    .sb-logout:hover{background:rgba(248,113,113,.14)}
+/* ── SIDEBAR ── */
+#sidebar{width:var(--sb);flex-shrink:0;background:var(--card);border-right:1px solid var(--border);display:flex;flex-direction:column;height:100vh;overflow-y:auto;transition:transform .25s;z-index:250}
+.sb-logo{padding:18px 16px 10px}
+.sb-logo-name{font-size:1.05rem;font-weight:800;color:var(--green)}
+.sb-logo-sub{font-size:.68rem;color:var(--dim);letter-spacing:.08em;text-transform:uppercase}
+.sb-sep{height:1px;background:var(--border);margin:6px 12px}
+nav{flex:1;padding:6px}
+.sb-btn{display:flex;align-items:center;gap:10px;width:100%;padding:9px 12px;background:none;border:none;border-radius:var(--r);color:var(--dim);font-size:.86rem;transition:background .15s,color .15s;text-align:left;position:relative}
+.sb-btn:hover{background:rgba(74,222,128,.06);color:var(--text)}
+.sb-btn.active{background:rgba(74,222,128,.13);color:var(--green)}
+.sb-ico{font-size:1rem;width:20px;text-align:center}
+.sb-badge{margin-left:auto;background:var(--green);color:#020d04;font-size:.68rem;font-weight:700;padding:1px 7px;border-radius:20px;display:none}
+.sb-bottom{padding:10px 6px;border-top:1px solid var(--border);display:flex;flex-direction:column;gap:3px}
+.sb-link{display:flex;align-items:center;gap:8px;padding:8px 12px;border-radius:var(--r);color:var(--dim);font-size:.8rem;border:none;background:none;width:100%;text-align:left;transition:background .15s,color .15s}
+.sb-link:hover{background:rgba(255,255,255,.04);color:var(--text)}
+.sb-logout{display:flex;align-items:center;gap:8px;padding:9px 12px;border-radius:var(--r);border:1px solid rgba(248,113,113,.22);background:rgba(248,113,113,.04);color:var(--danger);font-size:.8rem;cursor:pointer;width:100%;font-family:inherit;transition:background .15s}
+.sb-logout:hover{background:rgba(248,113,113,.1)}
 
-    /* ── MAIN AREA ── */
-    .main-area{flex:1;display:flex;flex-direction:column;overflow:hidden}
-    .topbar{padding:16px 28px;border-bottom:1px solid var(--gbd);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;background:var(--bg)}
-    .topbar h1{font-family:var(--serif);font-size:1.4rem;font-weight:400}
-    .topbar-actions{display:flex;gap:8px;align-items:center}
-    .tab-scroll{flex:1;overflow-y:auto;padding:24px 28px}
+/* ── MAIN ── */
+#main{flex:1;overflow:hidden;display:flex;flex-direction:column}
+.tab{display:none;flex:1;flex-direction:column;overflow:hidden}
+.tab.active{display:flex}
+.tab-scroll{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch}
 
-    /* ── STAT CARDS ── */
-    .stat-cards{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:22px}
-    .stat-cards.row2{grid-template-columns:repeat(4,1fr);margin-top:14px}
-    .stat-card{background:var(--bg2);border:1px solid var(--gbd);border-radius:14px;padding:20px 18px}
-    .stat-card__ico{font-size:1.5rem;margin-bottom:8px}
-    .stat-card__val{font-family:var(--serif);font-size:1.8rem;color:var(--green);line-height:1;margin-bottom:4px}
-    .stat-card__lbl{font-size:.75rem;color:var(--dim);text-transform:uppercase;letter-spacing:.05em}
+/* ── PAGE HEADER ── */
+.phdr{display:flex;align-items:center;justify-content:space-between;padding:18px 22px 0;gap:10px;flex-wrap:wrap}
+.phdr-title{font-size:1.3rem;font-weight:700}
+.phdr-right{display:flex;gap:8px;align-items:center}
 
-    /* ── CHART ── */
-    .box{background:var(--bg2);border:1px solid var(--gbd);border-radius:14px;padding:20px 22px;margin-bottom:18px}
-    .box h2{font-size:.95rem;font-weight:600;margin-bottom:16px}
-    .chart{display:flex;align-items:flex-end;gap:8px;height:110px}
-    .bar-col{display:flex;flex-direction:column;align-items:center;gap:3px;flex:1}
-    .bar-val{font-size:.68rem;color:var(--dim);min-height:12px}
-    .bar-wrap{flex:1;width:100%;display:flex;align-items:flex-end}
-    .bar{width:100%;background:linear-gradient(180deg,var(--green),rgba(74,222,128,.35));border-radius:4px 4px 0 0;min-height:3px}
-    .bar-lbl{font-size:.67rem;color:var(--dim)}
+/* ── BUTTONS ── */
+.btn-green{display:inline-flex;align-items:center;gap:6px;padding:9px 18px;background:var(--green);color:#020d04;border:none;border-radius:var(--r);font-weight:700;font-size:.84rem;transition:opacity .15s}
+.btn-green:hover{opacity:.85}
+.btn-out{display:inline-flex;align-items:center;gap:5px;padding:8px 14px;background:none;border:1px solid var(--border);color:var(--dim);border-radius:var(--r);font-size:.8rem;transition:background .15s,color .15s}
+.btn-out:hover{background:rgba(255,255,255,.05);color:var(--text)}
+.btn-sm{padding:5px 10px;border-radius:6px;font-size:.74rem;border:1px solid var(--border);background:none;color:var(--dim);transition:all .15s}
+.btn-sm:hover{background:rgba(255,255,255,.06);color:var(--text)}
+.btn-sm.danger{border-color:rgba(248,113,113,.3);color:var(--danger)}
+.btn-sm.danger:hover{background:rgba(248,113,113,.1)}
+.btn-sm.primary{border-color:rgba(74,222,128,.3);color:var(--green)}
+.btn-sm.primary:hover{background:rgba(74,222,128,.1)}
 
-    /* ── TABLES ── */
-    .tbl-wrap{overflow-x:auto}
-    .data-table{width:100%;border-collapse:collapse;font-size:.855rem}
-    .data-table th{text-align:left;padding:9px 12px;font-size:.7rem;font-weight:600;color:var(--dim);text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid var(--gbd);white-space:nowrap}
-    .data-table td{padding:11px 12px;border-bottom:1px solid rgba(74,222,128,.05);vertical-align:middle}
-    .data-table tr:last-child td{border-bottom:none}
-    .data-table tr:hover td{background:rgba(74,222,128,.03)}
-    .ord-group-hdr{font-size:.8rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--green);padding:18px 4px 8px;opacity:.75}
-    .ord-group-hdr.today{color:#4ade80;opacity:1;font-size:.85rem}
-    .ord-refresh{font-size:.72rem;color:var(--dim);padding:4px 0 0;text-align:right}
+/* ── FILTER BAR ── */
+.fbar-wrap{padding:10px 22px;overflow-x:auto;scrollbar-width:none}
+.fbar-wrap::-webkit-scrollbar{display:none}
+.fbar{display:flex;gap:6px;white-space:nowrap}
+.fp{padding:6px 14px;border-radius:20px;border:1px solid var(--border);background:none;color:var(--dim);font-size:.76rem;white-space:nowrap;transition:all .15s}
+.fp:hover{background:var(--glow);color:var(--text)}
+.fp.active{background:var(--green);color:#020d04;border-color:var(--green);font-weight:600}
 
-    /* ── BUTTONS ── */
-    .btn-green{background:var(--green);color:#020d04;padding:9px 18px;border-radius:var(--r);font-size:.855rem;font-weight:700;transition:all var(--tr)}
-    .btn-green:hover{background:var(--gl);transform:translateY(-1px)}
-    .btn-outline{background:var(--gb);border:1px solid var(--gbd);color:var(--text);padding:8px 16px;border-radius:var(--r);font-size:.82rem;transition:all var(--tr)}
-    .btn-outline:hover{border-color:var(--green);color:var(--green)}
-    .btn-icon{background:none;border:none;padding:6px 10px;border-radius:6px;font-size:.8rem;transition:all var(--tr);white-space:nowrap}
-    .btn-edit{background:rgba(96,165,250,.1);color:var(--blue);border:1px solid rgba(96,165,250,.2)}
-    .btn-edit:hover{background:rgba(96,165,250,.2)}
-    .btn-del{background:rgba(248,113,113,.1);color:var(--red);border:1px solid rgba(248,113,113,.2)}
-    .btn-del:hover{background:rgba(248,113,113,.2)}
-    .btn-move{background:rgba(139,92,246,.1);color:#a78bfa;border:1px solid rgba(139,92,246,.2)}
-    .btn-move:hover{background:rgba(139,92,246,.2)}
+/* ── TABLE ── */
+.tbl-wrap{overflow-x:auto}
+.dtbl{width:100%;border-collapse:collapse}
+.dtbl th{padding:9px 14px;text-align:left;font-size:.7rem;color:var(--dim);text-transform:uppercase;letter-spacing:.06em;border-bottom:1px solid var(--border);white-space:nowrap}
+.dtbl td{padding:9px 14px;border-bottom:1px solid rgba(74,222,128,.04);vertical-align:middle}
+.dtbl tbody tr:hover{background:rgba(74,222,128,.025)}
+.dtbl tbody tr:last-child td{border-bottom:none}
 
-    /* ── PAGE HEADER ── */
-    .page-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;gap:12px;flex-wrap:wrap}
-    .page-hdr h1{font-family:var(--serif);font-size:1.4rem;font-weight:400}
-    .hdr-tools{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+/* ── THUMB ── */
+.thumb{width:38px;height:38px;border-radius:8px;object-fit:cover}
+.thumb-ph{width:38px;height:38px;border-radius:8px;background:linear-gradient(135deg,#4ade8033,#16653422);display:flex;align-items:center;justify-content:center;font-size:.95rem}
 
-    /* ── PRODUCT THUMB ── */
-    .prod-thumb{width:44px;height:44px;border-radius:8px;object-fit:cover;display:block;flex-shrink:0}
-    .prod-thumb-grad{width:44px;height:44px;border-radius:8px;flex-shrink:0}
+/* ── INLINE INPUTS ── */
+.iinp{background:rgba(74,222,128,.05);border:1px solid rgba(74,222,128,.1);border-radius:6px;color:var(--text);padding:4px 8px;width:68px;text-align:center}
+.iinp:focus{outline:none;border-color:var(--green)}
+.stk-cell{display:flex;align-items:center;gap:6px}
+.stk-tog{padding:3px 8px;border-radius:6px;font-size:.68rem;font-weight:600;border:1px solid;cursor:pointer;background:none}
+.stk-tog.avail{border-color:rgba(74,222,128,.3);color:var(--green)}
+.stk-tog.out{border-color:rgba(248,113,113,.3);color:var(--danger)}
 
-    /* ── BADGES ── */
-    .badge{display:inline-block;padding:2px 9px;border-radius:20px;font-size:.7rem;font-weight:600}
-    .badge-socks{background:rgba(59,130,246,.14);color:#60a5fa}
-    .badge-lingerie{background:rgba(139,92,246,.14);color:#a78bfa}
-    .badge-bras{background:rgba(244,63,94,.14);color:#fb7185}
-    .badge-custom{background:rgba(74,222,128,.12);color:var(--green)}
+/* ── PROD GRID ── */
+.pgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:12px;padding:0 22px 22px}
+.pgc{background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:hidden;display:flex;flex-direction:column}
+.pgc-img{aspect-ratio:1;position:relative;display:flex;align-items:center;justify-content:center;overflow:hidden;background:linear-gradient(135deg,#4ade8018,#16653418)}
+.pgc-img img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.pgc-body{padding:8px 10px;flex:1}
+.pgc-name{font-size:.76rem;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pgc-price{font-size:.88rem;font-weight:700;color:var(--green)}
+.pgc-old{font-size:.7rem;color:var(--dim);text-decoration:line-through;margin-left:4px}
+.pgc-acts{display:flex;gap:4px;padding:7px 8px;border-top:1px solid var(--border)}
+.pgc-acts .btn-sm{flex:1;text-align:center;padding:5px 4px}
 
-    /* ── VIEW TOGGLE ── */
-    .view-toggle{display:flex;background:var(--bg2);border:1px solid var(--gbd);border-radius:8px;overflow:hidden}
-    .view-btn{padding:6px 12px;font-size:.82rem;color:var(--dim);transition:all var(--tr);background:none}
-    .view-btn.active{background:var(--gb);color:var(--green)}
+/* ── VIEW SWITCH ── */
+.vsw{display:flex;gap:4px}
+.vbtn{padding:6px 10px;border-radius:8px;border:1px solid var(--border);background:none;color:var(--dim);font-size:.82rem;transition:all .15s}
+.vbtn.active{background:var(--glow);color:var(--green);border-color:rgba(74,222,128,.3)}
 
-    /* ── PRODUCT GRID VIEW ── */
-    .prod-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:14px}
-    .prod-grid-card{background:var(--bg2);border:1px solid var(--gbd);border-radius:14px;overflow:hidden;transition:all var(--tr)}
-    .prod-grid-card:hover{border-color:rgba(74,222,128,.3);box-shadow:0 6px 24px rgba(74,222,128,.1)}
-    .pgc-img{height:130px;position:relative;display:flex;align-items:center;justify-content:center;font-size:2rem}
-    .pgc-img img{width:100%;height:100%;object-fit:cover;position:absolute;inset:0}
-    .pgc-new{position:absolute;top:8px;left:8px;background:var(--green);color:#020d04;font-size:.6rem;font-weight:700;padding:2px 7px;border-radius:4px}
-    .pgc-body{padding:12px}
-    .pgc-name{font-size:.82rem;font-weight:600;color:var(--text);margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-    .pgc-price{color:var(--green);font-weight:700;font-size:.9rem}
-    .pgc-old{color:var(--dim);text-decoration:line-through;font-size:.75rem;margin-left:4px}
-    .pgc-actions{display:flex;gap:4px;padding:8px 12px;border-top:1px solid var(--gbd)}
-    .pgc-actions button{flex:1;padding:5px;font-size:.72rem;border-radius:6px}
+/* ── STAT CARDS ── */
+.sgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;padding:16px 22px}
+.scard{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px 16px}
+.scard-label{font-size:.68rem;color:var(--dim);text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px}
+.scard-val{font-size:1.4rem;font-weight:700}
+.scard-val.green{color:var(--green)}
+.scard-val.warn{color:var(--warn)}
 
-    /* ── CATALOG TAB ── */
-    .cat-cards-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px}
-    .cat-admin-card{background:var(--bg2);border:1px solid var(--gbd);border-radius:14px;padding:18px 16px;cursor:pointer;transition:all var(--tr);position:relative}
-    .cat-admin-card:hover{border-color:rgba(74,222,128,.3);box-shadow:0 4px 20px rgba(74,222,128,.08);transform:translateY(-2px)}
-    .cac-ico{font-size:1.8rem;margin-bottom:10px}
-    .cac-name{font-weight:600;font-size:.9rem;color:var(--text);margin-bottom:4px}
-    .cac-count{font-size:.78rem;color:var(--dim)}
-    .cac-del{position:absolute;top:10px;right:10px;background:none;border:none;color:var(--dim);font-size:.85rem;padding:4px;border-radius:4px;transition:color var(--tr)}
-    .cac-del:hover{color:var(--red)}
-    .cac-filter-btn{position:absolute;bottom:12px;right:12px;background:var(--gb);border:1px solid var(--gbd);color:var(--green);font-size:.7rem;padding:4px 8px;border-radius:6px;transition:all var(--tr)}
-    .cac-filter-btn:hover{background:rgba(74,222,128,.2)}
+/* ── CHART ── */
+.chart-wrap{display:flex;align-items:flex-end;gap:5px;height:72px}
+.bcol{display:flex;flex-direction:column;align-items:center;flex:1;height:100%;gap:3px}
+.bval{font-size:.62rem;color:var(--dim)}
+.bbg{flex:1;width:100%;background:rgba(74,222,128,.06);border-radius:4px;display:flex;align-items:flex-end}
+.bfill{width:100%;background:var(--green);border-radius:4px;min-height:3px}
+.blbl{font-size:.62rem;color:var(--dim)}
 
-    /* ── MOVE MODAL ── */
-    .modal{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:300;display:flex;align-items:center;justify-content:center}
-    .modal-box{background:var(--bg2);border:1px solid var(--gbd);border-radius:16px;padding:28px;width:380px;max-width:95vw}
-    .modal-box h3{font-family:var(--serif);font-size:1.2rem;margin-bottom:18px}
-    .modal-cats{display:flex;flex-direction:column;gap:6px;max-height:300px;overflow-y:auto}
-    .modal-cat-btn{display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:var(--r);background:var(--bg3);border:1px solid var(--gbd);color:var(--text);font-size:.875rem;transition:all var(--tr);text-align:left}
-    .modal-cat-btn:hover{border-color:var(--green);color:var(--green);background:var(--gb)}
-    .modal-footer{display:flex;justify-content:flex-end;margin-top:16px}
+/* ── CATALOG CARDS ── */
+.catgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(155px,1fr));gap:10px;padding:16px 22px}
+.catcard{background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:16px 12px;text-align:center;cursor:pointer;position:relative;transition:border-color .15s}
+.catcard:hover{border-color:rgba(74,222,128,.3)}
+.catcard-ico{font-size:1.7rem;margin-bottom:6px}
+.catcard-name{font-size:.8rem;font-weight:600;margin-bottom:2px}
+.catcard-count{font-size:.7rem;color:var(--dim);margin-bottom:10px}
+.catcard-del{position:absolute;top:7px;right:7px;background:none;border:none;color:var(--dim);font-size:.72rem;padding:2px 5px;border-radius:4px}
+.catcard-del:hover{color:var(--danger)}
 
-    /* ── OVERLAY (PRODUCT FORM) ── */
-    .overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:200;display:flex;justify-content:flex-end}
-    .overlay-panel{width:560px;background:var(--bg2);border-left:1px solid var(--gbd);display:flex;flex-direction:column;height:100vh}
-    .overlay-hdr{padding:18px 22px;border-bottom:1px solid var(--gbd);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
-    .overlay-hdr h2{font-family:var(--serif);font-size:1.2rem;font-weight:400}
-    .overlay-close{width:30px;height:30px;border-radius:50%;background:var(--gb);color:var(--dim);font-size:.9rem;display:flex;align-items:center;justify-content:center;transition:all var(--tr)}
-    .overlay-close:hover{background:rgba(248,113,113,.15);color:var(--red)}
-    .overlay-body{flex:1;overflow-y:auto;padding:20px 22px}
-    .overlay-footer{padding:14px 22px;border-top:1px solid var(--gbd);display:flex;gap:8px;flex-shrink:0}
-    .btn-cancel{flex:1;padding:10px;border-radius:var(--r);font-size:.855rem;color:var(--dim);background:var(--gb);border:1px solid var(--gbd);transition:all var(--tr)}
-    .btn-cancel:hover{color:var(--text)}
-    .btn-save{flex:2;padding:10px;border-radius:var(--r);font-size:.855rem;font-weight:700;background:var(--green);color:#020d04;transition:all var(--tr)}
-    .btn-save:hover{background:var(--gl)}
+/* ── ORDER ROWS ── */
+.ord-detail{display:none;background:#080e0a;border-top:1px solid var(--border)}
+.ord-detail.open{display:block}
+.ord-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px 24px;padding:14px 20px}
+.ord-label{font-size:.68rem;color:var(--dim);text-transform:uppercase;letter-spacing:.06em}
+.ord-val{font-size:.86rem}
+.ord-footer{padding:12px 20px;display:flex;justify-content:space-between;align-items:center;border-top:1px solid rgba(74,222,128,.06)}
 
-    /* ── FORM FIELDS ── */
-    .fg{margin-bottom:14px}
-    .fg label{display:block;font-size:.72rem;font-weight:600;color:var(--dim);margin-bottom:5px;text-transform:uppercase;letter-spacing:.05em}
-    .fi{width:100%;padding:9px 13px;background:#061008;border:1.5px solid #1f3522;border-radius:var(--r);color:var(--text);font-size:.875rem;transition:border-color var(--tr)}
-    .fi:focus{outline:none;border-color:var(--green)}
-    .fi::placeholder{color:rgba(224,224,224,.22)}
-    textarea.fi{resize:vertical;min-height:76px}
-    .fr2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-    .fsep{font-size:.68rem;font-weight:700;color:var(--green);letter-spacing:.1em;text-transform:uppercase;margin:16px 0 10px;padding-bottom:5px;border-bottom:1px solid var(--gbd)}
-    .img-preview{width:100%;height:220px;border-radius:var(--r);border:1.5px dashed #1f3522;display:flex;align-items:center;justify-content:center;color:var(--dim);font-size:.8rem;margin-bottom:8px;overflow:hidden;background:#061008}
-    .img-preview img{max-width:100%;max-height:220px;object-fit:contain;display:block}
-    /* Multi-image slots */
-    .imgs-slots{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:10px}
-    .img-slot{aspect-ratio:3/4;border-radius:10px;border:1.5px dashed #1f3522;background:#061008;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--dim);font-size:1.5rem;position:relative;overflow:hidden;transition:border-color var(--tr)}
-    .img-slot:hover{border-color:rgba(74,222,128,.4)}
-    .img-slot img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
-    .img-slot__del{position:absolute;top:3px;right:3px;background:rgba(0,0,0,.75);color:#fff;border:none;border-radius:4px;width:18px;height:18px;font-size:.6rem;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:2;line-height:1}
-    .img-slot__main{position:absolute;bottom:3px;left:3px;background:var(--green);color:#020d04;font-size:.5rem;font-weight:700;padding:1px 5px;border-radius:3px;z-index:2;pointer-events:none}
-    .img-slot.active-slot::after{content:'';position:absolute;inset:0;border:2px solid var(--green);border-radius:10px;pointer-events:none;z-index:1}
-    /* Color presets */
-    .color-presets{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:8px}
-    .preset-sw{width:32px;height:32px;border-radius:50%;cursor:pointer;border:2.5px solid transparent;transition:all .15s;position:relative;flex-shrink:0}
-    .preset-sw:hover{transform:scale(1.18)}
-    .preset-sw.active{box-shadow:0 0 0 2px #020d04,0 0 0 4.5px #4ade80}
-    .preset-sw.active::after{content:'✓';position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:.65rem;color:#fff;text-shadow:0 0 3px rgba(0,0,0,.8)}
-    /* Color tags */
-    .color-tags{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px;min-height:0}
-    .color-tag{display:flex;align-items:center;gap:6px;background:var(--bg3);border:1px solid var(--gbd);border-radius:20px;padding:4px 10px 4px 6px;font-size:.78rem;color:var(--text)}
-    .color-tag__dot{width:14px;height:14px;border-radius:50%;flex-shrink:0;border:1px solid rgba(255,255,255,.1)}
-    .color-tag__del{background:none;border:none;color:var(--dim);cursor:pointer;font-size:.8rem;margin-left:2px;padding:0;line-height:1}
-    .color-tag__del:hover{color:var(--red)}
+/* ── REVIEW CARD ── */
+.rcard{background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:12px 16px;margin-bottom:8px}
+.rcard-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px}
+.rcard-name{font-weight:600;font-size:.86rem}
+.rcard-stars{color:var(--warn);font-size:.82rem}
+.rcard-text{font-size:.8rem;color:var(--dim)}
 
-    /* ── EMPTY STATE ── */
-    .empty{text-align:center;padding:50px 20px;color:var(--dim)}
-    .empty-ico{font-size:2.8rem;margin-bottom:12px}
-    .empty p{font-size:.875rem;margin-bottom:16px}
+/* ── OVERLAY PANEL ── */
+#overlay{position:fixed;inset:0;background:rgba(0,0,0,.72);display:none;z-index:500;justify-content:flex-end}
+#overlay.open{display:flex}
+#panel{width:530px;max-width:100%;background:var(--card);border-left:1px solid var(--border);display:flex;flex-direction:column;height:100vh;overflow:hidden}
+.panel-hdr{display:flex;align-items:center;justify-content:space-between;padding:16px 18px;border-bottom:1px solid var(--border);flex-shrink:0}
+.panel-title{font-size:.98rem;font-weight:700}
+.panel-close{width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,.06);border:none;color:var(--dim);font-size:.9rem;display:flex;align-items:center;justify-content:center}
+.panel-close:hover{background:rgba(255,255,255,.12);color:var(--text)}
+.panel-body{flex:1;overflow-y:auto;padding:18px}
+.panel-footer{padding:14px 18px;border-top:1px solid var(--border);display:flex;gap:8px;flex-shrink:0}
 
-    /* ── INLINE EDIT ── */
-    .inline-price{background:#061008;border:1px solid var(--gbd);border-radius:6px;color:var(--green);font-weight:700;font-size:.855rem;padding:4px 8px;width:80px;text-align:center}
-    .inline-price:focus{outline:none;border-color:var(--green)}
-    .stock-cell{display:flex;align-items:center;gap:5px;white-space:nowrap}
-    .inline-stock{background:#061008;border:1px solid var(--gbd);border-radius:6px;color:var(--green);font-weight:700;font-size:.855rem;padding:4px 6px;width:58px;text-align:center}
-    .inline-stock:focus{outline:none;border-color:var(--green)}
-    .stock-toggle{font-size:.7rem;padding:3px 7px;border-radius:5px;cursor:pointer;border:1px solid;font-weight:600;transition:all .15s}
-    .stock-toggle.avail{background:rgba(74,222,128,.1);border-color:rgba(74,222,128,.3);color:#4ade80}
-    .stock-toggle.avail:hover{background:rgba(74,222,128,.25)}
-    .stock-toggle.out{background:rgba(248,113,113,.1);border-color:rgba(248,113,113,.3);color:#f87171}
-    .stock-toggle.out:hover{background:rgba(248,113,113,.25)}
+/* ── FORM ── */
+.fsect{margin-bottom:18px}
+.fsect-title{font-size:.68rem;font-weight:700;color:var(--green);text-transform:uppercase;letter-spacing:.1em;margin-bottom:10px}
+.frow{display:grid;gap:10px;margin-bottom:10px}
+.frow.c2{grid-template-columns:1fr 1fr}
+.frow.c3{grid-template-columns:1fr 1fr 1fr}
+.ff{display:flex;flex-direction:column;gap:4px}
+.flbl{font-size:.68rem;color:var(--dim);text-transform:uppercase;letter-spacing:.05em}
+.finp,.fsel,.fta{width:100%;padding:10px 12px;background:#0a1a0c;border:1px solid var(--border);border-radius:var(--r);color:var(--text);outline:none;transition:border-color .15s}
+.finp:focus,.fsel:focus,.fta:focus{border-color:rgba(74,222,128,.4)}
+.fta{resize:vertical;min-height:72px}
+.fhint{font-size:.7rem;color:var(--dim)}
+.fhint.green{color:var(--green)}
 
-    /* ── CAT FORM MODAL ── */
-    .cat-modal{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:300;display:flex;align-items:center;justify-content:center}
-    .cat-modal-box{background:var(--bg2);border:1px solid var(--gbd);border-radius:16px;padding:30px;width:400px;max-width:95vw}
-    .cat-modal-box h3{font-family:var(--serif);font-size:1.2rem;margin-bottom:20px}
+/* ── IMG SLOTS ── */
+.islots{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:8px}
+.islot{width:76px;height:76px;border-radius:10px;border:1.5px dashed rgba(74,222,128,.22);display:flex;align-items:center;justify-content:center;font-size:1.2rem;color:var(--dim);cursor:pointer;position:relative;overflow:hidden;transition:border-color .15s}
+.islot:hover{border-color:var(--green)}
+.islot.filled{border-style:solid;border-color:var(--border)}
+.islot.active-slot{border-color:var(--green)!important}
+.islot img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.islot-main{position:absolute;bottom:2px;left:2px;font-size:.52rem;background:var(--green);color:#020d04;padding:1px 4px;border-radius:3px;font-weight:700}
+.islot-del{position:absolute;top:2px;right:2px;width:17px;height:17px;border-radius:50%;background:rgba(0,0,0,.75);border:none;color:#fff;font-size:.6rem;display:flex;align-items:center;justify-content:center}
+.img-url-row{display:flex;gap:6px}
+.img-rot-row{display:flex;gap:5px;margin-top:5px}
 
-    /* ── TOAST ── */
-    .toast{position:fixed;bottom:20px;right:20px;background:#1a1a1a;color:#fff;padding:11px 18px;border-radius:10px;font-size:.855rem;z-index:999;transform:translateY(60px);opacity:0;transition:all .3s;pointer-events:none}
-    .toast.show{transform:translateY(0);opacity:1}
+/* ── COLORS ── */
+.cpresets{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:7px}
+.csw{width:26px;height:26px;border-radius:50%;border:2px solid transparent;cursor:pointer;transition:border-color .15s,transform .1s;flex-shrink:0}
+.csw:hover{transform:scale(1.1)}
+.csw.on{border-color:#fff;box-shadow:0 0 0 1px rgba(0,0,0,.4)}
+.ctags{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:8px}
+.ctag{display:flex;align-items:center;gap:5px;padding:3px 8px 3px 5px;background:rgba(74,222,128,.07);border:1px solid rgba(74,222,128,.18);border-radius:20px;font-size:.76rem}
+.cdot{width:11px;height:11px;border-radius:50%;flex-shrink:0}
+.ctag-del{background:none;border:none;color:var(--dim);font-size:.75rem;padding:0;line-height:1}
+.ctag-del:hover{color:var(--danger)}
+.cust-row{display:flex;gap:7px;align-items:center}
 
-    /* ── FILTER BAR ── */
-    .filter-bar{display:flex;gap:6px;flex-wrap:nowrap;overflow-x:auto;margin-bottom:16px;padding-bottom:4px;scrollbar-width:thin;scrollbar-color:rgba(74,222,128,.2) transparent}
-    .filter-bar::-webkit-scrollbar{height:3px}
-    .filter-bar::-webkit-scrollbar-track{background:transparent}
-    .filter-bar::-webkit-scrollbar-thumb{background:rgba(74,222,128,.25);border-radius:2px}
-    .filter-pill{padding:5px 12px;border-radius:20px;font-size:.78rem;border:1px solid var(--gbd);color:var(--dim);background:none;transition:all var(--tr);cursor:pointer;white-space:nowrap;flex-shrink:0}
-    .filter-pill:hover{border-color:var(--green);color:var(--green)}
-    .filter-pill.active{background:rgba(74,222,128,.15);border-color:rgba(74,222,128,.4);color:var(--green);font-weight:600}
+/* ── ICON GRID ── */
+.icongrid{display:flex;gap:5px;flex-wrap:wrap;margin:8px 0}
+.iopt{width:34px;height:34px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:1.05rem;cursor:pointer;border:2px solid transparent;background:rgba(255,255,255,.03);transition:border-color .15s}
+.iopt:hover{background:rgba(255,255,255,.07)}
+.iopt.sel{border-color:var(--green);background:rgba(74,222,128,.1)}
 
-    /* ── ICON PICKER ── */
-    .icon-grid{display:grid;grid-template-columns:repeat(8,1fr);gap:4px;margin-bottom:8px}
-    .icon-opt{font-size:1.3rem;padding:6px;border-radius:6px;background:var(--bg3);border:1.5px solid transparent;cursor:pointer;text-align:center;transition:all var(--tr)}
-    .icon-opt:hover,.icon-opt.selected{border-color:var(--green);background:var(--gb)}
+/* ── MODAL ── */
+.moverlay{position:fixed;inset:0;background:rgba(0,0,0,.72);display:none;align-items:center;justify-content:center;z-index:600}
+.moverlay.open{display:flex}
+.mbox{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:22px;width:460px;max-width:95vw;max-height:85vh;overflow-y:auto}
+.mhdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.mtitle{font-size:.96rem;font-weight:700}
+.mcats{display:flex;flex-wrap:wrap;gap:7px}
+.mcat-btn{padding:8px 13px;border-radius:var(--r);border:1px solid var(--border);background:none;color:var(--dim);font-size:.78rem;transition:all .15s}
+.mcat-btn:hover{background:var(--glow);color:var(--text)}
+.mcat-btn.cur{border-color:var(--green);color:var(--green);background:rgba(74,222,128,.08)}
 
-    /* ── PHOTO TAB ── */
-    .photo-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(155px,1fr));gap:14px}
-    .photo-card{background:var(--bg2);border:1.5px solid var(--gbd);border-radius:14px;overflow:hidden;cursor:pointer;transition:all var(--tr);position:relative}
-    .photo-card:hover{border-color:rgba(74,222,128,.45);box-shadow:0 6px 24px rgba(74,222,128,.12);transform:translateY(-2px)}
-    .photo-card__img{height:140px;display:flex;align-items:center;justify-content:center;background:#061008;position:relative;overflow:hidden}
-    .photo-card__img img{width:100%;height:100%;object-fit:cover}
-    .photo-card__no-img{font-size:2.2rem;opacity:.3}
-    .photo-card__overlay{position:absolute;inset:0;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity var(--tr);font-size:1.6rem}
-    .photo-card:hover .photo-card__overlay{opacity:1}
-    .photo-card__name{padding:10px 12px 4px;font-size:.8rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-    .photo-card__status{padding:0 12px 10px;font-size:.7rem}
-    .photo-card.uploading{opacity:.5;pointer-events:none}
-    .photo-hint{font-size:.82rem;color:var(--dim);margin-bottom:16px}
-    .photo-stats{display:flex;gap:18px;margin-bottom:18px;font-size:.82rem}
-    .photo-stat{color:var(--dim)}
-    .photo-stat strong{color:var(--text)}
-    .photo-stat.ok strong{color:var(--green)}
-    .photo-stat.miss strong{color:var(--red)}
+/* ── EMPTY ── */
+.empty{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:55px 20px;color:var(--dim);gap:10px;text-align:center}
+.empty-ico{font-size:2.3rem}
+.empty p{font-size:.88rem}
 
-    /* ── MOBILE HAMBURGER ── */
-    .mob-bar{display:none;align-items:center;justify-content:space-between;padding:12px 16px;background:var(--bg3);border-bottom:1px solid var(--gbd);flex-shrink:0}
-    .mob-bar__logo{font-family:var(--serif);font-size:1.1rem;color:var(--green)}
-    .mob-ham{background:none;border:1px solid var(--gbd);border-radius:8px;color:var(--text);padding:7px 10px;font-size:1rem;cursor:pointer;transition:all var(--tr)}
-    .mob-ham:hover{border-color:var(--green);color:var(--green)}
-    .sb-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:149}
-    .sb-overlay.open{display:block}
+/* ── MOBILE ── */
+#menuBtn{display:none;position:fixed;top:11px;left:11px;z-index:300;background:var(--card);border:1px solid var(--border);width:36px;height:36px;border-radius:9px;align-items:center;justify-content:center;font-size:1rem;color:var(--text)}
+#sbOverlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200}
+@media(max-width:768px){
+  #menuBtn{display:flex}
+  #sidebar{position:fixed;left:0;top:0;bottom:0;transform:translateX(-100%)}
+  #sidebar.open{transform:translateX(0)}
+  #sbOverlay.open{display:block}
+  .phdr{padding-top:14px;padding-left:54px}
+  #panel{width:100%;border-left:none;height:auto;max-height:90vh}
+  #overlay{align-items:flex-end}
+  .sgrid{grid-template-columns:repeat(2,1fr)}
+  .frow.c2,.frow.c3{grid-template-columns:1fr}
+  .dtbl{min-width:480px}
+  .ord-grid{grid-template-columns:1fr}
+}
 
-    /* ── RESPONSIVE ── */
-    @media(max-width:768px){
-      .admin-app{flex-direction:column}
+/* ── TOAST ── */
+#toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);background:#1a2e1e;border:1px solid rgba(74,222,128,.22);color:var(--text);padding:9px 20px;border-radius:30px;font-size:.83rem;z-index:9999;opacity:0;transition:opacity .25s;pointer-events:none;white-space:nowrap}
+#toast.show{opacity:1}
 
-      /* Sidebar becomes drawer */
-      .sidebar{position:fixed;top:0;left:-240px;height:100vh;z-index:150;transition:left .25s ease;width:240px}
-      .sidebar.open{left:0}
-      .mob-bar{display:flex}
-
-      /* Main area: fills below mob-bar, scrollable */
-      .main-area{height:calc(100vh - 49px);overflow:hidden;display:flex;flex-direction:column}
-      .tab-scroll{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:12px}
-
-      /* Topbar: allow wrapping */
-      .topbar{padding:10px 12px;flex-wrap:wrap;gap:8px}
-      .topbar h1{font-size:1rem;white-space:nowrap}
-      .topbar-actions{gap:6px;flex-wrap:wrap}
-      .topbar-actions .view-toggle{display:none}
-
-      /* Stat cards: 2 per row */
-      .stat-cards{grid-template-columns:repeat(2,1fr);gap:10px}
-      .stat-cards.row2{grid-template-columns:repeat(2,1fr)}
-      .stat-card{padding:14px 12px}
-      .stat-card__val{font-size:1.4rem}
-
-      /* Tables: horizontal scroll, compact */
-      .tbl-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;border-radius:10px}
-      .data-table{min-width:520px;font-size:.78rem}
-      .data-table th,.data-table td{padding:8px 10px}
-
-      /* Overlay panel: slides up from bottom */
-      .overlay{align-items:flex-end}
-      .overlay-panel{width:100%;max-height:94vh;height:auto;border-left:none;border-top:1px solid var(--gbd);border-radius:20px 20px 0 0;overflow-y:auto;-webkit-overflow-scrolling:touch}
-
-      /* Form 2-col → 1-col */
-      .fr2{grid-template-columns:1fr}
-
-      /* Login card */
-      .login-card{width:calc(100% - 32px);padding:28px 20px}
-
-      /* Product grid smaller */
-      .prod-grid{grid-template-columns:repeat(2,1fr);gap:10px}
-
-      /* Photo grid */
-      .photo-grid{grid-template-columns:repeat(2,1fr);gap:10px}
-
-      /* Chart */
-      .chart{height:80px}
-      .bar-lbl{font-size:.58rem}
-
-      /* Toast bottom center */
-      .toast{left:12px;right:12px;bottom:16px}
-
-      /* Icon grid */
-      .icon-grid{grid-template-columns:repeat(6,1fr)}
-
-      /* Cat modal full-width */
-      .cat-modal-box{width:calc(100% - 24px);padding:22px 18px}
-
-      /* Color presets: wrap on mobile */
-      .color-presets{gap:10px}
-      .preset-sw{width:36px;height:36px}
-
-      /* Btn-green smaller */
-      .btn-green{padding:8px 14px;font-size:.82rem}
-      .filter-pill{font-size:.72rem;padding:4px 9px}
-    }
-
-    @media(max-width:480px){
-      .stat-cards{grid-template-columns:1fr 1fr}
-      .stat-card__val{font-size:1.25rem}
-      .tab-scroll{padding:10px}
-      .topbar{padding:8px 10px}
-      .prod-grid{grid-template-columns:repeat(2,1fr)}
-      .photo-grid{grid-template-columns:repeat(2,1fr)}
-      .data-table{min-width:460px;font-size:.73rem}
-    }
-  </style>
+/* ── MISC ── */
+.box{background:var(--card);border:1px solid var(--border);border-radius:14px;overflow:hidden}
+.badge{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:20px;font-size:.7rem;font-weight:500;background:rgba(74,222,128,.08);border:1px solid rgba(74,222,128,.15);color:rgba(74,222,128,.8)}
+</style>
 </head>
 <body>
 
-<!-- LOGIN -->
-<div id="loginScreen" class="login-screen">
-  <div class="login-card">
-    <div class="login-logo">Nice Shopping</div>
-    <div class="login-sub">Адміністративна панель</div>
-    <div class="pass-wrap">
-      <input type="password" id="loginPass" class="login-input" placeholder="Введіть пароль">
-      <button class="pass-eye" onclick="togglePass()" id="eyeBtn" title="Показати пароль">👁</button>
-    </div>
-    <button class="login-btn" onclick="doLogin()">Увійти →</button>
-    <div id="loginErr" class="login-error" style="display:none">Невірний пароль</div>
+<!-- ── LOGIN ── -->
+<div id="loginScreen">
+  <div class="lbox">
+    <div class="llogo">Nice Shopping</div>
+    <div class="lsub">Адмін панель</div>
+    <input id="loginPass" class="linp" type="password" placeholder="Пароль">
+    <button class="lbtn" onclick="doLogin()">Увійти →</button>
+    <div id="loginErr" class="lerr"></div>
   </div>
 </div>
 
-<!-- ADMIN APP -->
-<div id="adminApp" class="admin-app" style="display:none">
+<!-- ── ADMIN ── -->
+<div id="adminApp">
+<button id="menuBtn" onclick="openSb()">☰</button>
+<div id="sbOverlay" onclick="closeSb()"></div>
+<div id="layout">
 
-  <!-- Mobile overlay -->
-  <div class="sb-overlay" id="sbOverlay" onclick="closeSidebar()"></div>
+<!-- SIDEBAR -->
+<aside id="sidebar">
+  <div class="sb-logo">
+    <div class="sb-logo-name">Nice Shopping</div>
+    <div class="sb-logo-sub">Адмін панель</div>
+  </div>
+  <div class="sb-sep"></div>
+  <nav>
+    <button class="sb-btn active" id="btn-stats"    onclick="showTab('stats')">   <span class="sb-ico">📊</span> Статистика</button>
+    <button class="sb-btn"        id="btn-products" onclick="showTab('products')"><span class="sb-ico">📦</span> Товари <span class="sb-badge" id="sbProd">0</span></button>
+    <button class="sb-btn"        id="btn-cats"     onclick="showTab('cats')">    <span class="sb-ico">🗂</span> Каталоги</button>
+    <button class="sb-btn"        id="btn-orders"   onclick="showTab('orders')">  <span class="sb-ico">📋</span> Замовлення <span class="sb-badge" id="sbOrd">0</span></button>
+    <button class="sb-btn"        id="btn-reviews"  onclick="showTab('reviews')"> <span class="sb-ico">⭐</span> Відгуки</button>
+  </nav>
+  <div class="sb-sep"></div>
+  <div class="sb-bottom">
+    <a href="index.html" target="_blank" class="sb-link">↗ Відкрити сайт</a>
+    <a href="catalog.html" target="_blank" class="sb-link">↗ Каталог</a>
+    <button class="sb-link" onclick="doRefresh()">↻ Оновити сторінку</button>
+    <button class="sb-logout" onclick="doLogout()">Вийти з панелі</button>
+  </div>
+</aside>
 
-  <!-- Sidebar -->
-  <aside class="sidebar" id="sidebar">
-    <div class="sb-logo">
-      <div style="display:flex;align-items:center;gap:7px">
-        <svg width="16" height="19" viewBox="0 0 24 30" fill="#4ade80" aria-hidden="true"><circle cx="12" cy="6" r="5.8"/><circle cx="12" cy="18" r="5.8"/><circle cx="6" cy="12" r="5.8"/><circle cx="18" cy="12" r="5.8"/><path d="M12,24 Q10,27 9,29" stroke="#4ade80" stroke-width="2" stroke-linecap="round" fill="none" opacity=".85"/></svg>
-        <span class="sb-logo-main">Nice Shopping</span>
-      </div>
-      <span class="sb-logo-sub">Адмін панель</span>
+<!-- MAIN -->
+<div id="main">
+
+<!-- STATS TAB -->
+<div id="tab-stats" class="tab active">
+  <div class="tab-scroll">
+    <div class="phdr"><div class="phdr-title">Статистика</div></div>
+    <div class="sgrid" id="statGrid">
+      <div class="scard"><div class="scard-label">Товарів</div><div class="scard-val green" id="sProducts">—</div></div>
+      <div class="scard"><div class="scard-label">Залишок (шт)</div><div class="scard-val" id="sStockQty">—</div></div>
+      <div class="scard"><div class="scard-label">Сума залишку</div><div class="scard-val green" id="sStockVal">—</div></div>
+      <div class="scard"><div class="scard-label">Замовлень</div><div class="scard-val" id="sOrders">—</div></div>
+      <div class="scard"><div class="scard-label">Виручка</div><div class="scard-val green" id="sRevenue">—</div></div>
+      <div class="scard"><div class="scard-label">Продано (шт)</div><div class="scard-val" id="sSold">—</div></div>
+      <div class="scard"><div class="scard-label">Прибуток (склад)</div><div class="scard-val green" id="sStockProfit">—</div></div>
+      <div class="scard"><div class="scard-label">Прибуток (продаж)</div><div class="scard-val green" id="sSoldProfit">—</div></div>
     </div>
-    <nav class="sb-nav">
-      <button class="sb-item active" id="btn-stats"    onclick="showTab('stats')">   <span class="sb-ico">📊</span> Статистика</button>
-      <button class="sb-item"        id="btn-products" onclick="showTab('products')"><span class="sb-ico">📦</span> Товари <span class="sb-badge" id="sbProdCount">0</span></button>
-      <button class="sb-item"        id="btn-catalogs" onclick="showTab('catalogs')"><span class="sb-ico">🗂</span> Каталоги</button>
-      <button class="sb-item"        id="btn-orders"   onclick="showTab('orders')">  <span class="sb-ico">📋</span> Замовлення <span class="sb-badge" id="sbOrdCount" style="display:none">0</span></button>
-      <button class="sb-item"        id="btn-photos"   onclick="showTab('photos')"> <span class="sb-ico">📸</span> Фото товарів</button>
-    </nav>
-    <div class="sb-bottom">
-      <a href="index.html" target="_blank" class="sb-site-link">↗ Відкрити сайт</a>
-      <a href="catalog.html" target="_blank" class="sb-site-link">↗ Переглянути каталог</a>
-      <button class="sb-site-link" style="width:100%;text-align:left;border:none;background:rgba(255,255,255,.04);border-radius:var(--r);margin-bottom:4px" onclick="doRefresh()">↻ Оновити сторінку</button>
-      <button class="sb-logout" onclick="doLogout()">Вийти з панелі</button>
+    <div style="padding:0 22px 14px">
+      <div style="font-size:.75rem;color:var(--dim);margin-bottom:8px">Відвідування за 7 днів</div>
+      <div class="chart-wrap" id="chart"></div>
     </div>
-  </aside>
-
-  <!-- Main -->
-  <div class="main-area">
-    <!-- Mobile top bar -->
-    <div class="mob-bar">
-      <span class="mob-bar__logo">Nice Shopping</span>
-      <button class="mob-ham" onclick="openSidebar()">☰ Меню</button>
+    <div style="padding:0 22px 22px" id="statsTable"></div>
+    <div style="padding:0 22px 22px">
+      <div style="font-size:.82rem;font-weight:600;margin-bottom:10px">Нещодавні замовлення</div>
+      <div id="recentOrders"></div>
     </div>
-
-    <!-- STATISTICS -->
-    <div id="tab-stats" class="tab-scroll">
-      <div class="page-hdr"><h1>Статистика</h1></div>
-      <div class="stat-cards">
-        <div class="stat-card"><div class="stat-card__ico">👁</div><div class="stat-card__val" id="sVisits">0</div><div class="stat-card__lbl">Відвідувачів</div></div>
-        <div class="stat-card"><div class="stat-card__ico">📋</div><div class="stat-card__val" id="sOrders">0</div><div class="stat-card__lbl">Замовлень</div></div>
-        <div class="stat-card"><div class="stat-card__ico">💰</div><div class="stat-card__val" id="sRevenue">₴0</div><div class="stat-card__lbl">Виручка</div></div>
-        <div class="stat-card"><div class="stat-card__ico">📦</div><div class="stat-card__val" id="sProducts">0</div><div class="stat-card__lbl">Товарів</div></div>
-      </div>
-      <div class="stat-cards row2">
-        <div class="stat-card"><div class="stat-card__ico">🏷</div><div class="stat-card__val" id="sStockQty">0</div><div class="stat-card__lbl">Залишок (шт.)</div></div>
-        <div class="stat-card"><div class="stat-card__ico">💎</div><div class="stat-card__val" id="sStockVal">₴0</div><div class="stat-card__lbl">Вартість залишку</div></div>
-        <div class="stat-card"><div class="stat-card__ico">🛒</div><div class="stat-card__val" id="sSold">0</div><div class="stat-card__lbl">Продано одиниць</div></div>
-        <div class="stat-card"><div class="stat-card__ico">📈</div><div class="stat-card__val" id="sSoldVal">₴0</div><div class="stat-card__lbl">На суму продано</div></div>
-      </div>
-      <div class="stat-cards row2">
-        <div class="stat-card"><div class="stat-card__ico">🧾</div><div class="stat-card__val" id="sCostVal">₴0</div><div class="stat-card__lbl">Собівартість залишку</div></div>
-        <div class="stat-card"><div class="stat-card__ico">💹</div><div class="stat-card__val" id="sStockProfit">₴0</div><div class="stat-card__lbl">Потенц. прибуток (залишок)</div></div>
-        <div class="stat-card"><div class="stat-card__ico">🤑</div><div class="stat-card__val" id="sSoldProfit">₴0</div><div class="stat-card__lbl">Прибуток (продано)</div></div>
-        <div class="stat-card"><div class="stat-card__ico">📊</div><div class="stat-card__val" id="sMargin">—</div><div class="stat-card__lbl">Середня маржа</div></div>
-      </div>
-      <div class="box"><h2>Відвідування за 7 днів</h2><div class="chart" id="visitsChart"></div></div>
-      <div class="box"><h2>Залишки та продажі по товарах</h2><div id="inventoryTable"></div></div>
-      <div class="box"><h2>Останні замовлення</h2><div id="recentOrders"></div></div>
-    </div>
-
-    <!-- PRODUCTS -->
-    <div id="tab-products" style="display:none">
-      <div class="topbar">
-        <h1>Товари</h1>
-        <div class="topbar-actions">
-          <div class="view-toggle">
-            <button class="view-btn active" id="vList" onclick="setView('list')">☰ Список</button>
-            <button class="view-btn" id="vGrid" onclick="setView('grid')">⊞ Каталог</button>
-          </div>
-          <button class="btn-green" onclick="openForm()">+ Додати товар</button>
-        </div>
-      </div>
-      <div class="tab-scroll" style="padding-top:16px">
-        <div class="filter-bar" id="prodFilterBar"></div>
-        <div id="productsList"></div>
-      </div>
-    </div>
-
-    <!-- CATALOGS -->
-    <div id="tab-catalogs" style="display:none">
-      <div class="topbar"><h1>Каталоги</h1><div class="topbar-actions"><button class="btn-green" onclick="openCatForm()">+ Створити каталог</button></div></div>
-      <div class="tab-scroll">
-        <div id="catalogsList"></div>
-      </div>
-    </div>
-
-    <!-- ORDERS -->
-    <div id="tab-orders" style="display:none">
-      <div class="topbar"><h1>Замовлення</h1></div>
-      <div class="tab-scroll">
-        <div class="box"><div id="ordersList"></div></div>
-      </div>
-    </div>
-
-    <!-- PHOTOS -->
-    <div id="tab-photos" style="display:none;flex-direction:column;flex:1;min-height:0;overflow:hidden">
-      <div class="topbar">
-        <h1>Фото товарів</h1>
-        <div class="topbar-actions">
-          <span style="font-size:.8rem;color:var(--dim)">Натисніть на картку — вибере фото і збереже автоматично</span>
-        </div>
-      </div>
-      <div class="tab-scroll">
-        <div class="photo-stats" id="photoStats"></div>
-        <div id="photoGrid"></div>
-      </div>
-    </div>
-
   </div>
 </div>
 
-<input type="file" id="photoPickerInput" accept="image/*" style="display:none" onchange="onPhotoPickerChange(this)">
-
-<!-- PRODUCT FORM -->
-<div id="overlay" class="overlay" style="display:none" onclick="if(event.target===this)closeForm()">
-  <div class="overlay-panel">
-    <div class="overlay-hdr">
-      <h2 id="formTitle">Новий товар</h2>
-      <button class="overlay-close" onclick="closeForm()">✕</button>
-    </div>
-    <div class="overlay-body">
-
-      <div class="fsep">Основна інформація</div>
-      <div class="fr2">
-        <div class="fg"><label>Назва товару (UA) *</label><input type="text" id="pName" class="fi" placeholder="Наприклад: Жіночі шкарпетки"></div>
-        <div class="fg"><label>Назва товару (EN)</label><input type="text" id="pNameEn" class="fi" placeholder="e.g. Women's socks"></div>
+<!-- PRODUCTS TAB -->
+<div id="tab-products" class="tab">
+  <div class="phdr">
+    <div class="phdr-title">Товари</div>
+    <div class="phdr-right">
+      <div class="vsw">
+        <button class="vbtn active" id="vList" onclick="setView('list')" title="Список">☰</button>
+        <button class="vbtn"        id="vGrid" onclick="setView('grid')" title="Сітка">⊞</button>
       </div>
-      <div class="fr2">
-        <div class="fg"><label>Категорія *</label>
-          <div style="display:flex;gap:6px">
-            <select id="pCatId" class="fi" onchange="onCatChange()" style="flex:1;min-width:0"></select>
-            <button type="button" class="btn-outline" style="padding:7px 13px;font-size:1.1rem;font-weight:700;flex-shrink:0" onclick="openCatForm(true)" title="Нова категорія">+</button>
-          </div>
+      <button class="btn-green" onclick="openForm()">+ Додати</button>
+    </div>
+  </div>
+  <div class="fbar-wrap"><div class="fbar" id="filterBar"></div></div>
+  <div class="tab-scroll">
+    <div id="prodList" style="padding:0 22px 22px"></div>
+  </div>
+</div>
+
+<!-- CATEGORIES TAB -->
+<div id="tab-cats" class="tab">
+  <div class="phdr">
+    <div class="phdr-title">Каталоги</div>
+    <button class="btn-green" onclick="openCatForm(false)">+ Новий каталог</button>
+  </div>
+  <div class="tab-scroll">
+    <div class="catgrid" id="catGrid"></div>
+  </div>
+</div>
+
+<!-- ORDERS TAB -->
+<div id="tab-orders" class="tab">
+  <div class="phdr">
+    <div class="phdr-title">Замовлення</div>
+    <div id="ordUpdated" style="font-size:.72rem;color:var(--dim)"></div>
+  </div>
+  <div class="tab-scroll">
+    <div style="padding:14px 22px 22px" id="ordList"></div>
+  </div>
+</div>
+
+<!-- REVIEWS TAB -->
+<div id="tab-reviews" class="tab">
+  <div class="phdr"><div class="phdr-title">Відгуки</div></div>
+  <div class="tab-scroll">
+    <div style="padding:14px 22px 22px" id="revList"></div>
+  </div>
+</div>
+
+</div><!-- /main -->
+</div><!-- /layout -->
+</div><!-- /adminApp -->
+
+<!-- PRODUCT OVERLAY PANEL -->
+<div id="overlay" onclick="if(event.target===this)closeForm()">
+<div id="panel">
+  <div class="panel-hdr">
+    <div class="panel-title" id="formTitle">Новий товар</div>
+    <button class="panel-close" onclick="closeForm()">✕</button>
+  </div>
+  <div class="panel-body">
+
+    <div class="fsect">
+      <div class="fsect-title">Основна інформація</div>
+      <div class="frow c2">
+        <div class="ff"><div class="flbl">Назва (UA) *</div><input id="pName" class="finp" placeholder="Назва товару"></div>
+        <div class="ff"><div class="flbl">Назва (EN)</div><input id="pNameEn" class="finp" placeholder="Product name"></div>
+      </div>
+      <div class="frow c2">
+        <div class="ff">
+          <div class="flbl">Категорія * <button class="btn-sm primary" style="margin-left:4px;font-size:.65rem;padding:2px 7px" onclick="openCatForm(true)">+</button></div>
+          <select id="pCatId" class="fsel" onchange="onCatChange()"></select>
         </div>
-        <div class="fg"><label>Стать</label>
-          <select id="pGender" class="fi">
+        <div class="ff">
+          <div class="flbl">Стать</div>
+          <select id="pGender" class="fsel">
             <option value="women">Жіноче</option>
             <option value="men">Чоловіче</option>
           </select>
         </div>
       </div>
-
-      <div class="fsep">Ціна та кількість</div>
-      <div class="fr2">
-        <div class="fg"><label>Ціна продажу (₴) *</label><input type="number" id="pPrice" class="fi" placeholder="450" oninput="updateMarginHint()"></div>
-        <div class="fg"><label>Стара ціна (₴)</label><input type="number" id="pOldPrice" class="fi" placeholder="600"></div>
-      </div>
-      <div class="fr2">
-        <div class="fg"><label>Закупівельна ціна (₴)</label><input type="number" id="pPurchase" class="fi" placeholder="200" min="0" oninput="updateMarginHint()"></div>
-        <div class="fg"><label>Кількість (шт.) *</label><input type="number" id="pStock" class="fi" placeholder="10" min="0"></div>
-      </div>
-      <div id="marginHint" style="font-size:.8rem;color:var(--dim);margin:-2px 0 6px">Прибуток з одиниці: —&nbsp;·&nbsp;0 = немає в наявності</div>
-
-      <div class="fsep">Розміри та опис</div>
-      <div class="fg"><label>Розміри (через кому)</label><input type="text" id="pSizes" class="fi" placeholder="XS, S, M, L, XL"></div>
-      <div class="fg"><label>Опис товару</label><textarea id="pDesc" class="fi" placeholder="Короткий опис..."></textarea></div>
-      <div class="fg"><label>Характеристики (кожна з нового рядка)</label><textarea id="pDetails" class="fi" placeholder="Матеріал: бавовна 95%&#10;Колір: білий&#10;Догляд: ручне прання"></textarea></div>
-
-      <div class="fsep">Фото товару (до 5 штук)</div>
-      <div class="imgs-slots" id="imgsSlots"></div>
-      <input type="file" id="pImageFile" accept="image/*" multiple style="display:none" onchange="handleMultiUpload(this)">
-      <div style="display:flex;gap:8px;margin-bottom:10px">
-        <button type="button" class="btn-outline" style="flex:1;padding:9px;font-size:.835rem" onclick="document.getElementById('pImageFile').click()">📁 Додати фото</button>
-        <button type="button" class="btn-outline" style="padding:9px 12px;font-size:1.05rem" onclick="rotateActivePhoto(-1)" title="Повернути вліво">↺</button>
-        <button type="button" class="btn-outline" style="padding:9px 12px;font-size:1.05rem" onclick="rotateActivePhoto(1)" title="Повернути вправо">↻</button>
-      </div>
-      <div class="fg">
-        <label>Або вставте URL та натисніть Enter</label>
-        <input type="url" id="pImageUrl" class="fi" placeholder="https://..." onkeydown="if(event.key==='Enter'){addImageByUrl();event.preventDefault()}">
-      </div>
-
-      <div class="fsep">Кольори товару</div>
-      <div id="colorPresets" class="color-presets"></div>
-      <div class="color-tags" id="colorTags"></div>
-      <div style="display:flex;gap:6px;align-items:center;margin-bottom:6px">
-        <input type="text" id="colorName" class="fi" placeholder="Інший колір..." style="flex:1;padding:7px 10px;font-size:.82rem" onkeydown="if(event.key==='Enter'){addColor();event.preventDefault()}">
-        <input type="color" id="colorHex" value="#ff69b4" style="width:36px;height:34px;padding:2px;border-radius:6px;border:1.5px solid #1f3522;background:#061008;cursor:pointer;flex-shrink:0">
-        <button type="button" class="btn-outline" style="padding:7px 12px;font-size:1rem;font-weight:700;flex-shrink:0" onclick="addColor()" title="Додати">+</button>
-      </div>
-
-
     </div>
-    <div class="overlay-footer">
-      <button class="btn-cancel" onclick="closeForm()">Скасувати</button>
-      <button class="btn-save" onclick="saveProduct()">💾 Зберегти товар</button>
+
+    <div class="fsect">
+      <div class="fsect-title">Ціна та кількість</div>
+      <div class="frow c3">
+        <div class="ff"><div class="flbl">Ціна продажу ₴ *</div><input id="pPrice" class="finp" type="number" min="0" oninput="updateMarginHint()"></div>
+        <div class="ff"><div class="flbl">Стара ціна ₴</div><input id="pOldPrice" class="finp" type="number" min="0"></div>
+        <div class="ff"><div class="flbl">Закупівля ₴</div><input id="pPurchase" class="finp" type="number" min="0" oninput="updateMarginHint()"></div>
+      </div>
+      <div class="frow c2">
+        <div class="ff"><div class="flbl">Залишок (шт) — 0 = немає</div><input id="pStock" class="finp" type="number" min="0" value="0"></div>
+        <div class="ff" style="justify-content:flex-end;padding-top:18px"><div class="fhint green" id="marginHint"></div></div>
+      </div>
     </div>
+
+    <div class="fsect">
+      <div class="fsect-title">Опис</div>
+      <div class="ff" style="margin-bottom:10px"><div class="flbl">Короткий опис</div><textarea id="pDesc" class="fta" placeholder="Опис товару..."></textarea></div>
+      <div class="ff"><div class="flbl">Деталі (кожен рядок — окремий пункт)</div><textarea id="pDetails" class="fta" style="min-height:90px" placeholder="Колір: рожевий&#10;Матеріал: бавовна&#10;Догляд: прання 30°C"></textarea></div>
+    </div>
+
+    <div class="fsect">
+      <div class="fsect-title">Розміри</div>
+      <div class="ff"><div class="flbl">Через кому (або виберіть нижче)</div><input id="pSizes" class="finp" placeholder="XS, S, M, L, XL"></div>
+      <div id="sizePresets" style="display:flex;gap:5px;flex-wrap:wrap;margin-top:7px"></div>
+    </div>
+
+    <div class="fsect">
+      <div class="fsect-title">Кольори</div>
+      <div class="cpresets" id="colorPresets"></div>
+      <div class="ctags" id="colorTags"></div>
+      <div class="cust-row">
+        <input id="colorName" class="finp" style="flex:1" placeholder="Назва кольору">
+        <input id="colorHex" type="color" value="#ff69b4" style="width:36px;height:36px;border-radius:8px;border:1px solid var(--border);background:none;cursor:pointer;padding:2px">
+        <button class="btn-sm primary" onclick="addColor()">+ Додати</button>
+      </div>
+    </div>
+
+    <div class="fsect">
+      <div class="fsect-title">Фото (до 5)</div>
+      <div class="islots" id="imgSlots"></div>
+      <input id="imgFile" type="file" accept="image/*" multiple style="display:none" onchange="handleUpload(this)">
+      <div class="img-url-row" style="margin-bottom:6px">
+        <input id="imgUrl" class="finp" placeholder="URL фото">
+        <button class="btn-sm primary" onclick="addImgUrl()">Додати URL</button>
+      </div>
+      <div class="img-rot-row">
+        <button class="btn-sm" onclick="rotateImg(-1)">↺ Ліво</button>
+        <button class="btn-sm" onclick="rotateImg(1)">↻ Право</button>
+      </div>
+    </div>
+
   </div>
+  <div class="panel-footer">
+    <button class="btn-out" style="flex:0 0 auto" onclick="closeForm()">Скасувати</button>
+    <button class="btn-green" style="flex:1" onclick="saveProduct()">💾 Зберегти</button>
+  </div>
+</div>
 </div>
 
 <!-- MOVE MODAL -->
-<div id="moveModal" class="modal" style="display:none">
-  <div class="modal-box">
-    <h3>Перемістити товар до...</h3>
-    <div class="modal-cats" id="moveCatList"></div>
-    <div class="modal-footer"><button class="btn-outline" onclick="closeMoveModal()">Скасувати</button></div>
+<div id="moveModal" class="moverlay" onclick="if(event.target===this)closeMoveModal()">
+  <div class="mbox">
+    <div class="mhdr">
+      <div class="mtitle">Перемістити до каталогу</div>
+      <button class="btn-sm" onclick="closeMoveModal()">✕</button>
+    </div>
+    <div class="mcats" id="moveCats"></div>
   </div>
 </div>
 
-<!-- CATALOG FORM MODAL -->
-<div id="catFormModal" class="cat-modal" style="display:none">
-  <div class="cat-modal-box">
-    <h3 id="catFormTitle">Нова категорія</h3>
-    <div class="fg"><label>Іконка</label>
-      <div class="icon-grid" id="iconGrid"></div>
-      <input type="hidden" id="catIcon" value="🏷️">
+<!-- CATEGORY MODAL -->
+<div id="catModal" class="moverlay" onclick="if(event.target===this)closeCatForm()">
+  <div class="mbox">
+    <div class="mhdr">
+      <div class="mtitle" id="catModalTitle">Новий каталог</div>
+      <button class="btn-sm" onclick="closeCatForm()">✕</button>
     </div>
-    <div class="fg"><label>Назва категорії *</label><input type="text" id="catName" class="fi" placeholder="Наприклад: Термо шкарпетки" oninput="autoCatKey(this.value)"><input type="hidden" id="catKey"></div>
-    <div class="fg"><label>Стать</label>
-      <select id="catGender" class="fi">
-        <option value="women">Жіноче</option>
-        <option value="men">Чоловіче</option>
-      </select>
+    <div class="frow c2" style="margin-bottom:10px">
+      <div class="ff"><div class="flbl">Назва *</div><input id="catName" class="finp" placeholder="Назва категорії" oninput="autoCatKey(this.value)"><input type="hidden" id="catKey"></div>
+      <div class="ff"><div class="flbl">Стать</div><select id="catGender" class="fsel"><option value="women">Жіноче</option><option value="men">Чоловіче</option></select></div>
     </div>
-    <div style="display:flex;gap:8px;margin-top:4px">
-      <button class="btn-cancel" style="flex:1;padding:10px;border-radius:var(--r);font-size:.855rem;background:var(--gb);border:1px solid var(--gbd);color:var(--dim)" onclick="closeCatForm()">Скасувати</button>
-      <button class="btn-save"   style="flex:2;padding:10px;border-radius:var(--r);font-size:.855rem;font-weight:700;background:var(--green);color:#020d04" onclick="saveCat()">Створити</button>
+    <div class="flbl" style="margin-bottom:6px">Іконка</div>
+    <div class="icongrid" id="iconGrid"></div>
+    <div style="margin-top:14px;display:flex;gap:8px">
+      <button class="btn-out" style="flex:1" onclick="closeCatForm()">Скасувати</button>
+      <button class="btn-green" style="flex:2" onclick="saveCat()">Створити</button>
     </div>
   </div>
 </div>
 
-<div class="toast" id="toast"></div>
+<div id="toast"></div>
 
-<script src="js/config.js"></script>
 <script src="js/api.js"></script>
 <script>
-/* ─────────── STATE ─────────── */
-var S = { view:'list', filter:'all', editingId:null, movingId:null };
+/* ── STATE ── */
 var _products = [];
+var S = { tab:'stats', view:'list', filter:'all', editingId:null, movingId:null };
 
-/* ─────────── DEFAULT CATEGORIES ─────────── */
+/* ── CATEGORIES ── */
 var DEF_CATS = [
-  {id:'bras',           key:'bras',      gender:'',      label:'Бюстгальтери',             icon:'✨', editable:false},
-  {id:'lingerie-women', key:'lingerie',  gender:'women', label:'Жіноча нижня білизна',    icon:'👙', editable:false},
-  {id:'winter-women',   key:'winter',    gender:'women', label:'Жіночі зимові шкарпетки', icon:'❄️', editable:false},
-  {id:'summer-women',   key:'summer',    gender:'women', label:'Жіночі літні шкарпетки',  icon:'☀️', editable:false},
-  {id:'stockings',      key:'stockings', gender:'women', label:'Чулки',                   icon:'🧦', editable:false},
-  {id:'tshirts-women',  key:'tshirts',   gender:'women', label:'Футболки жіночі',          icon:'👗', editable:false},
-  {id:'peignoirs',      key:'peignoirs', gender:'women', label:'Пенюари',                  icon:'🌸', editable:false},
-  {id:'jewelry',        key:'jewelry',   gender:'',      label:'Ювелірні вироби',          icon:'💍', editable:false},
-  {id:'lingerie-men',   key:'lingerie',  gender:'men',   label:'Чоловіча нижня білизна',  icon:'🩲', editable:false},
-  {id:'winter-men',     key:'winter',    gender:'men',   label:'Чоловічі зимові шкарпетки',icon:'❄️', editable:false},
-  {id:'summer-men',     key:'summer',    gender:'men',   label:'Чоловічі літні шкарпетки', icon:'☀️', editable:false},
-  {id:'tshirts-men',    key:'tshirts',   gender:'men',   label:'Футболки чоловічі',        icon:'👔', editable:false},
+  {id:'bras',          key:'bras',       gender:'',      label:'Бюстгальтери',              icon:'✨'},
+  {id:'lingerie-women',key:'lingerie',   gender:'women', label:'Жіноча нижня білизна',      icon:'👙'},
+  {id:'winter-women',  key:'winter',     gender:'women', label:'Жіночі зимові шкарпетки',   icon:'❄️'},
+  {id:'summer-women',  key:'summer',     gender:'women', label:'Жіночі літні шкарпетки',    icon:'☀️'},
+  {id:'stockings',     key:'stockings',  gender:'women', label:'Чулки',                     icon:'🧦'},
+  {id:'tshirts-women', key:'tshirts',    gender:'women', label:'Футболки жіночі',            icon:'👗'},
+  {id:'peignoirs',     key:'peignoirs',  gender:'women', label:'Пенюари',                   icon:'🌸'},
+  {id:'jewelry',       key:'jewelry',    gender:'',      label:'Ювелірні вироби',            icon:'💍'},
+  {id:'lingerie-men',  key:'lingerie',   gender:'men',   label:'Чоловіча нижня білизна',    icon:'🩲'},
+  {id:'winter-men',    key:'winter',     gender:'men',   label:'Чоловічі зимові шкарпетки', icon:'❄️'},
+  {id:'summer-men',    key:'summer',     gender:'men',   label:'Чоловічі літні шкарпетки',  icon:'☀️'},
+  {id:'tshirts-men',   key:'tshirts',    gender:'men',   label:'Футболки чоловічі',          icon:'👔'},
 ];
-var ICONS = ['🧦','👙','🩲','✨','🧣','🧤','🩱','🩳','👗','👔','💎','🎀','💍','🌸','🌺','⭐','🎽','🩰','👑','🛍️'];
+var ICONS = ['🧦','👙','🩲','✨','🧣','🧤','🩱','🩳','👗','👔','💎','🎀','💍','🌸','🌺','⭐','🎽','🩰','👑','🛍️','🏷️','📦'];
+var SIZE_MAP = {
+  'bras:':      ['70A','70B','70C','75A','75B','75C','80B','80C','85C'],
+  'bras:women': ['70A','70B','70C','75A','75B','75C','80B','80C','85C'],
+  'bras:men':   ['S','M','L','XL'],
+  'lingerie:':     ['XS','S','M','L','XL'],
+  'lingerie:women':['XS','S','M','L','XL'],
+  'winter:women':  ['36-38','38-40','40-42','42-44'],
+  'winter:men':    ['40-43','43-46'],
+  'summer:women':  ['35-38','38-40','40-42'],
+  'summer:men':    ['40-43','43-46'],
+  'stockings:women':['S/M','L/XL','36-39','40-44'],
+  'tshirts:women': ['XS','S','M','L','XL','XXL'],
+  'tshirts:men':   ['S','M','L','XL','XXL'],
+  'peignoirs:women':['S/M','L/XL','XL/XXL'],
+  'default':       ['XS','S','M','L','XL','XXL'],
+};
+var COLOR_PRESETS = [
+  {name:'Чорний', hex:'#1a1a1a'},{name:'Білий',   hex:'#f0f0f0'},{name:'Сірий',   hex:'#9e9e9e'},
+  {name:'Тілесний',hex:'#e8b896'},{name:'Рожевий',hex:'#f48fb1'},{name:'Червоний',hex:'#ef5350'},
+  {name:'Бузковий',hex:'#ce93d8'},{name:'Синій',  hex:'#42a5f5'},{name:'М\'ятний',hex:'#80cbc4'},
+  {name:'Зелений',hex:'#66bb6a'},
+];
 
-/* ─────────── HELPERS ─────────── */
-function esc(s){
-  return String(s==null?'':s)
-    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
-    .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
-}
-
-/* ─────────── DATA HELPERS ─────────── */
-function getCustomCats(){ try{ return JSON.parse(localStorage.getItem('ns_categories'))||[]; }catch(e){ return []; } }
-function setCustomCats(a){ localStorage.setItem('ns_categories',JSON.stringify(a)); }
-function getAllCats(){ return DEF_CATS.concat(getCustomCats()); }
-function catById(id){ return getAllCats().find(function(c){ return c.id===id; }); }
+function getCats(){  return DEF_CATS.concat(getCustomCats()); }
+function getCustomCats(){ try{ return JSON.parse(localStorage.getItem('ns_cats'))||[]; }catch(e){ return []; } }
+function setCustomCats(a){ localStorage.setItem('ns_cats',JSON.stringify(a)); }
+function catById(id){ return getCats().find(function(c){ return c.id===id; }); }
 function productCatId(p){
-  var all = getAllCats();
-  var found = all.find(function(c){ return c.key===p.category && (c.gender===p.gender||c.gender===''); });
-  return found ? found.id : '';
+  var all=getCats();
+  var found=all.find(function(c){ return c.key===p.category&&(c.gender===p.gender||c.gender===''); });
+  return found?found.id:'';
 }
-function getProducts(){ return _products; }
-async function setProducts(list){
-  _products = list;
-  try { await API.saveAllProducts(list); } catch(e) { toast('❌ Помилка збереження'); }
+
+/* ── UTILS ── */
+function esc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function toast(msg){
+  var t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('show');
+  clearTimeout(t._t);
+  t._t=setTimeout(function(){ t.classList.remove('show'); },2800);
 }
 function getVisits(){ try{ return JSON.parse(localStorage.getItem('ns_visits'))||{}; }catch(e){ return {}; } }
 
-/* ─────────── AUTH ─────────── */
+/* ── AUTH ── */
 async function doLogin(){
-  var pass = document.getElementById('loginPass').value;
-  if(!pass){return;}
-  var btn = document.querySelector('.login-btn');
-  var err = document.getElementById('loginErr');
+  var pass=document.getElementById('loginPass').value;
+  if(!pass) return;
+  var btn=document.querySelector('.lbtn'), err=document.getElementById('loginErr');
   btn.disabled=true; err.style.display='none';
-
-  async function attempt(){
-    try{
-      var r = await API.login(pass);
-      API.setToken(r.token);
-      err.style.display='none';
-      showAdmin();
-      return 'ok';
-    }catch(e){
-      return e.message==='wrong_password'?'wrong_password':'network_error';
-    }
-  }
-
-  var delays = [0, 5000, 10000, 15000];
+  var delays=[0,5000,10000,15000];
   for(var i=0;i<delays.length;i++){
     if(delays[i]>0){
       btn.textContent='Спроба '+(i+1)+'/'+delays.length+'...';
-      err.textContent='З\'єднання... зачекайте (~'+Math.round(delays[i]/1000)+'с)';
+      err.textContent='Підключення... (~'+Math.round(delays[i]/1000)+'с)';
       err.style.display='block';
-      await new Promise(function(r){setTimeout(r,delays[i]);});
-    } else {
-      btn.textContent='Підключення...';
-    }
-    var res = await attempt();
-    if(res==='ok') return;
-    if(res==='wrong_password'){
-      err.textContent='Невірний пароль'; err.style.display='block';
-      btn.disabled=false; btn.textContent='Увійти →';
+      await new Promise(function(r){ setTimeout(r,delays[i]); });
+    } else { btn.textContent='Підключення...'; }
+    try {
+      var r=await API.login(pass);
+      API.setToken(r.token);
+      err.style.display='none';
+      showAdmin();
       return;
+    } catch(e){
+      if(e.message==='wrong_password'){
+        err.textContent='Невірний пароль'; err.style.display='block';
+        btn.disabled=false; btn.textContent='Увійти →';
+        return;
+      }
     }
   }
-
-  err.innerHTML='Не вдалось підключитись.<br><small>Перевірте інтернет або спробуйте через хвилину.</small>';
-  err.style.display='block';
-  btn.disabled=false; btn.textContent='Увійти →';
+  err.innerHTML='Не вдалось підключитись.<br><small>Перевірте інтернет або спробуйте пізніше.</small>';
+  err.style.display='block'; btn.disabled=false; btn.textContent='Увійти →';
 }
 function doLogout(){ API.logout(); location.reload(); }
 function doRefresh(){ location.reload(); }
+
 async function showAdmin(){
   document.getElementById('loginScreen').style.display='none';
-  document.getElementById('adminApp').style.display='flex';
-  try { _products = await API.getProducts(); } catch(e) { _products = []; }
-  updateSideBadges();
-  loadStats();
+  document.getElementById('adminApp').style.display='block';
+  try { _products=await API.getProducts(); } catch(e){ _products=[]; }
+  updateBadges();
+  showTab('stats');
 }
 
-/* ─────────── TABS ─────────── */
-var TABS = ['stats','products','catalogs','orders','photos'];
-function openSidebar(){
-  document.getElementById('sidebar').classList.add('open');
-  document.getElementById('sbOverlay').classList.add('open');
-}
-function closeSidebar(){
-  document.getElementById('sidebar').classList.remove('open');
-  document.getElementById('sbOverlay').classList.remove('open');
-}
+/* ── NAVIGATION ── */
+function openSb(){ document.getElementById('sidebar').classList.add('open'); document.getElementById('sbOverlay').classList.add('open'); }
+function closeSb(){ document.getElementById('sidebar').classList.remove('open'); document.getElementById('sbOverlay').classList.remove('open'); }
 
+var TABS=['stats','products','cats','orders','reviews'];
 function showTab(name){
-  closeSidebar();
-  var flexTabs = ['products','photos'];
+  closeSb();
+  S.tab=name;
   TABS.forEach(function(t){
-    var el = document.getElementById('tab-'+t);
-    var isFlex = flexTabs.indexOf(t) >= 0;
-    el.style.display = t===name ? (isFlex?'flex':'block') : 'none';
-    if(isFlex){ el.style.flexDirection='column'; el.style.flex='1'; el.style.minHeight='0'; el.style.overflow='hidden'; }
+    document.getElementById('tab-'+t).classList.toggle('active', t===name);
     document.getElementById('btn-'+t).classList.toggle('active', t===name);
   });
   if(name==='stats')    loadStats();
   if(name==='products'){ buildFilterBar(); renderProducts(); }
-  if(name==='catalogs') renderCatalogs();
-  if(name==='orders')   { startOrdersPolling(); renderOrders(false); }
-  else                  stopOrdersPolling();
-  if(name==='photos')   renderPhotos();
+  if(name==='cats')     renderCats();
+  if(name==='orders')   { startOrderPoll(); renderOrders(false); }
+  else                  stopOrderPoll();
+  if(name==='reviews')  renderReviews();
 }
 
-/* ─────────── BADGES ─────────── */
-function updateSideBadges(){
-  document.getElementById('sbProdCount').textContent = _products.length;
+function updateBadges(){
+  var pb=document.getElementById('sbProd');
+  pb.textContent=_products.length;
+  pb.style.display=_products.length?'inline-block':'none';
 }
 
-/* ─────────── STATS ─────────── */
+/* ── STATS ── */
 async function loadStats(){
-  var visits = getVisits();
-  var totalV = Object.values(visits).reduce(function(a,b){return a+b;},0);
-  var orders = [];
-  try { orders = await API.getOrders(); } catch(e) {}
-  var revenue = orders.reduce(function(s,o){return s+(o.total||0);},0);
-
-  // Stock totals
-  var stockQty = _products.reduce(function(s,p){return s+(p.stock||0);},0);
-  var stockVal = _products.reduce(function(s,p){return s+(p.price||0)*(p.stock||0);},0);
-
-  // Cost / profit totals (only products with a purchase price counted)
-  var costByName = {};
-  var costVal = 0, stockProfit = 0, costedStockVal = 0, costedStockCost = 0;
-  _products.forEach(function(p){
-    if(p.purchasePrice!=null && p.purchasePrice!==''){
-      var c=p.purchasePrice||0, st=p.stock||0;
-      costByName[p.name]=c;
-      costVal      += c*st;
-      stockProfit  += ((p.price||0)-c)*st;
-      costedStockVal += (p.price||0)*st;
-      costedStockCost += c*st;
-    }
-  });
-
-  // Sold per product (count and value from order items)
-  var soldMap = {};
-  var totalSoldVal = 0, soldProfit = 0;
-  orders.forEach(function(o){
-    (o.items||[]).forEach(function(i){
-      var qty=i.qty||1;
-      soldMap[i.name] = (soldMap[i.name]||0) + qty;
-      totalSoldVal += (i.price||0) * qty;
-      if(costByName[i.name]!=null) soldProfit += ((i.price||0)-costByName[i.name])*qty;
-    });
-  });
-  var totalSold = Object.values(soldMap).reduce(function(a,b){return a+b;},0);
-  var avgMargin = costedStockVal>0 ? Math.round((costedStockVal-costedStockCost)/costedStockVal*100) : null;
-
-  document.getElementById('sVisits').textContent   = totalV;
-  document.getElementById('sOrders').textContent   = orders.length;
-  document.getElementById('sRevenue').textContent  = '₴'+revenue.toLocaleString('uk-UA');
-  document.getElementById('sProducts').textContent = _products.length;
-  document.getElementById('sStockQty').textContent = stockQty;
-  document.getElementById('sStockVal').textContent = '₴'+stockVal.toLocaleString('uk-UA');
-  document.getElementById('sSold').textContent     = totalSold;
-  document.getElementById('sSoldVal').textContent  = '₴'+totalSoldVal.toLocaleString('uk-UA');
-  document.getElementById('sCostVal').textContent    = '₴'+costVal.toLocaleString('uk-UA');
-  document.getElementById('sStockProfit').textContent= '₴'+stockProfit.toLocaleString('uk-UA');
-  document.getElementById('sSoldProfit').textContent = '₴'+soldProfit.toLocaleString('uk-UA');
-  document.getElementById('sMargin').textContent     = avgMargin==null?'—':avgMargin+'%';
-
+  var visits=getVisits();
+  var totalV=Object.values(visits).reduce(function(a,b){return a+b;},0);
+  var orders=[]; try{ orders=await API.getOrders(); }catch(e){}
+  var revenue=orders.reduce(function(s,o){return s+(o.total||0);},0);
+  var stockQty=_products.reduce(function(s,p){return s+(p.stock||0);},0);
+  var stockVal=_products.reduce(function(s,p){return s+(p.price||0)*(p.stock||0);},0);
+  var costByName={};
+  _products.forEach(function(p){ if(p.purchasePrice!=null&&p.purchasePrice!=='') costByName[p.name]=p.purchasePrice||0; });
+  var soldMap={}, totalSoldVal=0, soldProfit=0, stockProfit=0;
+  orders.forEach(function(o){ (o.items||[]).forEach(function(i){ var q=i.qty||1; soldMap[i.name]=(soldMap[i.name]||0)+q; totalSoldVal+=(i.price||0)*q; if(costByName[i.name]!=null) soldProfit+=((i.price||0)-costByName[i.name])*q; }); });
+  _products.forEach(function(p){ if(costByName[p.name]!=null) stockProfit+=((p.price||0)-costByName[p.name])*(p.stock||0); });
+  var totalSold=Object.values(soldMap).reduce(function(a,b){return a+b;},0);
+  document.getElementById('sProducts').textContent=_products.length;
+  document.getElementById('sStockQty').textContent=stockQty;
+  document.getElementById('sStockVal').textContent='₴'+stockVal.toLocaleString('uk-UA');
+  document.getElementById('sOrders').textContent=orders.length;
+  document.getElementById('sRevenue').textContent='₴'+revenue.toLocaleString('uk-UA');
+  document.getElementById('sSold').textContent=totalSold;
+  document.getElementById('sStockProfit').textContent='₴'+stockProfit.toLocaleString('uk-UA');
+  document.getElementById('sSoldProfit').textContent='₴'+soldProfit.toLocaleString('uk-UA');
   renderChart(visits);
-  renderInventoryTable(soldMap);
+  renderStatsTable(soldMap);
   renderRecentOrders(orders.slice(0,5));
 }
 
-function renderInventoryTable(soldMap){
-  var el = document.getElementById('inventoryTable');
-  if(!_products.length){ el.innerHTML='<div class="empty"><div class="empty-ico">📦</div><p>Немає товарів</p></div>'; return; }
-  var rows = _products.map(function(p){
-    var sold = soldMap[p.name] || 0;
-    var stock = p.stock||0;
-    var val  = (p.price||0)*stock;
-    var hasCost = p.purchasePrice!=null && p.purchasePrice!=='';
-    var cost = hasCost ? (p.purchasePrice||0) : null;
-    var unitProfit = hasCost ? (p.price||0)-cost : null;
-    var soldProfit = hasCost ? unitProfit*sold : null;
-    var stockCls = stock===0 ? 'color:#f87171' : stock<=3 ? 'color:#fbbf24' : 'color:#4ade80';
-    var profCls = unitProfit!=null ? (unitProfit>=0?'color:#4ade80':'color:#f87171') : 'color:var(--dim)';
-    return '<tr>'+
-      '<td>'+esc(p.name)+'</td>'+
-      '<td style="text-align:center">₴'+(p.price||0)+'</td>'+
-      '<td style="text-align:center;color:var(--dim)">'+(hasCost?'₴'+cost:'—')+'</td>'+
-      '<td style="text-align:center;font-weight:600;'+profCls+'">'+(unitProfit!=null?'₴'+unitProfit:'—')+'</td>'+
-      '<td style="text-align:center;font-weight:600;'+stockCls+'">'+stock+'</td>'+
-      '<td style="text-align:center">₴'+val+'</td>'+
-      '<td style="text-align:center;font-weight:600;color:#4ade80">'+sold+'</td>'+
-      '<td style="text-align:center;font-weight:600;'+profCls+'">'+(soldProfit!=null?'₴'+soldProfit:'—')+'</td>'+
-    '</tr>';
-  }).join('');
-  el.innerHTML='<div class="tbl-wrap"><table class="data-table">'+
-    '<thead><tr>'+
-      '<th>Товар</th>'+
-      '<th style="text-align:center">Ціна</th>'+
-      '<th style="text-align:center">Закупівля</th>'+
-      '<th style="text-align:center">Приб./од</th>'+
-      '<th style="text-align:center">Залишок</th>'+
-      '<th style="text-align:center">Сума залишку</th>'+
-      '<th style="text-align:center">Продано</th>'+
-      '<th style="text-align:center">Прибуток</th>'+
-    '</tr></thead><tbody>'+rows+'</tbody></table></div>';
-}
 function renderChart(visits){
   var days=[];
-  for(var i=6;i>=0;i--){
-    var d=new Date(); d.setDate(d.getDate()-i);
-    var key=d.toISOString().split('T')[0];
-    days.push({lbl:d.getDate()+'.'+(d.getMonth()+1),count:visits[key]||0});
-  }
-  var max=Math.max.apply(null,days.map(function(d){return d.count;}))||1;
-  document.getElementById('visitsChart').innerHTML = days.map(function(d){
-    var pct=Math.round((d.count/max)*100);
-    return '<div class="bar-col"><div class="bar-val">'+(d.count||'')+'</div><div class="bar-wrap"><div class="bar" style="height:'+pct+'%"></div></div><div class="bar-lbl">'+d.lbl+'</div></div>';
+  for(var i=6;i>=0;i--){ var d=new Date(); d.setDate(d.getDate()-i); var k=d.toISOString().split('T')[0]; days.push({l:d.getDate()+'.'+(d.getMonth()+1),n:visits[k]||0}); }
+  var max=Math.max.apply(null,days.map(function(d){return d.n;}))||1;
+  document.getElementById('chart').innerHTML=days.map(function(d){
+    var pct=Math.round((d.n/max)*100);
+    return '<div class="bcol"><div class="bval">'+(d.n||'')+'</div><div class="bbg"><div class="bfill" style="height:'+pct+'%"></div></div><div class="blbl">'+d.l+'</div></div>';
   }).join('');
 }
+
+function renderStatsTable(soldMap){
+  if(!_products.length){ document.getElementById('statsTable').innerHTML=''; return; }
+  var rows=_products.map(function(p){
+    var sold=soldMap[p.name]||0, stock=p.stock||0;
+    var hasCost=p.purchasePrice!=null&&p.purchasePrice!=='';
+    var cost=hasCost?p.purchasePrice:null;
+    var prof=hasCost?(p.price||0)-cost:null;
+    var sc=stock===0?'color:#f87171':stock<=3?'color:#fbbf24':'color:#4ade80';
+    var pc=prof!=null?(prof>=0?'color:#4ade80':'color:#f87171'):'color:var(--dim)';
+    return '<tr><td>'+esc(p.name)+'</td><td style="text-align:center">₴'+(p.price||0)+'</td><td style="text-align:center;color:var(--dim)">'+(hasCost?'₴'+cost:'—')+'</td><td style="text-align:center;font-weight:600;'+pc+'">'+(prof!=null?'₴'+prof:'—')+'</td><td style="text-align:center;font-weight:600;'+sc+'">'+stock+'</td><td style="text-align:center;font-weight:600;color:#4ade80">'+sold+'</td></tr>';
+  }).join('');
+  document.getElementById('statsTable').innerHTML='<div class="box"><div class="tbl-wrap"><table class="dtbl"><thead><tr><th>Товар</th><th style="text-align:center">Ціна</th><th style="text-align:center">Закупівля</th><th style="text-align:center">Прибуток/од</th><th style="text-align:center">Залишок</th><th style="text-align:center">Продано</th></tr></thead><tbody>'+rows+'</tbody></table></div></div>';
+}
+
 function renderRecentOrders(orders){
   var el=document.getElementById('recentOrders');
-  if(!orders.length){ el.innerHTML='<div class="empty" style="padding:20px 0"><div class="empty-ico">📋</div><p>Замовлень ще немає</p></div>'; return; }
-  el.innerHTML='<div class="tbl-wrap"><table class="data-table"><thead><tr><th>Дата</th><th>Клієнт</th><th>Телефон</th><th>Сума</th></tr></thead><tbody>'+
-    orders.map(function(o){
-      return '<tr><td>'+esc(o.date||'-')+'</td><td>'+esc(o.firstName||'')+' '+esc(o.lastName||'')+'</td><td>'+esc(o.phone||'-')+'</td><td style="color:var(--green);font-weight:600">₴'+(o.total||0)+'</td></tr>';
-    }).join('')+'</tbody></table></div>';
+  if(!orders.length){ el.innerHTML='<div style="color:var(--dim);font-size:.8rem">Замовлень ще немає</div>'; return; }
+  el.innerHTML='<div class="box"><div class="tbl-wrap"><table class="dtbl"><thead><tr><th>Дата</th><th>Клієнт</th><th>Телефон</th><th>Сума</th></tr></thead><tbody>'+
+    orders.map(function(o){ return '<tr><td>'+esc(o.date||'-')+'</td><td>'+esc((o.firstName||'')+' '+(o.lastName||''))+'</td><td>'+esc(o.phone||'-')+'</td><td style="color:var(--green);font-weight:700">₴'+(o.total||0)+'</td></tr>'; }).join('')+
+  '</tbody></table></div></div>';
 }
 
-/* ─────────── PRODUCTS: FILTER BAR ─────────── */
+/* ── PRODUCTS: FILTER BAR ── */
 function buildFilterBar(){
-  var cats=getAllCats();
-  var counts={all:getProducts().length};
-  getProducts().forEach(function(p){ var id=productCatId(p); counts[id]=(counts[id]||0)+1; });
-  var html='<button class="filter-pill'+(S.filter==='all'?' active':'')+'" onclick="setFilter(\'all\')">Всі ('+counts.all+')</button>';
-  cats.forEach(function(c){
-    var n=counts[c.id]||0;
-    html+='<button class="filter-pill'+(S.filter===c.id?' active':'')+'" onclick="setFilter(\''+c.id+'\')">'+ c.icon+' '+c.label+' ('+n+')</button>';
-  });
-  document.getElementById('prodFilterBar').innerHTML=html;
+  var cats=getCats(), counts={all:_products.length};
+  _products.forEach(function(p){ var id=productCatId(p); counts[id]=(counts[id]||0)+1; });
+  var html='<button class="fp'+(S.filter==='all'?' active':'')+'" onclick="setFilter(\'all\')">Всі ('+counts.all+')</button>';
+  cats.forEach(function(c){ html+='<button class="fp'+(S.filter===c.id?' active':'')+'" onclick="setFilter(\''+c.id+'\')">'+(c.icon||'📦')+' '+c.label+' ('+(counts[c.id]||0)+')</button>'; });
+  document.getElementById('filterBar').innerHTML=html;
 }
 function setFilter(id){ S.filter=id; buildFilterBar(); renderProducts(); }
-function setView(v){ S.view=v; document.getElementById('vList').classList.toggle('active',v==='list'); document.getElementById('vGrid').classList.toggle('active',v==='grid'); renderProducts(); }
-
-/* ─────────── PRODUCTS: RENDER ─────────── */
-function filteredProducts(){
-  var list=getProducts();
-  if(S.filter==='all') return list;
-  return list.filter(function(p){ return productCatId(p)===S.filter; });
+function setView(v){
+  S.view=v;
+  document.getElementById('vList').classList.toggle('active',v==='list');
+  document.getElementById('vGrid').classList.toggle('active',v==='grid');
+  renderProducts();
 }
+function filteredProds(){
+  if(S.filter==='all') return _products;
+  return _products.filter(function(p){ return productCatId(p)===S.filter; });
+}
+
+/* ── PRODUCTS: RENDER ── */
 function renderProducts(){
-  var list=filteredProducts();
-  var el=document.getElementById('productsList');
+  var list=filteredProds(), el=document.getElementById('prodList');
   if(!list.length){
     el.innerHTML='<div class="empty"><div class="empty-ico">📦</div><p>Товарів у цьому каталозі немає</p><button class="btn-green" onclick="openForm()">+ Додати товар</button></div>';
     return;
   }
-  if(S.view==='grid'){ renderGrid(list,el); } else { renderList(list,el); }
-  document.getElementById('sbProdCount').textContent = _products.length;
-}
-function thumb(p){
-  return p.imageUrl
-    ? '<img src="'+p.imageUrl+'" class="prod-thumb" onerror="this.style.display=\'none\'">'
-    : '<div class="prod-thumb-grad" style="background:linear-gradient(135deg,#4ade80,#166534)"></div>';
-}
-function renderList(list,el){
-  var catN={socks:'Шкарпетки',lingerie:'Білизна',bras:'Бюстгальтери'};
-  el.innerHTML='<div class="box" style="padding:0;overflow:hidden"><div class="tbl-wrap"><table class="data-table"><thead><tr><th>Фото</th><th>Назва</th><th>Каталог</th><th>Ціна ₴</th><th>Залишок</th><th>Дії</th></tr></thead><tbody>'+
-    list.map(function(p){
-      var cat=catById(productCatId(p));
-      var catLabel=cat?(cat.icon+' '+cat.label):(p.category||'-');
-      var priceCell='<input class="inline-price" type="number" value="'+p.price+'" onchange="quickPrice('+p.id+',this.value)" title="Змінити ціну">';
-      var stock=p.stock!=null?p.stock:0;
-      var isOut=stock===0;
-      var stockBadge='<div class="stock-cell">'+
-        '<input class="inline-stock" type="number" min="0" value="'+stock+'" onchange="quickStock('+p.id+',this.value)" title="Кількість">'+
-        '<button class="stock-toggle '+(isOut?'avail':'out')+'" onclick="quickStock('+p.id+','+(isOut?'1':'0')+',true)" title="'+(isOut?'Позначити як є в наявності':'Позначити як немає')+'">'+(isOut?'✓ Є':'✕ Немає')+'</button>'+
-      '</div>';
-      return '<tr>'+
-        '<td style="width:56px">'+thumb(p)+'</td>'+
-        '<td style="font-weight:500;max-width:200px"><div style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+p.name+'</div>'+(p.oldPrice?'<div style="font-size:.72rem;color:var(--dim);text-decoration:line-through">₴'+p.oldPrice+'</div>':'')+'</td>'+
-        '<td><span class="badge badge-'+(p.category||'custom')+'">'+catLabel+'</span></td>'+
-        '<td>'+priceCell+'</td>'+
-        '<td>'+stockBadge+'</td>'+
-        '<td style="white-space:nowrap">'+
-          '<button class="btn-icon btn-edit" onclick="openForm('+p.id+')">✏️ Змінити</button> '+
-          '<button class="btn-icon btn-move" onclick="openMoveModal('+p.id+')">↔ Перемістити</button> '+
-          '<button class="btn-icon btn-del"  onclick="delProduct('+p.id+')">🗑</button>'+
-        '</td>'+
-      '</tr>';
-    }).join('')+'</tbody></table></div></div>';
-}
-function renderGrid(list,el){
-  el.innerHTML='<div class="prod-grid">'+list.map(function(p){
-    var bg=p.imageUrl?'':'background:linear-gradient(135deg,#4ade80,#166534)';
-    var imgInner=p.imageUrl?'<img src="'+p.imageUrl+'" style="width:100%;height:100%;object-fit:cover;position:absolute;inset:0">':'<span style="font-size:2.2rem;position:relative;z-index:1">'+getCatIcon(p)+'</span>';
-    return '<div class="prod-grid-card">'+
-      '<div class="pgc-img" style="'+bg+'">'+imgInner+(p.oldPrice?'<div class="pgc-new">SALE</div>':'')+'</div>'+
-      '<div class="pgc-body">'+
-        '<div class="pgc-name">'+p.name+'</div>'+
-        '<div><span class="pgc-price">₴'+p.price+'</span>'+(p.oldPrice?'<span class="pgc-old">₴'+p.oldPrice+'</span>':'')+'</div>'+
-      '</div>'+
-      '<div class="pgc-actions">'+
-        '<button class="btn-icon btn-edit" onclick="openForm('+p.id+')" style="flex:1;padding:5px;font-size:.72rem">✏️</button>'+
-        '<button class="btn-icon btn-move" onclick="openMoveModal('+p.id+')" style="flex:1;padding:5px;font-size:.72rem">↔</button>'+
-        '<button class="btn-icon btn-del"  onclick="delProduct('+p.id+')"   style="flex:1;padding:5px;font-size:.72rem">🗑</button>'+
-      '</div>'+
-    '</div>';
-  }).join('')+'</div>';
-}
-function getCatIcon(p){
-  var cat=catById(productCatId(p)); return cat?cat.icon:'📦';
-}
-async function quickPrice(id,val){
-  var list=getProducts();
-  var p=list.find(function(x){return x.id===id;});
-  if(p){
-    p.price=parseFloat(val)||p.price;
-    try { await API.updateProduct(id,p); toast('Ціну оновлено'); } catch(e){ toast('❌ Помилка'); }
-  }
-}
-async function quickStock(id,val,rerender){
-  var list=getProducts();
-  var p=list.find(function(x){return x.id===id;});
-  if(!p) return;
-  var newStock=Math.max(0,parseInt(val)||0);
-  p.stock=newStock;
-  try {
-    await API.updateProduct(id,p);
-    toast(newStock===0?'Позначено: немає в наявності':'Залишок: '+newStock+' шт.');
-    if(rerender) renderProducts();
-  } catch(e){ toast('❌ Помилка збереження'); }
+  if(S.view==='grid') renderGrid(list,el); else renderList(list,el);
+  updateBadges();
 }
 
-/* ─────────── PRODUCT FORM ─────────── */
-function buildCatSelect(selectedId){
-  var sel=document.getElementById('pCatId');
-  sel.innerHTML=getAllCats().map(function(c){
-    return '<option value="'+c.id+'"'+(c.id===selectedId?' selected':'')+'>'+c.icon+' '+c.label+'</option>';
+function thumbHtml(p){
+  return p.imageUrl
+    ?'<img class="thumb" src="'+esc(p.imageUrl)+'" onerror="this.style.display=\'none\'">'
+    :'<div class="thumb-ph">'+(getCatIcon(p))+'</div>';
+}
+function getCatIcon(p){ var c=catById(productCatId(p)); return c?c.icon:'📦'; }
+
+function renderList(list, el){
+  var rows=list.map(function(p){
+    var cat=catById(productCatId(p));
+    var clabel=cat?(cat.icon+' '+cat.label):(p.category||'—');
+    var stock=p.stock!=null?p.stock:0;
+    var isOut=stock===0;
+    return '<tr>'+
+      '<td style="width:44px">'+thumbHtml(p)+'</td>'+
+      '<td style="font-weight:500;max-width:180px"><div style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(p.name)+'</div>'+(p.oldPrice?'<div style="font-size:.7rem;color:var(--dim);text-decoration:line-through">₴'+p.oldPrice+'</div>':'')+'</td>'+
+      '<td><span class="badge">'+esc(clabel)+'</span></td>'+
+      '<td><input class="iinp" type="number" value="'+p.price+'" onchange="quickPrice('+p.id+',this.value)"></td>'+
+      '<td><div class="stk-cell"><input class="iinp" type="number" min="0" value="'+stock+'" onchange="quickStock('+p.id+',this.value)"><button class="stk-tog '+(isOut?'avail':'out')+'" onclick="quickStock('+p.id+','+(isOut?'1':'0')+',true)">'+(isOut?'✓ Є':'✕ Нема')+'</button></div></td>'+
+      '<td style="white-space:nowrap"><button class="btn-sm primary" onclick="openForm('+p.id+')" style="margin-right:4px">✏️ Змінити</button><button class="btn-sm" onclick="openMoveModal('+p.id+')" style="margin-right:4px">↔</button><button class="btn-sm danger" onclick="delProduct('+p.id+')">🗑</button></td>'+
+    '</tr>';
+  }).join('');
+  el.innerHTML='<div class="box"><div class="tbl-wrap"><table class="dtbl"><thead><tr><th>Фото</th><th>Назва</th><th>Каталог</th><th>Ціна ₴</th><th>Залишок</th><th>Дії</th></tr></thead><tbody>'+rows+'</tbody></table></div></div>';
+}
+
+function renderGrid(list, el){
+  el.innerHTML='<div class="pgrid">'+list.map(function(p){
+    var bg=p.imageUrl?'':'';
+    var imgH=p.imageUrl?'<img src="'+esc(p.imageUrl)+'" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover">':'<span style="font-size:2rem">'+getCatIcon(p)+'</span>';
+    return '<div class="pgc"><div class="pgc-img">'+imgH+(p.oldPrice?'<div style="position:absolute;top:6px;left:6px;background:#ef5350;color:#fff;font-size:.62rem;font-weight:700;padding:2px 6px;border-radius:4px">SALE</div>':'')+'</div>'+
+      '<div class="pgc-body"><div class="pgc-name" title="'+esc(p.name)+'">'+esc(p.name)+'</div><div><span class="pgc-price">₴'+p.price+'</span>'+(p.oldPrice?'<span class="pgc-old">₴'+p.oldPrice+'</span>':'')+'</div></div>'+
+      '<div class="pgc-acts"><button class="btn-sm primary" onclick="openForm('+p.id+')">✏️</button><button class="btn-sm" onclick="openMoveModal('+p.id+')">↔</button><button class="btn-sm danger" onclick="delProduct('+p.id+')">🗑</button></div></div>';
+  }).join('')+'</div>';
+}
+
+async function quickPrice(id, val){
+  var p=_products.find(function(x){return x.id===id;}); if(!p) return;
+  p.price=parseFloat(val)||p.price;
+  try{ await API.updateProduct(id,p); toast('Ціну оновлено'); }catch(e){ toast('❌ Помилка'); }
+}
+async function quickStock(id, val, rerender){
+  var p=_products.find(function(x){return x.id===id;}); if(!p) return;
+  p.stock=Math.max(0,parseInt(val)||0);
+  try{ await API.updateProduct(id,p); toast(p.stock===0?'Позначено: немає':'Залишок: '+p.stock+' шт'); if(rerender) renderProducts(); }catch(e){ toast('❌ Помилка'); }
+}
+async function delProduct(id){
+  if(!confirm('Видалити цей товар?')) return;
+  try{ await API.deleteProduct(id); _products=_products.filter(function(p){return p.id!==id;}); buildFilterBar(); renderProducts(); toast('Товар видалено'); }catch(e){ toast('❌ Помилка'); }
+}
+
+/* ── PRODUCT FORM ── */
+var _imgs=[], _colors=[], _activeImg=0, _catFromProd=false;
+
+function buildCatSel(selId){
+  document.getElementById('pCatId').innerHTML=getCats().map(function(c){
+    return '<option value="'+c.id+'"'+(c.id===selId?' selected':'')+'>'+c.icon+' '+c.label+'</option>';
   }).join('');
 }
 function onCatChange(){
   var c=catById(document.getElementById('pCatId').value);
-  // auto-set gender if category has one
   if(c&&c.gender) document.getElementById('pGender').value=c.gender;
+  updateSizePresets();
 }
+function updateMarginHint(){
+  var price=parseFloat(document.getElementById('pPrice').value);
+  var cost=parseFloat(document.getElementById('pPurchase').value);
+  var el=document.getElementById('marginHint');
+  if(!price||isNaN(cost)||isNaN(price)){ el.textContent=''; return; }
+  var prof=price-cost, margin=price>0?Math.round(prof/price*100):0;
+  el.textContent='Прибуток: ₴'+prof+' ('+margin+'%)';
+  el.style.color=prof>=0?'var(--green)':'#f87171';
+}
+function updateSizePresets(){
+  var catId=document.getElementById('pCatId').value;
+  var gender=document.getElementById('pGender').value;
+  var cat=catById(catId)||{key:'',gender:''};
+  var key=cat.key+':'+gender;
+  var sizes=SIZE_MAP[key]||SIZE_MAP[cat.key+':']||SIZE_MAP['default'];
+  document.getElementById('sizePresets').innerHTML=sizes.map(function(s){
+    return '<button type="button" class="btn-sm" onclick="toggleSize(\''+s+'\')" id="sz-'+s.replace(/[^a-zA-Z0-9]/g,'')+'" style="flex-shrink:0">'+s+'</button>';
+  }).join('');
+}
+function toggleSize(s){
+  var inp=document.getElementById('pSizes');
+  var cur=inp.value.split(',').map(function(x){return x.trim();}).filter(Boolean);
+  var idx=cur.indexOf(s);
+  if(idx>=0) cur.splice(idx,1); else cur.push(s);
+  inp.value=cur.join(', ');
+}
+
 function openForm(id){
   S.editingId=id||null;
   document.getElementById('formTitle').textContent=id?'Редагувати товар':'Новий товар';
-  var fields=['pName','pNameEn','pPrice','pOldPrice','pPurchase','pStock','pSizes','pDesc','pDetails','pImageUrl'];
-  fields.forEach(function(f){document.getElementById(f).value='';});
+  ['pName','pNameEn','pPrice','pOldPrice','pPurchase','pStock','pSizes','pDesc','pDetails','imgUrl'].forEach(function(f){ var el=document.getElementById(f); if(el) el.value=''; });
   document.getElementById('pGender').value='women';
-  buildCatSelect(null);
-  _editImages=[];
-  _editColors=[];
-  _activeImgIdx=0;
-
+  buildCatSel(null);
+  _imgs=[]; _colors=[]; _activeImg=0;
   if(id){
-    var p=getProducts().find(function(x){return x.id===id;});
+    var p=_products.find(function(x){return x.id===id;});
     if(p){
       document.getElementById('pName').value=p.name||'';
       document.getElementById('pNameEn').value=p.nameEn||'';
@@ -981,145 +834,108 @@ function openForm(id){
       document.getElementById('pDesc').value=p.description||'';
       document.getElementById('pDetails').value=(p.details||[]).join('\n');
       document.getElementById('pGender').value=p.gender||'women';
-      buildCatSelect(productCatId(p));
-      _editImages=(p.images&&p.images.length?p.images.slice():(p.imageUrl?[p.imageUrl]:[]));
-      _editColors=(p.colors?p.colors.map(function(c){return Object.assign({},c)}):[]);
+      buildCatSel(productCatId(p));
+      _imgs=(p.images&&p.images.length)?p.images.slice():(p.imageUrl?[p.imageUrl]:[]);
+      _colors=p.colors?p.colors.map(function(c){return Object.assign({},c);}):[];
     }
   }
-  renderImgSlots();
-  renderColorPresets();
-  renderColorTags();
-  updateMarginHint();
-  document.getElementById('overlay').style.display='flex';
+  updateSizePresets();
+  renderImgSlots(); renderColorPresets(); renderColorTags(); updateMarginHint();
+  document.getElementById('overlay').classList.add('open');
 }
-function updateMarginHint(){
-  var el=document.getElementById('marginHint');
-  if(!el) return;
-  var price=parseFloat(document.getElementById('pPrice').value);
-  var cost=parseFloat(document.getElementById('pPurchase').value);
-  if(!price||isNaN(cost)){
-    el.innerHTML='Прибуток з одиниці: —&nbsp;·&nbsp;0 = немає в наявності';
-    el.style.color='var(--dim)';
-    return;
-  }
-  var profit=price-cost;
-  var margin=price>0?Math.round(profit/price*100):0;
-  el.innerHTML='Прибуток з одиниці: <strong>₴'+profit+'</strong> ('+margin+'%)&nbsp;·&nbsp;0 = немає в наявності';
-  el.style.color=profit>=0?'var(--green)':'#f87171';
+function closeForm(){
+  document.getElementById('overlay').classList.remove('open');
+  S.editingId=null; _imgs=[]; _colors=[]; _activeImg=0;
+  document.getElementById('imgFile').value='';
 }
-var _editImages=[];
-var _editColors=[];
-var _activeImgIdx=0;
-
-function closeForm(){ document.getElementById('overlay').style.display='none'; S.editingId=null; document.getElementById('pImageFile').value=''; _editImages=[]; _editColors=[]; _activeImgIdx=0; }
 
 function renderImgSlots(){
   var html='';
   for(var i=0;i<5;i++){
-    if(_editImages[i]){
-      html+='<div class="img-slot'+(i===_activeImgIdx?' active-slot':'')+'" onclick="setActiveImg('+i+')">' +
-        '<img src="'+_editImages[i]+'">' +
-        (i===0?'<span class="img-slot__main">Головне</span>':'')+
-        '<button class="img-slot__del" onclick="event.stopPropagation();removeImg('+i+')">✕</button>'+
+    if(_imgs[i]){
+      html+='<div class="islot filled'+(i===_activeImg?' active-slot':'')+'" onclick="setActiveImg('+i+')">'+
+        '<img src="'+_imgs[i]+'">'+
+        (i===0?'<span class="islot-main">Головне</span>':'')+
+        '<button class="islot-del" onclick="event.stopPropagation();removeImg('+i+')">✕</button>'+
       '</div>';
     } else {
-      html+='<div class="img-slot" onclick="document.getElementById(\'pImageFile\').click()" title="Додати фото">+</div>';
+      html+='<div class="islot" onclick="document.getElementById(\'imgFile\').click()" title="Додати фото">+</div>';
     }
   }
-  document.getElementById('imgsSlots').innerHTML=html;
+  document.getElementById('imgSlots').innerHTML=html;
 }
-function setActiveImg(idx){_activeImgIdx=idx;renderImgSlots();}
-function removeImg(idx){
-  _editImages.splice(idx,1);
-  if(_activeImgIdx>=_editImages.length)_activeImgIdx=Math.max(0,_editImages.length-1);
-  renderImgSlots();
-}
-function handleMultiUpload(input){
-  var files=Array.from(input.files);
-  var remaining=5-_editImages.length;
-  var toProcess=files.slice(0,remaining);
-  toProcess.forEach(function(file){
-    compressImage(file,800,0.80,function(base64){
-      _editImages.push(base64);
-      renderImgSlots();
-    });
-  });
+function setActiveImg(i){ _activeImg=i; renderImgSlots(); }
+function removeImg(i){ _imgs.splice(i,1); if(_activeImg>=_imgs.length) _activeImg=Math.max(0,_imgs.length-1); renderImgSlots(); }
+function handleUpload(input){
+  var files=Array.from(input.files).slice(0,5-_imgs.length);
+  files.forEach(function(f){ compressImg(f,800,.8,function(b64){ _imgs.push(b64); renderImgSlots(); }); });
   input.value='';
 }
-function addImageByUrl(){
-  var url=document.getElementById('pImageUrl').value.trim();
-  if(!url)return;
-  if(_editImages.length>=5){toast('Максимум 5 фото');return;}
-  _editImages.push(url);
-  document.getElementById('pImageUrl').value='';
-  renderImgSlots();
+function addImgUrl(){
+  var url=document.getElementById('imgUrl').value.trim(); if(!url) return;
+  if(_imgs.length>=5){ toast('Максимум 5 фото'); return; }
+  _imgs.push(url); document.getElementById('imgUrl').value=''; renderImgSlots();
 }
-function rotateActivePhoto(dir){
-  var src=_editImages[_activeImgIdx];
-  if(!src){toast('Виберіть фото для повороту');return;}
+function rotateImg(dir){
+  var src=_imgs[_activeImg]; if(!src){ toast('Виберіть фото'); return; }
   var img=new Image();
   img.onload=function(){
-    var canvas=document.createElement('canvas');
-    canvas.width=img.height;canvas.height=img.width;
-    var ctx=canvas.getContext('2d');
-    ctx.translate(canvas.width/2,canvas.height/2);
-    ctx.rotate(dir*Math.PI/2);
-    ctx.drawImage(img,-img.width/2,-img.height/2);
-    _editImages[_activeImgIdx]=canvas.toDataURL('image/jpeg',0.85);
-    renderImgSlots();
+    var c=document.createElement('canvas'); c.width=img.height; c.height=img.width;
+    var ctx=c.getContext('2d'); ctx.translate(c.width/2,c.height/2); ctx.rotate(dir*Math.PI/2); ctx.drawImage(img,-img.width/2,-img.height/2);
+    _imgs[_activeImg]=c.toDataURL('image/jpeg',.85); renderImgSlots();
   };
-  img.crossOrigin='anonymous';
-  img.src=src;
+  img.crossOrigin='anonymous'; img.src=src;
 }
-var COLOR_PRESETS=[
-  {name:'Чорний',hex:'#1a1a1a'},{name:'Білий',hex:'#f0f0f0'},{name:'Сірий',hex:'#9e9e9e'},
-  {name:'Тілесний',hex:'#e8b896'},{name:'Рожевий',hex:'#f48fb1'},{name:'Червоний',hex:'#ef5350'},
-  {name:'Бузковий',hex:'#ce93d8'},{name:'Синій',hex:'#42a5f5'},{name:'М\'ятний',hex:'#80cbc4'},{name:'Зелений',hex:'#66bb6a'},
-];
+function compressImg(file,maxPx,q,cb){
+  var r=new FileReader();
+  r.onload=function(e){
+    var img=new Image();
+    img.onload=function(){
+      var w=img.width,h=img.height;
+      if(w>maxPx||h>maxPx){ if(w>=h){h=Math.round(h*maxPx/w);w=maxPx;}else{w=Math.round(w*maxPx/h);h=maxPx;} }
+      var c=document.createElement('canvas'); c.width=w; c.height=h;
+      c.getContext('2d').drawImage(img,0,0,w,h); cb(c.toDataURL('image/jpeg',q));
+    };
+    img.src=e.target.result;
+  };
+  r.readAsDataURL(file);
+}
+
+/* ── COLORS ── */
 function renderColorPresets(){
   var el=document.getElementById('colorPresets');
-  if(!el)return;
   el.innerHTML=COLOR_PRESETS.map(function(c){
-    var active=_editColors.some(function(x){return x.name===c.name;});
-    return '<div class="preset-sw'+(active?' active':'')+'" style="background:'+c.hex+'" title="'+c.name+'" onclick="togglePreset(\''+c.name+'\',\''+c.hex+'\')"></div>';
+    var on=_colors.some(function(x){return x.name===c.name;});
+    return '<div class="csw'+(on?' on':'')+'" style="background:'+c.hex+'" title="'+c.name+'" onclick="togglePreset(\''+c.name+'\',\''+c.hex+'\')"></div>';
   }).join('');
 }
 function togglePreset(name,hex){
-  var idx=_editColors.findIndex(function(c){return c.name===name;});
-  if(idx>=0){_editColors.splice(idx,1);}else{_editColors.push({name:name,hex:hex});}
-  renderColorPresets();
-  renderColorTags();
+  var idx=_colors.findIndex(function(c){return c.name===name;});
+  if(idx>=0) _colors.splice(idx,1); else _colors.push({name:name,hex:hex});
+  renderColorPresets(); renderColorTags();
 }
 function renderColorTags(){
-  var el=document.getElementById('colorTags');
-  if(!el)return;
-  el.innerHTML=_editColors.map(function(c,i){
-    return '<div class="color-tag">'+
-      '<div class="color-tag__dot" style="background:'+c.hex+'"></div>'+
-      c.name+
-      '<button class="color-tag__del" onclick="removeColor('+i+')">✕</button>'+
-    '</div>';
+  document.getElementById('colorTags').innerHTML=_colors.map(function(c,i){
+    return '<div class="ctag"><div class="cdot" style="background:'+c.hex+'"></div>'+esc(c.name)+'<button class="ctag-del" onclick="removeColor('+i+')">✕</button></div>';
   }).join('');
 }
 function addColor(){
-  var name=document.getElementById('colorName').value.trim();
-  var hex=document.getElementById('colorHex').value;
-  if(!name){toast('Введіть назву кольору');return;}
-  if(_editColors.some(function(c){return c.name===name;})){toast('Цей колір вже доданий');return;}
-  _editColors.push({name:name,hex:hex});
-  document.getElementById('colorName').value='';
-  renderColorPresets();
-  renderColorTags();
+  var name=document.getElementById('colorName').value.trim(), hex=document.getElementById('colorHex').value;
+  if(!name){ toast('Введіть назву'); return; }
+  if(_colors.some(function(c){return c.name===name;})){ toast('Вже є'); return; }
+  _colors.push({name:name,hex:hex}); document.getElementById('colorName').value=''; renderColorPresets(); renderColorTags();
 }
-function removeColor(idx){_editColors.splice(idx,1);renderColorPresets();renderColorTags();}
+function removeColor(i){ _colors.splice(i,1); renderColorPresets(); renderColorTags(); }
+
+/* ── SAVE PRODUCT ── */
 async function saveProduct(){
   var name=document.getElementById('pName').value.trim();
   var price=parseFloat(document.getElementById('pPrice').value);
-  if(!name){toast('Введіть назву товару');return;}
-  if(!price){toast('Введіть ціну');return;}
+  if(!name){ toast('Введіть назву товару'); return; }
+  if(!price){ toast('Введіть ціну'); return; }
   var catId=document.getElementById('pCatId').value;
-  var cat=catById(catId)||{key:'socks',gender:'women'};
-  var existing=S.editingId?getProducts().find(function(x){return x.id===S.editingId;}):null;
+  var cat=catById(catId)||{key:'other',gender:'women'};
+  var existing=S.editingId?_products.find(function(x){return x.id===S.editingId;}):null;
   var p={
     id:S.editingId||Date.now(),
     name:name,
@@ -1128,364 +944,205 @@ async function saveProduct(){
     gender:document.getElementById('pGender').value,
     price:price,
     oldPrice:parseFloat(document.getElementById('pOldPrice').value)||null,
-    purchasePrice:parseFloat(document.getElementById('pPurchase').value)||null,
+    purchasePrice:document.getElementById('pPurchase').value!==''?parseFloat(document.getElementById('pPurchase').value):null,
     stock:parseInt(document.getElementById('pStock').value)||0,
     rating:(existing&&existing.rating)||5.0,
     reviews:(existing&&existing.reviews)||0,
     sizes:document.getElementById('pSizes').value.split(',').map(function(s){return s.trim();}).filter(Boolean),
     description:document.getElementById('pDesc').value.trim(),
     details:document.getElementById('pDetails').value.split('\n').map(function(s){return s.trim();}).filter(Boolean),
-    images:_editImages.slice(),
-    imageUrl:_editImages[0]||'',
-    colors:_editColors.slice()
+    images:_imgs.slice(),
+    imageUrl:_imgs[0]||'',
+    colors:_colors.slice(),
   };
-  try {
+  try{
     if(S.editingId){
-      if(typeof API.updateProduct==='function'){
-        await API.updateProduct(S.editingId, p);
-      } else {
-        var fb=getProducts(); var fi=fb.findIndex(function(x){return x.id===S.editingId;}); if(fi>=0)fb[fi]=p; else fb.push(p);
-        await API.saveAllProducts(fb);
-      }
-      var list=getProducts(); var idx=list.findIndex(function(x){return x.id===S.editingId;});
-      if(idx>=0) list[idx]=p; else list.push(p); _products=list;
+      await API.updateProduct(S.editingId,p);
+      var idx=_products.findIndex(function(x){return x.id===S.editingId;});
+      if(idx>=0) _products[idx]=p; else _products.push(p);
     } else {
-      var allNew=getProducts().concat([p]);
-      if(typeof API.addProduct==='function'){
-        var res=await API.addProduct(p); if(res&&res.id) p.id=res.id;
-      } else {
-        await API.saveAllProducts(allNew);
-      }
-      _products=allNew;
+      var res=await API.addProduct(p); if(res&&res.id) p.id=res.id;
+      _products.push(p);
     }
   } catch(e){ toast('❌ Помилка: '+(e.message||e)); return; }
-  closeForm(); buildFilterBar(); renderProducts(); toast('✅ Товар збережено!');
-}
-async function delProduct(id){
-  if(!confirm('Видалити цей товар?'))return;
-  try {
-    await API.deleteProduct(id);
-    _products=_products.filter(function(p){return p.id!==id;});
-    buildFilterBar(); renderProducts(); toast('Товар видалено');
-  } catch(e){ toast('❌ Помилка видалення'); }
+  closeForm();
+  if(_catFromProd){ _catFromProd=false; }
+  buildFilterBar(); renderProducts();
+  toast('✅ Товар збережено!');
 }
 
-/* ─────────── MOVE MODAL ─────────── */
+/* ── MOVE MODAL ── */
 function openMoveModal(id){
   S.movingId=id;
-  var cats=getAllCats();
-  var p=getProducts().find(function(x){return x.id===id;});
-  var currentId=p?productCatId(p):'';
-  document.getElementById('moveCatList').innerHTML=cats.map(function(c){
-    var active=c.id===currentId?' style="border-color:var(--green);color:var(--green)"':'';
-    return '<button class="modal-cat-btn"'+active+' onclick="moveProduct(\''+c.id+'\')">'+c.icon+' '+c.label+(c.id===currentId?' ✓':'')+'</button>';
+  var p=_products.find(function(x){return x.id===id;}), curId=p?productCatId(p):'';
+  document.getElementById('moveCats').innerHTML=getCats().map(function(c){
+    return '<button class="mcat-btn'+(c.id===curId?' cur':'')+'" onclick="moveProduct(\''+c.id+'\')">'+(c.icon||'📦')+' '+esc(c.label)+'</button>';
   }).join('');
-  document.getElementById('moveModal').style.display='flex';
+  document.getElementById('moveModal').classList.add('open');
 }
-function closeMoveModal(){ document.getElementById('moveModal').style.display='none'; S.movingId=null; }
+function closeMoveModal(){ document.getElementById('moveModal').classList.remove('open'); S.movingId=null; }
 async function moveProduct(catId){
-  var cat=catById(catId);
-  if(!cat||!S.movingId)return;
-  var list=getProducts();
-  var p=list.find(function(x){return x.id===S.movingId;});
-  if(p){
-    p.category=cat.key; p.gender=cat.gender||p.gender;
-    try { await API.updateProduct(p.id, p); } catch(e){ toast('❌ Помилка'); return; }
-  }
+  var cat=catById(catId); if(!cat||!S.movingId) return;
+  var p=_products.find(function(x){return x.id===S.movingId;}); if(!p) return;
+  p.category=cat.key; p.gender=cat.gender||p.gender;
+  try{ await API.updateProduct(p.id,p); }catch(e){ toast('❌ Помилка'); return; }
   closeMoveModal(); buildFilterBar(); renderProducts();
-  toast('Товар переміщено до «'+cat.label+'»');
+  toast('Переміщено до «'+cat.label+'»');
 }
 
-/* ─────────── CATALOGS ─────────── */
-function renderCatalogs(){
-  var products=getProducts();
-  var all=getAllCats();
-  var counts={};
-  products.forEach(function(p){ var id=productCatId(p); counts[id]=(counts[id]||0)+1; });
-  var html='<div style="margin-bottom:12px;font-size:.8rem;color:var(--dim)">Усього каталогів: '+all.length+' · Клікніть на картку, щоб побачити товари</div>'+
-    '<div class="cat-cards-grid">'+
-    all.map(function(c){
-      var n=counts[c.id]||0;
-      var delBtn=c.editable!==false?'':(!c.editable&&c.id.indexOf('custom-')===0)?
-        '<button class="cac-del" onclick="event.stopPropagation();deleteCat(\''+c.id+'\')" title="Видалити">✕</button>':'';
-      // For custom categories, show delete
-      var showDel=getCustomCats().find(function(x){return x.id===c.id;});
-      var delHtml=showDel?'<button class="cac-del" onclick="event.stopPropagation();deleteCat(\''+c.id+'\')" title="Видалити">✕</button>':'';
-      return '<div class="cat-admin-card" onclick="goToProducts(\''+c.id+'\')" title="Переглянути товари">'+
-        delHtml+
-        '<div class="cac-ico">'+c.icon+'</div>'+
-        '<div class="cac-name">'+c.label+'</div>'+
-        '<div class="cac-count">'+n+' товарів</div>'+
-        '<button class="cac-filter-btn" onclick="event.stopPropagation();goToProducts(\''+c.id+'\')">Переглянути →</button>'+
-      '</div>';
-    }).join('')+
+/* ── CATEGORIES ── */
+function renderCats(){
+  var prods=_products, counts={};
+  prods.forEach(function(p){ var id=productCatId(p); counts[id]=(counts[id]||0)+1; });
+  var all=getCats(), custom=getCustomCats();
+  document.getElementById('catGrid').innerHTML=all.map(function(c){
+    var isCustom=!!custom.find(function(x){return x.id===c.id;});
+    var del=isCustom?'<button class="catcard-del" onclick="event.stopPropagation();deleteCat(\''+c.id+'\')">✕</button>':'';
+    return '<div class="catcard" onclick="goCat(\''+c.id+'\')">'+del+
+      '<div class="catcard-ico">'+(c.icon||'📦')+'</div>'+
+      '<div class="catcard-name">'+esc(c.label)+'</div>'+
+      '<div class="catcard-count">'+(counts[c.id]||0)+' товарів</div>'+
+      '<button class="btn-sm" style="font-size:.72rem" onclick="event.stopPropagation();goCat(\''+c.id+'\')">Переглянути →</button>'+
     '</div>';
-  document.getElementById('catalogsList').innerHTML=html;
+  }).join('');
 }
-function goToProducts(catId){
-  S.filter=catId;
-  showTab('products');
-}
+function goCat(id){ S.filter=id; showTab('products'); }
 function deleteCat(id){
-  if(!confirm('Видалити цей каталог? Товари залишаться.'))return;
+  if(!confirm('Видалити каталог? Товари залишаться.')) return;
   setCustomCats(getCustomCats().filter(function(c){return c.id!==id;}));
-  renderCatalogs();
-  toast('Каталог видалено');
+  renderCats(); toast('Каталог видалено');
 }
 
-/* ─────────── CATALOG FORM ─────────── */
-var selectedIcon='🏷️';
-var _catFormFromProduct=false;
+/* ── CATEGORY FORM ── */
+var _selIcon='🏷️';
 function slugify(s){
   var m={'а':'a','б':'b','в':'v','г':'h','ґ':'g','д':'d','е':'e','є':'ye','ж':'zh','з':'z','и':'y','і':'i','ї':'yi','й':'y','к':'k','л':'l','м':'m','н':'n','о':'o','п':'p','р':'r','с':'s','т':'t','у':'u','ф':'f','х':'kh','ц':'ts','ч':'ch','ш':'sh','щ':'shch','ь':'','ю':'yu','я':'ya',' ':'-'};
   return s.toLowerCase().split('').map(function(c){return m[c]!==undefined?m[c]:c;}).join('').replace(/[^a-z0-9-]/g,'').replace(/-+/g,'-').replace(/^-|-$/g,'')||('cat'+Date.now());
 }
 function autoCatKey(val){ document.getElementById('catKey').value=slugify(val); }
-function openCatForm(fromProduct){
-  _catFormFromProduct=!!fromProduct;
-  selectedIcon='🏷️';
-  document.getElementById('catName').value='';
-  document.getElementById('catKey').value='';
+function openCatForm(fromProd){
+  _catFromProd=!!fromProd; _selIcon='🏷️';
+  document.getElementById('catName').value=''; document.getElementById('catKey').value='';
   document.getElementById('catGender').value='women';
-  document.getElementById('catFormTitle').textContent='Нова категорія';
-  var grid=document.getElementById('iconGrid');
-  grid.innerHTML=ICONS.map(function(ic){
-    return '<div class="icon-opt'+(ic===selectedIcon?' selected':'')+'" onclick="selectIcon(this,\''+ic+'\')">'+ic+'</div>';
+  document.getElementById('catModalTitle').textContent='Новий каталог';
+  document.getElementById('iconGrid').innerHTML=ICONS.map(function(ic){
+    return '<div class="iopt'+(ic===_selIcon?' sel':'')+'" onclick="selIcon(this,\''+ic+'\')">'+ic+'</div>';
   }).join('');
-  document.getElementById('catFormModal').style.display='flex';
-  setTimeout(function(){document.getElementById('catName').focus();},100);
+  document.getElementById('catModal').classList.add('open');
+  setTimeout(function(){ document.getElementById('catName').focus(); },100);
 }
-function closeCatForm(){ document.getElementById('catFormModal').style.display='none'; }
-function selectIcon(el,ic){
-  selectedIcon=ic;
-  document.querySelectorAll('.icon-opt').forEach(function(e){e.classList.remove('selected');});
-  el.classList.add('selected');
+function closeCatForm(){ document.getElementById('catModal').classList.remove('open'); }
+function selIcon(el,ic){
+  _selIcon=ic;
+  document.querySelectorAll('.iopt').forEach(function(e){e.classList.remove('sel');});
+  el.classList.add('sel');
 }
 function saveCat(){
   var name=document.getElementById('catName').value.trim();
   var key=document.getElementById('catKey').value||slugify(name);
-  if(!name){toast('Введіть назву категорії');return;}
+  var gender=document.getElementById('catGender').value;
+  if(!name){ toast('Введіть назву'); return; }
   var custom=getCustomCats();
-  if(custom.find(function(c){return c.key===key&&c.gender===document.getElementById('catGender').value;})){
-    toast('Така категорія вже існує');return;
-  }
-  var newId='custom-'+key+'-'+document.getElementById('catGender').value;
-  custom.push({id:newId,key:key,gender:document.getElementById('catGender').value,label:name,icon:selectedIcon,editable:true});
+  if(custom.find(function(c){return c.key===key&&c.gender===gender;})){ toast('Така вже є'); return; }
+  var newId='custom-'+key+'-'+gender;
+  custom.push({id:newId,key:key,gender:gender,label:name,icon:_selIcon});
   setCustomCats(custom);
   closeCatForm();
-  if(_catFormFromProduct){
-    buildCatSelect(newId);
-  } else {
-    renderCatalogs();
-  }
-  toast('✅ Категорія «'+name+'» створена!');
+  if(_catFromProd){ buildCatSel(newId); } else { renderCats(); }
+  toast('✅ Каталог «'+name+'» створено!');
 }
 
-/* ─────────── ORDERS ─────────── */
-var _ordersCache = null;
-var _ordersTimer = null;
-
-function startOrdersPolling(){
-  stopOrdersPolling();
-  _ordersTimer = setInterval(function(){ renderOrders(true); }, 8000);
-}
-function stopOrdersPolling(){
-  if(_ordersTimer){ clearInterval(_ordersTimer); _ordersTimer=null; }
-}
+/* ── ORDERS ── */
+var _ordCache=null, _ordTimer=null;
+function startOrderPoll(){ stopOrderPoll(); _ordTimer=setInterval(function(){ renderOrders(true); },8000); }
+function stopOrderPoll(){ if(_ordTimer){ clearInterval(_ordTimer); _ordTimer=null; } }
 
 async function renderOrders(silent){
-  var el=document.getElementById('ordersList');
-  // Show cache instantly, then refresh in background
-  if(_ordersCache !== null){
-    displayOrders(_ordersCache, el);
-  } else if(!silent){
-    el.innerHTML='<div class="empty" style="padding:20px 0"><div class="empty-ico">⏳</div><p>Завантаження...</p></div>';
-  }
+  var el=document.getElementById('ordList');
+  if(_ordCache!==null){ displayOrders(_ordCache,el); }
+  else if(!silent){ el.innerHTML='<div class="empty"><div class="empty-ico">⏳</div><p>Завантаження...</p></div>'; }
   var orders=[];
-  try { orders = await API.getOrders(); } catch(e) {
-    if(_ordersCache===null) el.innerHTML='<div class="empty"><div class="empty-ico">❌</div><p>Помилка завантаження</p></div>';
-    return;
-  }
-  _ordersCache = orders;
-  displayOrders(orders, el);
+  try{ orders=await API.getOrders(); }catch(e){ if(_ordCache===null) el.innerHTML='<div class="empty"><div class="empty-ico">❌</div><p>Помилка завантаження</p></div>'; return; }
+  _ordCache=orders;
+  displayOrders(orders,el);
+  document.getElementById('ordUpdated').textContent='Оновлено: '+new Date().toLocaleTimeString('uk-UA',{hour:'2-digit',minute:'2-digit'});
 }
 
-
 function displayOrders(orders, el){
-  var ob=document.getElementById('sbOrdCount');
+  var ob=document.getElementById('sbOrd');
   ob.textContent=orders.length; ob.style.display=orders.length?'inline-block':'none';
   if(!orders.length){ el.innerHTML='<div class="empty"><div class="empty-ico">📋</div><p>Замовлень ще немає</p></div>'; return; }
+  var todayStr=new Date().toLocaleDateString('uk-UA');
+  var todayList=orders.filter(function(o){return o.date===todayStr;});
+  var prevList=orders.filter(function(o){return o.date!==todayStr;});
+  var payN={cod:'Накладений платіж',prepay:'Передоплата'};
 
-  var todayStr = new Date().toLocaleDateString('uk-UA');
-  var todayOrders = orders.filter(function(o){ return o.date===todayStr; });
-  var prevOrders  = orders.filter(function(o){ return o.date!==todayStr; });
-  var payN={cod:'Накладений платіж',prepay:'Передоплата на картку'};
-
-  function buildTable(list, offset){
-    return '<div class="tbl-wrap"><table class="data-table"><thead><tr><th>Дата</th><th>Клієнт</th><th>Телефон</th><th>Місто</th><th>Оплата</th><th>Товари</th><th>Сума</th><th></th></tr></thead><tbody>'+
-      list.map(function(o,i){
-        var idx=offset+i;
-        var items=(o.items||[]).map(function(it){return esc(it.name)+' ×'+(it.qty||1);}).join(', ');
-        var itemsDetail=(o.items||[]).map(function(it){
-          var meta=it.size||'';
-          if(it.color) meta+=(meta?', ':'')+it.color;
-          return '<li>'+esc(it.name)+(meta?' ('+esc(meta)+')':'')+' — ×'+(it.qty||1)+' — ₴'+((it.price||0)*(it.qty||1))+'</li>';
-        }).join('');
-        var detail='<tr id="ord-detail-'+idx+'" style="display:none"><td colspan="8" style="padding:0">'+
-          '<div style="background:#0a1a0c;border:1px solid rgba(74,222,128,.15);border-radius:12px;margin:0 8px 12px;padding:20px 24px;font-size:.85rem;line-height:1.8">'+
-            '<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px 32px">'+
-              '<div><span style="color:var(--dim);font-size:.75rem;text-transform:uppercase">Клієнт</span><br><strong>'+esc(o.firstName||'')+' '+esc(o.lastName||'')+'</strong></div>'+
-              '<div><span style="color:var(--dim);font-size:.75rem;text-transform:uppercase">Телефон</span><br><a href="tel:'+encodeURIComponent(o.phone||'')+'" style="color:var(--green)">'+esc(o.phone||'-')+'</a></div>'+
-              '<div><span style="color:var(--dim);font-size:.75rem;text-transform:uppercase">Місто</span><br>'+esc(o.city||'-')+'</div>'+
-              '<div><span style="color:var(--dim);font-size:.75rem;text-transform:uppercase">Відділення / адреса</span><br>'+esc(o.branch||'-')+'</div>'+
-              '<div><span style="color:var(--dim);font-size:.75rem;text-transform:uppercase">Оплата</span><br>'+esc(payN[o.payment]||o.payment||'-')+'</div>'+
-              (o.comment?'<div style="grid-column:1/-1"><span style="color:var(--dim);font-size:.75rem;text-transform:uppercase">Коментар</span><br>'+esc(o.comment)+'</div>':'')+
-            '</div>'+
-            '<div style="margin-top:16px;border-top:1px solid rgba(74,222,128,.1);padding-top:14px">'+
-              '<span style="color:var(--dim);font-size:.75rem;text-transform:uppercase">Товари</span>'+
-              '<ul style="margin-top:6px;padding-left:18px;color:var(--text)">'+itemsDetail+'</ul>'+
-            '</div>'+
-            '<div style="margin-top:12px;display:flex;justify-content:space-between;align-items:center">'+
-              '<button onclick="deleteOrder('+o._id+')" style="background:rgba(248,113,113,.12);border:1px solid rgba(248,113,113,.3);color:#f87171;padding:7px 16px;border-radius:8px;font-size:.8rem;cursor:pointer">🗑 Видалити замовлення</button>'+
-              '<span style="font-size:1.05rem;font-weight:700;color:var(--green)">Разом: ₴'+(o.total||0)+'</span>'+
-            '</div>'+
-          '</div></td></tr>';
-        var row='<tr style="cursor:pointer" onclick="toggleOrderDetail('+idx+')">'+
-          '<td style="white-space:nowrap">'+esc(o.date||'-')+'</td>'+
-          '<td style="font-weight:500">'+esc(o.firstName||'')+' '+esc(o.lastName||'')+'</td>'+
-          '<td>'+esc(o.phone||'-')+'</td>'+
-          '<td>'+esc(o.city||'-')+'</td>'+
-          '<td>'+esc(payN[o.payment]||o.payment||'-')+'</td>'+
-          '<td style="font-size:.78rem;color:var(--dim);max-width:180px">'+(items||'-')+'</td>'+
-          '<td style="color:var(--green);font-weight:700">₴'+(o.total||0)+'</td>'+
-          '<td style="color:var(--dim);font-size:.8rem" id="ord-arrow-'+idx+'">▼</td></tr>';
-        return row+detail;
-      }).join('')+
-    '</tbody></table></div>';
+  function buildRows(list, offset){
+    return list.map(function(o,i){
+      var idx=offset+i;
+      var items=(o.items||[]).map(function(it){return esc(it.name)+' ×'+(it.qty||1);}).join(', ');
+      var detail='<div class="ord-detail" id="od-'+idx+'">'+
+        '<div class="ord-grid">'+
+          '<div><div class="ord-label">Клієнт</div><div class="ord-val" style="font-weight:600">'+esc((o.firstName||'')+' '+(o.lastName||''))+'</div></div>'+
+          '<div><div class="ord-label">Телефон</div><a href="tel:'+esc(o.phone||'')+'" style="color:var(--green);font-size:.86rem">'+esc(o.phone||'—')+'</a></div>'+
+          '<div><div class="ord-label">Місто</div><div class="ord-val">'+esc(o.city||'—')+'</div></div>'+
+          '<div><div class="ord-label">Відділення / адреса</div><div class="ord-val">'+esc(o.branch||'—')+'</div></div>'+
+          '<div><div class="ord-label">Оплата</div><div class="ord-val">'+esc(payN[o.payment]||o.payment||'—')+'</div></div>'+
+          (o.comment?'<div style="grid-column:1/-1"><div class="ord-label">Коментар</div><div class="ord-val">'+esc(o.comment)+'</div></div>':'')+
+        '</div>'+
+        '<div style="padding:0 20px 12px"><div class="ord-label" style="margin-bottom:6px">Товари</div><ul style="padding-left:16px;color:var(--text);font-size:.82rem;line-height:1.9">'+
+          (o.items||[]).map(function(it){ var m=(it.size?it.size:'')+(it.color?', '+it.color:''); return '<li>'+esc(it.name)+(m?' ('+esc(m)+')':'')+' — ×'+(it.qty||1)+' — ₴'+((it.price||0)*(it.qty||1))+'</li>'; }).join('')+
+        '</ul></div>'+
+        '<div class="ord-footer"><button onclick="deleteOrder('+o._id+')" class="btn-sm danger">🗑 Видалити</button><span style="font-size:1rem;font-weight:700;color:var(--green)">₴'+(o.total||0)+'</span></div>'+
+      '</div>';
+      var row='<tr style="cursor:pointer" onclick="toggleOrd('+idx+')">'+
+        '<td style="white-space:nowrap">'+esc(o.date||'—')+'</td>'+
+        '<td style="font-weight:500">'+esc((o.firstName||'')+' '+(o.lastName||''))+'</td>'+
+        '<td>'+esc(o.phone||'—')+'</td>'+
+        '<td>'+esc(o.city||'—')+'</td>'+
+        '<td>'+esc(payN[o.payment]||o.payment||'—')+'</td>'+
+        '<td style="font-size:.76rem;color:var(--dim);max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(items)+'</td>'+
+        '<td style="color:var(--green);font-weight:700">₴'+(o.total||0)+'</td>'+
+        '<td id="oa-'+idx+'">▼</td>'+
+      '</tr><tr><td colspan="8" style="padding:0">'+detail+'</td></tr>';
+      return row;
+    }).join('');
   }
 
-  var html='<div class="ord-refresh">Оновлено: '+new Date().toLocaleTimeString('uk-UA')+'</div>';
-  if(todayOrders.length){
-    html+='<div class="ord-group-hdr today">📅 Сьогодні — '+todayOrders.length+' замовл.</div>';
-    html+=buildTable(todayOrders, 0);
-  }
-  if(prevOrders.length){
-    html+='<div class="ord-group-hdr">📆 Попередні дні — '+prevOrders.length+' замовл.</div>';
-    html+=buildTable(prevOrders, todayOrders.length);
-  }
+  var html='';
+  if(todayList.length) html+='<div style="font-size:.8rem;font-weight:700;color:var(--green);margin-bottom:8px">📅 Сьогодні — '+todayList.length+' замовл.</div>';
+  html+='<div class="box" style="margin-bottom:14px"><div class="tbl-wrap"><table class="dtbl"><thead><tr><th>Дата</th><th>Клієнт</th><th>Телефон</th><th>Місто</th><th>Оплата</th><th>Товари</th><th>Сума</th><th></th></tr></thead><tbody>'+
+    buildRows(todayList,0)+buildRows(prevList,todayList.length)+
+  '</tbody></table></div></div>';
   el.innerHTML=html;
 }
 
-async function deleteOrder(orderId){
-  if(!confirm('Видалити це замовлення?')) return;
-  try {
-    await API.deleteOrder(orderId);
-    _ordersCache=null;
-    renderOrders(false);
-    toast('🗑 Замовлення видалено');
-  } catch(e) { toast('❌ Помилка видалення'); }
+function toggleOrd(idx){
+  var el=document.getElementById('od-'+idx), ar=document.getElementById('oa-'+idx);
+  var open=el.classList.toggle('open');
+  if(ar) ar.textContent=open?'▲':'▼';
 }
-function toggleOrderDetail(idx){
-  var row=document.getElementById('ord-detail-'+idx);
-  var arrow=document.getElementById('ord-arrow-'+idx);
-  var open=row.style.display!=='none';
-  row.style.display=open?'none':'table-row';
-  if(arrow)arrow.textContent=open?'▼':'▲';
+async function deleteOrder(id){
+  if(!confirm('Видалити замовлення?')) return;
+  try{ await API.deleteOrder(id); _ordCache=null; renderOrders(false); toast('Замовлення видалено'); }catch(e){ toast('❌ Помилка'); }
 }
 
-/* ─────────── PHOTOS TAB ─────────── */
-function renderPhotos(){
-  var list = getProducts();
-  var el = document.getElementById('photoGrid');
-  var statsEl = document.getElementById('photoStats');
-  if(!list.length){
-    el.innerHTML='<div class="empty"><div class="empty-ico">📦</div><p>Немає товарів</p></div>';
-    statsEl.innerHTML='';
-    return;
-  }
-  var withPhoto = list.filter(function(p){ return !!p.imageUrl; }).length;
-  var without = list.length - withPhoto;
-  statsEl.innerHTML=
-    '<div class="photo-stat"><span>Всього товарів: </span><strong>'+list.length+'</strong></div>'+
-    '<div class="photo-stat ok"><span>З фото: </span><strong>'+withPhoto+'</strong></div>'+
-    (without ? '<div class="photo-stat miss"><span>Без фото: </span><strong>'+without+'</strong></div>' : '');
-  el.innerHTML='<div class="photo-grid">'+list.map(function(p){
-    var hasImg = !!p.imageUrl;
-    var imgHtml = hasImg
-      ? '<img src="'+p.imageUrl+'" onerror="this.style.display=\'none\'">'
-      : '<div class="photo-card__no-img">📷</div>';
-    var statusColor = hasImg ? 'var(--green)' : '#f87171';
-    var statusText  = hasImg ? '✓ Є фото' : '✗ Немає фото';
-    return '<div class="photo-card" id="pc-'+p.id+'" onclick="pickPhoto('+p.id+')" title="Клікніть, щоб вибрати фото">'+
-      '<div class="photo-card__img">'+imgHtml+'<div class="photo-card__overlay">📷</div></div>'+
-      '<div class="photo-card__name">'+p.name+'</div>'+
-      '<div class="photo-card__status" style="color:'+statusColor+'">'+statusText+'</div>'+
-    '</div>';
-  }).join('')+'</div>';
+/* ── REVIEWS ── */
+async function renderReviews(){
+  var el=document.getElementById('revList');
+  el.innerHTML='<div class="empty"><div class="empty-ico">⏳</div><p>Завантаження...</p></div>';
+  var reviews=[];
+  try{ reviews=await API.getReviews(); }catch(e){ el.innerHTML='<div class="empty"><div class="empty-ico">❌</div><p>Помилка</p></div>'; return; }
+  if(!reviews.length){ el.innerHTML='<div class="empty"><div class="empty-ico">⭐</div><p>Відгуків ще немає</p></div>'; return; }
+  var stars=function(n){ return '★'.repeat(n)+'☆'.repeat(5-n); };
+  el.innerHTML=reviews.map(function(r){
+    var d=r.ts?new Date(r.ts).toLocaleDateString('uk-UA'):'';
+    return '<div class="rcard"><div class="rcard-hdr"><div class="rcard-name">'+esc(r.name||'—')+'</div><div class="rcard-stars">'+stars(r.rating||5)+'</div></div><div class="rcard-text">'+esc(r.text||'')+'</div>'+(d?'<div style="font-size:.7rem;color:var(--dim);margin-top:4px">'+d+'</div>':'')+'</div>';
+  }).join('');
 }
 
-function pickPhoto(productId){
-  var input = document.getElementById('photoPickerInput');
-  input._productId = productId;
-  input.value = '';
-  input.click();
-}
-
-function compressImage(file, maxPx, quality, cb){
-  var reader = new FileReader();
-  reader.onload = function(e){
-    var img = new Image();
-    img.onload = function(){
-      var w = img.width, h = img.height;
-      if(w > maxPx || h > maxPx){
-        if(w >= h){ h = Math.round(h * maxPx / w); w = maxPx; }
-        else      { w = Math.round(w * maxPx / h); h = maxPx; }
-      }
-      var canvas = document.createElement('canvas');
-      canvas.width = w; canvas.height = h;
-      canvas.getContext('2d').drawImage(img, 0, 0, w, h);
-      cb(canvas.toDataURL('image/jpeg', quality));
-    };
-    img.src = e.target.result;
-  };
-  reader.readAsDataURL(file);
-}
-
-async function onPhotoPickerChange(input){
-  var file = input.files[0];
-  var productId = input._productId;
-  if(!file || !productId) return;
-  var card = document.getElementById('pc-'+productId);
-  if(card) card.classList.add('uploading');
-  compressImage(file, 800, 0.80, async function(base64){
-    var list = getProducts();
-    var p = list.find(function(x){ return x.id === productId; });
-    if(p){
-      p.imageUrl = base64;
-      try {
-        await API.updateProduct(p.id, p);
-        toast('✅ Фото збережено!');
-      } catch(e){ toast('❌ Помилка збереження фото'); }
-    }
-    renderPhotos();
-  });
-}
-
-/* ─────────── TOAST ─────────── */
-function toast(msg){
-  var t=document.getElementById('toast');
-  t.textContent=msg; t.classList.add('show');
-  setTimeout(function(){t.classList.remove('show');},2500);
-}
-
-/* ─────────── INIT ─────────── */
-document.getElementById('loginPass').addEventListener('keydown',function(e){if(e.key==='Enter')doLogin();});
-function togglePass(){
-  var inp=document.getElementById('loginPass');
-  var btn=document.getElementById('eyeBtn');
-  if(inp.type==='password'){inp.type='text';btn.textContent='🙈';}
-  else{inp.type='password';btn.textContent='👁';}
-}
+/* ── INIT ── */
+document.getElementById('loginPass').addEventListener('keydown',function(e){ if(e.key==='Enter') doLogin(); });
 if(API.hasToken()) showAdmin();
 </script>
 </body>
