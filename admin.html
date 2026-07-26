@@ -1202,7 +1202,7 @@ async function renderReviews(){
     var d=r.ts?new Date(r.ts).toLocaleDateString('uk-UA'):'';
     return '<div class="rcard"><div class="rcard-hdr">'+
       '<div style="display:flex;align-items:center;gap:10px"><div class="rcard-name">'+esc(r.name||'—')+'</div><div class="rcard-stars">'+stars(r.rating||5)+'</div></div>'+
-      '<button class="btn-sm danger" onclick="deleteReview('+r._id+')" title="Видалити відгук">🗑 Видалити</button>'+
+      '<button class="btn-sm danger" onclick="deleteReview('+r.id+')" title="Видалити відгук">🗑 Видалити</button>'+
     '</div><div class="rcard-text">'+esc(r.text||'')+'</div>'+(d?'<div style="font-size:.7rem;color:var(--dim);margin-top:4px">'+d+'</div>':'')+'</div>';
   }).join('');
 }
