@@ -644,18 +644,29 @@ async def create_order(req: Request, background_tasks: BackgroundTasks):
     try:
         name = f"{body.get('firstName','')} {body.get('lastName','')}".strip() or "—"
         phone = body.get("phone", "—")
-        city  = body.get("city", "")
+        email = body.get("email", "")
+        city  = body.get("city", "—")
+        branch = body.get("branch", "—")
+        delivery_raw = body.get("deliveryType", "")
+        delivery = "🟡 Нова Пошта" if delivery_raw == "nova" else ("🔵 Укрпошта" if delivery_raw == "ukr" else delivery_raw or "—")
+        payment_raw = body.get("payment", "")
+        payment = "💵 Накладений платіж" if payment_raw == "cod" else ("💳 Передоплата" if payment_raw == "prepay" else payment_raw or "—")
+        comment = body.get("comment", "")
         items_text = "\n".join(
-            f"  • {i.get('name','?')} × {i.get('qty',1)} — {i.get('price',0)} грн"
+            f"  • {i.get('name','?')} ({i.get('size','')}{', ' + i.get('color','') if i.get('color') else ''}) × {i.get('qty',1)} — {i.get('price',0)} грн"
             for i in items[:20]
         )
-        total = sum(float(i.get("price", 0)) * int(i.get("qty", 1)) for i in items)
+        total = body.get("total") or sum(float(i.get("price", 0)) * int(i.get("qty", 1)) for i in items)
         msg = (
-            f"🛍 <b>Нове замовлення!</b>\n"
-            f"👤 {name}\n"
+            f"🛍 <b>Нове замовлення!</b>\n\n"
+            f"👤 <b>{name}</b>\n"
             f"📞 {phone}\n"
-            f"📍 {city}\n\n"
-            f"{items_text}\n\n"
+            + (f"✉️ {email}\n" if email else "") +
+            f"\n📦 <b>Доставка:</b> {delivery}\n"
+            f"📍 {city}, {branch}\n"
+            f"💳 <b>Оплата:</b> {payment}\n"
+            + (f"💬 {comment}\n" if comment else "") +
+            f"\n<b>Товари:</b>\n{items_text}\n\n"
             f"💰 Разом: <b>{total:.0f} грн</b>"
         )
         background_tasks.add_task(_send_telegram, msg)

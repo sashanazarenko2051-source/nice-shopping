@@ -238,10 +238,11 @@ document.getElementById('checkoutForm').addEventListener('submit', function(e) {
   btn.textContent = window.i18n('co.sending');
 
   function onSuccess() {
+    var email = document.getElementById('email').value.trim();
     var order = {
       date: new Date().toLocaleDateString('uk-UA'),
-      firstName: firstName, lastName: lastName, phone: phone,
-      city: city, branch: branch, payment: payment, comment: comment,
+      firstName: firstName, lastName: lastName, phone: phone, email: email,
+      city: city, branch: branch, deliveryType: deliveryType, payment: payment, comment: comment,
       items: cart.map(function(item) {
         var p = PRODUCTS.find(function(x) { return x.id === item.productId; });
         return { name: p ? p.name : '?', size: item.size, color: item.color || '', qty: item.qty, price: p ? p.price : 0 };
