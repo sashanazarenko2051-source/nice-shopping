@@ -109,14 +109,15 @@ init_db()
 def _send_telegram(text: str):
     if not TG_BOT_TOKEN or not TG_CHAT_ID:
         return
-    try:
-        import urllib.request as _ur
-        url = f"https://api.telegram.org/bot{TG_BOT_TOKEN}/sendMessage"
-        data = json.dumps({"chat_id": TG_CHAT_ID, "text": text, "parse_mode": "HTML"}).encode()
-        req = _ur.Request(url, data=data, headers={"Content-Type": "application/json"})
-        _ur.urlopen(req, timeout=10)
-    except Exception as e:
-        print(f"[TG] Send error: {e}")
+    import urllib.request as _ur
+    url = f"https://api.telegram.org/bot{TG_BOT_TOKEN}/sendMessage"
+    for chat_id in [c.strip() for c in TG_CHAT_ID.split(",") if c.strip()]:
+        try:
+            data = json.dumps({"chat_id": chat_id, "text": text, "parse_mode": "HTML"}).encode()
+            req = _ur.Request(url, data=data, headers={"Content-Type": "application/json"})
+            _ur.urlopen(req, timeout=10)
+        except Exception as e:
+            print(f"[TG] Send error to {chat_id}: {e}")
 
 
 # ── Gist backup ───────────────────────────────────────────
