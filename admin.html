@@ -1207,8 +1207,15 @@ async function renderReviews(){
   }).join('');
 }
 async function deleteReview(id){
+  if(!id){ toast('❌ ID відгуку не знайдено'); return; }
   if(!confirm('Видалити цей відгук?')) return;
-  try{ await API.deleteReview(id); toast('Відгук видалено'); renderReviews(); }catch(e){ toast('❌ Помилка'); }
+  try{
+    await API.deleteReview(id);
+    toast('Відгук видалено');
+    renderReviews();
+  }catch(e){
+    toast('❌ Помилка: '+(e.message||e));
+  }
 }
 
 /* ── INIT ── */

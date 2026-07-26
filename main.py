@@ -709,15 +709,16 @@ async def create_review(req: Request, background_tasks: BackgroundTasks):
     return {"ok": True}
 
 @app.delete("/api/reviews/{rid}")
-async def delete_review(rid: int, token: str = Depends(require_admin)):
+async def delete_review(rid: int, background_tasks: BackgroundTasks,
+                        token: str = Depends(require_admin)):
     conn = get_db()
+    row = conn.execute("SELECT id FROM reviews WHERE id = ?", (rid,)).fetchone()
+    if not row:
+        conn.close()
+        raise HTTPException(status_code=404, detail="Review not found")
     conn.execute("DELETE FROM reviews WHERE id = ?", (rid,))
     conn.commit(); conn.close()
-    loop = asyncio.get_running_loop()
-    try:
-        await asyncio.wait_for(loop.run_in_executor(_backup_executor, _backup_reviews), timeout=8)
-    except Exception as e:
-        print(f"[Backup] Reviews delete backup error: {e}")
+    background_tasks.add_task(_backup_reviews)
     return {"ok": True}
 
 @app.post("/api/admin/restore")
