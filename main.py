@@ -23,6 +23,8 @@ ADMIN_PASS   = os.getenv("ADMIN_PASS", "admin2025")
 GITHUB_TOKEN = os.getenv("GITHUB_TOKEN", "")
 GIST_ID      = os.getenv("GIST_ID", "")
 GITHUB_REPO  = os.getenv("GITHUB_REPO", "sashanazarenko2051-source/nice-shopping")
+TG_BOT_TOKEN = os.getenv("TG_BOT_TOKEN", "")
+TG_CHAT_ID   = os.getenv("TG_CHAT_ID", "")
 # Committing products.json back to the git repo triggers a Render auto-deploy,
 # which wipes the ephemeral SQLite DB (losing orders/reviews). Off by default —
 # persistence goes through the Gist instead. Set AUTO_COMMIT=1 to re-enable.
@@ -102,6 +104,20 @@ def init_db():
     conn.commit(); conn.close()
 
 init_db()
+
+# ── Telegram notifications ────────────────────────────────
+def _send_telegram(text: str):
+    if not TG_BOT_TOKEN or not TG_CHAT_ID:
+        return
+    try:
+        import urllib.request as _ur, urllib.parse as _up
+        url = f"https://api.telegram.org/bot{TG_BOT_TOKEN}/sendMessage"
+        data = json.dumps({"chat_id": TG_CHAT_ID, "text": text, "parse_mode": "HTML"}).encode()
+        req = _ur.Request(url, data=data, headers={"Content-Type": "application/json"})
+        _ur.urlopen(req, timeout=10)
+    except Exception as e:
+        print(f"[TG] Send error: {e}")
+
 
 # ── Gist backup ───────────────────────────────────────────
 def _gist_headers():
@@ -624,6 +640,27 @@ async def create_order(req: Request, background_tasks: BackgroundTasks):
         await asyncio.wait_for(loop.run_in_executor(_backup_executor, _backup_orders), timeout=8)
     except Exception as e:
         print(f"[Backup] Orders backup error (order saved to DB): {e}")
+    # Telegram notification (fire-and-forget)
+    try:
+        name = f"{body.get('firstName','')} {body.get('lastName','')}".strip() or "—"
+        phone = body.get("phone", "—")
+        city  = body.get("city", "")
+        items_text = "\n".join(
+            f"  • {i.get('name','?')} × {i.get('qty',1)} — {i.get('price',0)} грн"
+            for i in items[:20]
+        )
+        total = sum(float(i.get("price", 0)) * int(i.get("qty", 1)) for i in items)
+        msg = (
+            f"🛍 <b>Нове замовлення!</b>\n"
+            f"👤 {name}\n"
+            f"📞 {phone}\n"
+            f"📍 {city}\n\n"
+            f"{items_text}\n\n"
+            f"💰 Разом: <b>{total:.0f} грн</b>"
+        )
+        background_tasks.add_task(_send_telegram, msg)
+    except Exception:
+        pass
     return {"ok": True}
 
 @app.delete("/api/orders/{oid}")

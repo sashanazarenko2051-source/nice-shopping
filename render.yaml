@@ -12,6 +12,10 @@ services:
         sync: false
       - key: GIST_ID           # id of the Gist storing products.json / orders.json / reviews.json
         sync: false
+      - key: TG_BOT_TOKEN      # Telegram bot token from @BotFather
+        sync: false
+      - key: TG_CHAT_ID        # your Telegram chat/user ID
+        sync: false
       # Optional:
       # - key: ALLOWED_ORIGINS  # e.g. https://your-shop.com  (defaults to * if unset)
       #   sync: false
