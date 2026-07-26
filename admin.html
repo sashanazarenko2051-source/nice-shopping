@@ -123,9 +123,10 @@ nav{flex:1;padding:6px}
 .vbtn.active{background:var(--glow);color:var(--green);border-color:rgba(74,222,128,.3)}
 
 /* ── STAT CARDS ── */
-.sgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;padding:16px 22px}
-.scard{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px 16px}
-.scard-label{font-size:.68rem;color:var(--dim);text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px}
+.sgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;padding:16px 22px}
+.scard{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px 16px;position:relative}
+.scard-ico{position:absolute;top:12px;right:14px;font-size:1.3rem;opacity:.55}
+.scard-label{font-size:.68rem;color:var(--dim);text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px;padding-right:28px}
 .scard-val{font-size:1.4rem;font-weight:700}
 .scard-val.green{color:var(--green)}
 .scard-val.warn{color:var(--warn)}
@@ -310,14 +311,18 @@ nav{flex:1;padding:6px}
   <div class="tab-scroll">
     <div class="phdr"><div class="phdr-title">Статистика</div></div>
     <div class="sgrid" id="statGrid">
-      <div class="scard"><div class="scard-label">Товарів</div><div class="scard-val green" id="sProducts">—</div></div>
-      <div class="scard"><div class="scard-label">Залишок (шт)</div><div class="scard-val" id="sStockQty">—</div></div>
-      <div class="scard"><div class="scard-label">Сума залишку</div><div class="scard-val green" id="sStockVal">—</div></div>
-      <div class="scard"><div class="scard-label">Замовлень</div><div class="scard-val" id="sOrders">—</div></div>
-      <div class="scard"><div class="scard-label">Виручка</div><div class="scard-val green" id="sRevenue">—</div></div>
-      <div class="scard"><div class="scard-label">Продано (шт)</div><div class="scard-val" id="sSold">—</div></div>
-      <div class="scard"><div class="scard-label">Прибуток (склад)</div><div class="scard-val green" id="sStockProfit">—</div></div>
-      <div class="scard"><div class="scard-label">Прибуток (продаж)</div><div class="scard-val green" id="sSoldProfit">—</div></div>
+      <div class="scard"><span class="scard-ico">👁</span><div class="scard-label">Відвідувачів</div><div class="scard-val" id="sVisits">—</div></div>
+      <div class="scard"><span class="scard-ico">📦</span><div class="scard-label">Товарів</div><div class="scard-val green" id="sProducts">—</div></div>
+      <div class="scard"><span class="scard-ico">📋</span><div class="scard-label">Замовлень</div><div class="scard-val" id="sOrders">—</div></div>
+      <div class="scard"><span class="scard-ico">💵</span><div class="scard-label">Виручка</div><div class="scard-val green" id="sRevenue">—</div></div>
+      <div class="scard"><span class="scard-ico">🏷️</span><div class="scard-label">Залишок (шт)</div><div class="scard-val" id="sStockQty">—</div></div>
+      <div class="scard"><span class="scard-ico">💎</span><div class="scard-label">Вартість залишку</div><div class="scard-val green" id="sStockVal">—</div></div>
+      <div class="scard"><span class="scard-ico">🛒</span><div class="scard-label">Продано (шт)</div><div class="scard-val" id="sSold">—</div></div>
+      <div class="scard"><span class="scard-ico">💰</span><div class="scard-label">На суму продано</div><div class="scard-val green" id="sSoldVal">—</div></div>
+      <div class="scard"><span class="scard-ico">🧾</span><div class="scard-label">Собівартість залишку</div><div class="scard-val" id="sStockCost">—</div></div>
+      <div class="scard"><span class="scard-ico">📈</span><div class="scard-label">Потенц. прибуток</div><div class="scard-val green" id="sStockProfit">—</div></div>
+      <div class="scard"><span class="scard-ico">🤑</span><div class="scard-label">Прибуток (продано)</div><div class="scard-val green" id="sSoldProfit">—</div></div>
+      <div class="scard"><span class="scard-ico">📊</span><div class="scard-label">Середня маржа</div><div class="scard-val" id="sMargin">—</div></div>
     </div>
     <div style="padding:0 22px 14px">
       <div style="font-size:.75rem;color:var(--dim);margin-bottom:8px">Відвідування за 7 днів</div>
@@ -638,27 +643,55 @@ function updateBadges(){
 }
 
 /* ── STATS ── */
+function fmt(n){ return '₴'+Math.round(n).toLocaleString('uk-UA'); }
 async function loadStats(){
   var visits=getVisits();
   var totalV=Object.values(visits).reduce(function(a,b){return a+b;},0);
   var orders=[]; try{ orders=await API.getOrders(); }catch(e){}
+
   var revenue=orders.reduce(function(s,o){return s+(o.total||0);},0);
   var stockQty=_products.reduce(function(s,p){return s+(p.stock||0);},0);
   var stockVal=_products.reduce(function(s,p){return s+(p.price||0)*(p.stock||0);},0);
+
   var costByName={};
-  _products.forEach(function(p){ if(p.purchasePrice!=null&&p.purchasePrice!=='') costByName[p.name]=p.purchasePrice||0; });
-  var soldMap={}, totalSoldVal=0, soldProfit=0, stockProfit=0;
-  orders.forEach(function(o){ (o.items||[]).forEach(function(i){ var q=i.qty||1; soldMap[i.name]=(soldMap[i.name]||0)+q; totalSoldVal+=(i.price||0)*q; if(costByName[i.name]!=null) soldProfit+=((i.price||0)-costByName[i.name])*q; }); });
-  _products.forEach(function(p){ if(costByName[p.name]!=null) stockProfit+=((p.price||0)-costByName[p.name])*(p.stock||0); });
+  _products.forEach(function(p){ if(p.purchasePrice!=null&&p.purchasePrice!=='') costByName[p.name]=Number(p.purchasePrice)||0; });
+
+  var soldMap={}, totalSoldVal=0, soldProfit=0;
+  orders.forEach(function(o){
+    (o.items||[]).forEach(function(i){
+      var q=i.qty||1;
+      soldMap[i.name]=(soldMap[i.name]||0)+q;
+      totalSoldVal+=(i.price||0)*q;
+      if(costByName[i.name]!=null) soldProfit+=((i.price||0)-costByName[i.name])*q;
+    });
+  });
+
+  var stockCost=_products.reduce(function(s,p){
+    return s+(costByName[p.name]!=null?costByName[p.name]:0)*(p.stock||0);
+  },0);
+  var stockProfit=_products.reduce(function(s,p){
+    return s+(costByName[p.name]!=null?((p.price||0)-costByName[p.name])*(p.stock||0):0);
+  },0);
   var totalSold=Object.values(soldMap).reduce(function(a,b){return a+b;},0);
+
+  var prods=_products.filter(function(p){return costByName[p.name]!=null;});
+  var avgMargin=prods.length?Math.round(prods.reduce(function(s,p){
+    return s+(p.price>0?((p.price-costByName[p.name])/p.price)*100:0);
+  },0)/prods.length):null;
+
+  document.getElementById('sVisits').textContent=totalV||0;
   document.getElementById('sProducts').textContent=_products.length;
-  document.getElementById('sStockQty').textContent=stockQty;
-  document.getElementById('sStockVal').textContent='₴'+stockVal.toLocaleString('uk-UA');
   document.getElementById('sOrders').textContent=orders.length;
-  document.getElementById('sRevenue').textContent='₴'+revenue.toLocaleString('uk-UA');
+  document.getElementById('sRevenue').textContent=fmt(revenue);
+  document.getElementById('sStockQty').textContent=stockQty;
+  document.getElementById('sStockVal').textContent=fmt(stockVal);
   document.getElementById('sSold').textContent=totalSold;
-  document.getElementById('sStockProfit').textContent='₴'+stockProfit.toLocaleString('uk-UA');
-  document.getElementById('sSoldProfit').textContent='₴'+soldProfit.toLocaleString('uk-UA');
+  document.getElementById('sSoldVal').textContent=fmt(totalSoldVal);
+  document.getElementById('sStockCost').textContent=fmt(stockCost);
+  document.getElementById('sStockProfit').textContent=fmt(stockProfit);
+  document.getElementById('sSoldProfit').textContent=fmt(soldProfit);
+  document.getElementById('sMargin').textContent=avgMargin!=null?avgMargin+'%':'—';
+
   renderChart(visits);
   renderStatsTable(soldMap);
   renderRecentOrders(orders.slice(0,5));
