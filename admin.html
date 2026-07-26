@@ -1137,8 +1137,15 @@ async function renderReviews(){
   var stars=function(n){ return '★'.repeat(n)+'☆'.repeat(5-n); };
   el.innerHTML=reviews.map(function(r){
     var d=r.ts?new Date(r.ts).toLocaleDateString('uk-UA'):'';
-    return '<div class="rcard"><div class="rcard-hdr"><div class="rcard-name">'+esc(r.name||'—')+'</div><div class="rcard-stars">'+stars(r.rating||5)+'</div></div><div class="rcard-text">'+esc(r.text||'')+'</div>'+(d?'<div style="font-size:.7rem;color:var(--dim);margin-top:4px">'+d+'</div>':'')+'</div>';
+    return '<div class="rcard"><div class="rcard-hdr">'+
+      '<div style="display:flex;align-items:center;gap:10px"><div class="rcard-name">'+esc(r.name||'—')+'</div><div class="rcard-stars">'+stars(r.rating||5)+'</div></div>'+
+      '<button class="btn-sm danger" onclick="deleteReview('+r._id+')" title="Видалити відгук">🗑 Видалити</button>'+
+    '</div><div class="rcard-text">'+esc(r.text||'')+'</div>'+(d?'<div style="font-size:.7rem;color:var(--dim);margin-top:4px">'+d+'</div>':'')+'</div>';
   }).join('');
+}
+async function deleteReview(id){
+  if(!confirm('Видалити цей відгук?')) return;
+  try{ await API.deleteReview(id); toast('Відгук видалено'); renderReviews(); }catch(e){ toast('❌ Помилка'); }
 }
 
 /* ── INIT ── */

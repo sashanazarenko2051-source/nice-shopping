@@ -642,9 +642,12 @@ def delete_order_api(oid: int, background_tasks: BackgroundTasks,
 @app.get("/api/reviews")
 def get_reviews():
     conn = get_db()
-    rows = conn.execute("SELECT data FROM reviews ORDER BY id DESC").fetchall()
+    rows = conn.execute("SELECT id, data FROM reviews ORDER BY id DESC").fetchall()
     conn.close()
-    return [json.loads(r["data"]) for r in rows]
+    result = []
+    for r in rows:
+        d = json.loads(r["data"]); d["_id"] = r["id"]; result.append(d)
+    return result
 
 @app.post("/api/reviews")
 async def create_review(req: Request, background_tasks: BackgroundTasks):
@@ -680,6 +683,15 @@ async def create_review(req: Request, background_tasks: BackgroundTasks):
         await asyncio.wait_for(loop.run_in_executor(_backup_executor, _backup_reviews), timeout=8)
     except Exception as e:
         print(f"[Backup] Reviews backup error (review saved to DB): {e}")
+    return {"ok": True}
+
+@app.delete("/api/reviews/{rid}")
+async def delete_review(rid: int, background_tasks: BackgroundTasks,
+                        token: str = Depends(require_admin)):
+    conn = get_db()
+    conn.execute("DELETE FROM reviews WHERE id = ?", (rid,))
+    conn.commit(); conn.close()
+    background_tasks.add_task(_backup_reviews)
     return {"ok": True}
 
 @app.post("/api/admin/restore")
