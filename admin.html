@@ -388,6 +388,7 @@
     <div class="sb-bottom">
       <a href="index.html" target="_blank" class="sb-site-link">↗ Відкрити сайт</a>
       <a href="catalog.html" target="_blank" class="sb-site-link">↗ Переглянути каталог</a>
+      <button class="sb-site-link" style="width:100%;text-align:left;border:none;background:rgba(255,255,255,.04);border-radius:var(--r);margin-bottom:4px" onclick="doRefresh()">↻ Оновити сторінку</button>
       <button class="sb-logout" onclick="doLogout()">Вийти з панелі</button>
     </div>
   </aside>
@@ -504,7 +505,6 @@
           <select id="pGender" class="fi">
             <option value="women">Жіноче</option>
             <option value="men">Чоловіче</option>
-            <option value="">Унісекс</option>
           </select>
         </div>
       </div>
@@ -578,7 +578,6 @@
       <select id="catGender" class="fi">
         <option value="women">Жіноче</option>
         <option value="men">Чоловіче</option>
-        <option value="">Унісекс</option>
       </select>
     </div>
     <div style="display:flex;gap:8px;margin-top:4px">
@@ -682,6 +681,7 @@ async function doLogin(){
   btn.disabled=false; btn.textContent='Увійти →';
 }
 function doLogout(){ API.logout(); location.reload(); }
+function doRefresh(){ location.reload(); }
 async function showAdmin(){
   document.getElementById('loginScreen').style.display='none';
   document.getElementById('adminApp').style.display='flex';
