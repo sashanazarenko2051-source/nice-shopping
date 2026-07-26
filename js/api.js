@@ -75,5 +75,9 @@ var API = (function() {
     createReview: function(data) {
       return _req('/api/reviews', { method: 'POST', headers: _headers(), body: JSON.stringify(data) });
     },
+
+    restoreFromGist: function() {
+      return _req('/api/admin/restore', { method: 'POST', headers: _headers() });
+    },
   };
 })();

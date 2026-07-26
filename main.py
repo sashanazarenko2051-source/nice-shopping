@@ -301,19 +301,13 @@ def _github_commit(products):
     except Exception as e:
         print(f"[GitHub] Commit error: {e}")
 
-def _gist_save(products):
-    """Зберегти товари: локальний файл + git repo + Gist (три шари надійності)."""
-    # 1) Local file (ephemeral, survives only within the same container lifetime)
+def _gist_save_fast(products):
+    """Save products to local file + Gist only (fast, ~1-3s). No GitHub commit."""
     try:
         Path("products.json").write_text(json.dumps(products, ensure_ascii=False, indent=2), encoding="utf-8")
     except Exception as e:
         print(f"[File] Save error: {e}")
 
-    # 2) Commit to git repo — render.yaml ignoredFiles prevents this from triggering
-    #    a redeploy. This makes products survive ANY redeploy even without Gist.
-    _github_commit(products)
-
-    # 3) Gist backup (fastest restore on startup)
     if not GITHUB_TOKEN or not GIST_ID:
         return
     try:
@@ -329,6 +323,12 @@ def _gist_save(products):
         print(f"[Gist] Saved {len(products)} products")
     except Exception as e:
         print(f"[Gist] Save error: {e}")
+
+
+def _gist_save(products):
+    """Зберегти товари: локальний файл + Gist + git repo (три шари надійності)."""
+    _gist_save_fast(products)
+    _github_commit(products)
 
 _gist_load()
 _restore_orders_reviews()
@@ -424,7 +424,12 @@ async def set_all_products(req: Request, background_tasks: BackgroundTasks,
         p["id"] = pid
         conn.execute("INSERT INTO products (id, data) VALUES (?, ?)", (pid, json.dumps(p, ensure_ascii=False)))
     conn.commit(); conn.close()
-    background_tasks.add_task(_gist_save, products)
+    loop = asyncio.get_event_loop()
+    try:
+        await asyncio.wait_for(loop.run_in_executor(_backup_executor, _gist_save_fast, products), timeout=15)
+    except Exception as e:
+        print(f"[Backup] Products backup error: {e}")
+    background_tasks.add_task(_github_commit, products)
     return {"ok": True, "count": len(products)}
 
 @app.post("/api/products/one")
@@ -441,7 +446,12 @@ async def add_one_product(req: Request, background_tasks: BackgroundTasks,
     products = [json.loads(r["data"]) for r in
                 conn.execute("SELECT data FROM products ORDER BY id ASC").fetchall()]
     conn.close()
-    background_tasks.add_task(_gist_save, products)
+    loop = asyncio.get_event_loop()
+    try:
+        await asyncio.wait_for(loop.run_in_executor(_backup_executor, _gist_save_fast, products), timeout=15)
+    except Exception as e:
+        print(f"[Backup] Products backup error: {e}")
+    background_tasks.add_task(_github_commit, products)
     return {"ok": True, "id": pid}
 
 @app.put("/api/products/{pid}")
@@ -461,7 +471,12 @@ async def update_one_product(pid: int, req: Request, background_tasks: Backgroun
     products = [json.loads(r["data"]) for r in
                 conn.execute("SELECT data FROM products ORDER BY id ASC").fetchall()]
     conn.close()
-    background_tasks.add_task(_gist_save, products)
+    loop = asyncio.get_event_loop()
+    try:
+        await asyncio.wait_for(loop.run_in_executor(_backup_executor, _gist_save_fast, products), timeout=15)
+    except Exception as e:
+        print(f"[Backup] Products backup error: {e}")
+    background_tasks.add_task(_github_commit, products)
     return {"ok": True}
 
 @app.post("/api/products/sync-file")
@@ -483,7 +498,12 @@ def delete_product(pid: int, background_tasks: BackgroundTasks,
     products = [json.loads(r["data"]) for r in
                 conn.execute("SELECT data FROM products ORDER BY id ASC").fetchall()]
     conn.close()
-    background_tasks.add_task(_gist_save, products)
+    loop = asyncio.get_event_loop()
+    try:
+        await asyncio.wait_for(loop.run_in_executor(_backup_executor, _gist_save_fast, products), timeout=15)
+    except Exception as e:
+        print(f"[Backup] Products backup error: {e}")
+    background_tasks.add_task(_github_commit, products)
     return {"ok": True}
 
 # ── Orders ────────────────────────────────────────────────
@@ -542,7 +562,7 @@ async def create_order(req: Request, background_tasks: BackgroundTasks):
         if updated:
             all_products = [json.loads(r["data"]) for r in
                             conn.execute("SELECT data FROM products ORDER BY id ASC").fetchall()]
-            background_tasks.add_task(_gist_save, all_products)
+            background_tasks.add_task(_gist_save_fast, all_products)
 
     conn.commit()
     conn.close()
@@ -584,7 +604,7 @@ def delete_order_api(oid: int, background_tasks: BackgroundTasks,
             if updated:
                 all_products = [json.loads(r["data"]) for r in
                                 conn.execute("SELECT data FROM products ORDER BY id ASC").fetchall()]
-                background_tasks.add_task(_gist_save, all_products)
+                background_tasks.add_task(_gist_save_fast, all_products)
     conn.execute("DELETE FROM orders WHERE id = ?", (oid,))
     conn.commit(); conn.close()
     background_tasks.add_task(_backup_orders)  # fire-and-forget is fine for delete
@@ -633,6 +653,44 @@ async def create_review(req: Request, background_tasks: BackgroundTasks):
     except Exception as e:
         print(f"[Backup] Reviews backup error (review saved to DB): {e}")
     return {"ok": True}
+
+@app.post("/api/admin/restore")
+async def admin_restore(token: str = Depends(require_admin)):
+    """Force-restore products, orders and reviews from Gist into SQLite."""
+    result = {}
+
+    products = _gist_fetch_file("products.json")
+    if isinstance(products, list):
+        _insert_products(products)
+        result["products"] = len(products)
+    else:
+        result["products"] = -1
+
+    orders = _gist_fetch_file("orders.json")
+    if isinstance(orders, list):
+        conn = get_db()
+        conn.execute("DELETE FROM orders")
+        for o in orders:
+            conn.execute("INSERT INTO orders (data) VALUES (?)", (json.dumps(o, ensure_ascii=False),))
+        conn.commit(); conn.close()
+        result["orders"] = len(orders)
+    else:
+        result["orders"] = -1
+
+    reviews = _gist_fetch_file("reviews.json")
+    if isinstance(reviews, list):
+        conn = get_db()
+        conn.execute("DELETE FROM reviews")
+        for rv in reviews:
+            conn.execute("INSERT INTO reviews (data) VALUES (?)", (json.dumps(rv, ensure_ascii=False),))
+        conn.commit(); conn.close()
+        result["reviews"] = len(reviews)
+    else:
+        result["reviews"] = -1
+
+    print(f"[Restore] products={result['products']} orders={result['orders']} reviews={result['reviews']}")
+    return {"ok": True, **result}
+
 
 @app.post("/api/admin/logout")
 def admin_logout(creds: HTTPAuthorizationCredentials = Depends(security)):
