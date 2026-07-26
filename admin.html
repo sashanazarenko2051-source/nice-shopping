@@ -448,7 +448,6 @@ nav{flex:1;padding:6px}
       <div class="cpresets" id="colorPresets"></div>
       <div class="ctags" id="colorTags"></div>
       <div class="cust-row">
-        <input id="colorName" class="finp" style="flex:1" placeholder="Назва кольору">
         <input id="colorHex" type="color" value="#ff69b4" style="width:36px;height:36px;border-radius:8px;border:1px solid var(--border);background:none;cursor:pointer;padding:2px">
         <button class="btn-sm primary" onclick="addColor()">+ Додати</button>
       </div>
@@ -956,10 +955,11 @@ function renderColorTags(){
   }).join('');
 }
 function addColor(){
-  var name=document.getElementById('colorName').value.trim(), hex=document.getElementById('colorHex').value;
-  if(!name){ toast('Введіть назву'); return; }
-  if(_colors.some(function(c){return c.name===name;})){ toast('Вже є'); return; }
-  _colors.push({name:name,hex:hex}); document.getElementById('colorName').value=''; renderColorPresets(); renderColorTags();
+  var hex=document.getElementById('colorHex').value;
+  var preset=COLOR_PRESETS.find(function(c){return c.hex.toLowerCase()===hex.toLowerCase();});
+  var name=preset?preset.name:hex.toUpperCase();
+  if(_colors.some(function(c){return c.hex.toLowerCase()===hex.toLowerCase();})){toast('Вже є');return;}
+  _colors.push({name:name,hex:hex}); renderColorPresets(); renderColorTags();
 }
 function removeColor(i){ _colors.splice(i,1); renderColorPresets(); renderColorTags(); }
 
