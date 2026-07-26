@@ -727,6 +727,41 @@ def admin_logout():
     # Token is stateless (HMAC) — logout is handled client-side by clearing localStorage
     return {"ok": True}
 
+@app.get("/api/admin/debug")
+async def admin_debug(token: str = Depends(require_admin)):
+    """Show system state: SQLite counts + Gist reachability."""
+    conn = get_db()
+    db_products = conn.execute("SELECT COUNT(*) FROM products").fetchone()[0]
+    db_orders   = conn.execute("SELECT COUNT(*) FROM orders").fetchone()[0]
+    db_reviews  = conn.execute("SELECT COUNT(*) FROM reviews").fetchone()[0]
+    conn.close()
+
+    gist_ok = False; gist_products = -1; gist_error = ""
+    if GITHUB_TOKEN and GIST_ID:
+        try:
+            import urllib.request
+            req = urllib.request.Request(f"https://api.github.com/gists/{GIST_ID}", headers=_gist_headers())
+            meta = json.loads(urllib.request.urlopen(req, timeout=10).read())
+            files = meta.get("files", {})
+            gist_ok = True
+            raw_url = files.get("products.json", {}).get("raw_url", "")
+            if raw_url:
+                r2 = urllib.request.Request(raw_url, headers={"User-Agent": "nice-shopping"})
+                data = json.loads(urllib.request.urlopen(r2, timeout=10).read())
+                gist_products = len(data) if isinstance(data, list) else -1
+            else:
+                gist_products = 0
+        except Exception as e:
+            gist_error = str(e)
+    else:
+        gist_error = "GITHUB_TOKEN or GIST_ID not configured"
+
+    return {
+        "sqlite": {"products": db_products, "orders": db_orders, "reviews": db_reviews},
+        "gist": {"ok": gist_ok, "products": gist_products, "error": gist_error},
+        "config": {"has_token": bool(GITHUB_TOKEN), "has_gist_id": bool(GIST_ID)},
+    }
+
 # ── Static files ──────────────────────────────────────────
 BLOCKED = {"main.py", "shop.db", "requirements.txt", "render.yaml", "products.json"}
 BLOCKED_SUFFIXES = (".py", ".db", ".db-wal", ".db-shm")

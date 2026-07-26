@@ -299,6 +299,7 @@ nav{flex:1;padding:6px}
     <a href="index.html" target="_blank" class="sb-link">↗ Відкрити сайт</a>
     <a href="catalog.html" target="_blank" class="sb-link">↗ Каталог</a>
     <button class="sb-link" onclick="doRefresh()">↻ Оновити сторінку</button>
+    <button class="sb-link" onclick="doDebug()">🔍 Стан системи</button>
     <button class="sb-logout" onclick="doLogout()">Вийти з панелі</button>
   </div>
 </aside>
@@ -606,6 +607,18 @@ async function doLogin(){
 }
 function doLogout(){ API.logout(); location.reload(); }
 function doRefresh(){ location.reload(); }
+async function doDebug(){
+  try{
+    var d=await fetch('/api/admin/debug',{headers:{'Authorization':'Bearer '+localStorage.getItem('ns_admin_token')}}).then(function(r){return r.json();});
+    var gistStatus=d.gist.ok?('✅ Gist доступний ('+d.gist.products+' товарів)'):'❌ Gist недоступний: '+d.gist.error;
+    var msg='📊 СТАН СИСТЕМИ\n\n'
+      +'SQLite:\n  Товарів: '+d.sqlite.products+'\n  Замовлень: '+d.sqlite.orders+'\n  Відгуків: '+d.sqlite.reviews+'\n\n'
+      +'Gist: '+gistStatus+'\n'
+      +'Token: '+(d.config.has_token?'✅':'❌ немає')+'\n'
+      +'Gist ID: '+(d.config.has_gist_id?'✅':'❌ немає');
+    alert(msg);
+  }catch(e){ alert('❌ Помилка: '+e.message); }
+}
 
 async function showAdmin(){
   document.getElementById('loginScreen').style.display='none';
