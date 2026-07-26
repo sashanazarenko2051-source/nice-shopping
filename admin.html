@@ -292,7 +292,7 @@ nav{flex:1;padding:6px}
     <button class="sb-btn"        id="btn-products" onclick="showTab('products')"><span class="sb-ico">📦</span> Товари <span class="sb-badge" id="sbProd">0</span></button>
     <button class="sb-btn"        id="btn-cats"     onclick="showTab('cats')">    <span class="sb-ico">🗂</span> Каталоги</button>
     <button class="sb-btn"        id="btn-orders"   onclick="showTab('orders')">  <span class="sb-ico">📋</span> Замовлення <span class="sb-badge" id="sbOrd">0</span></button>
-    <button class="sb-btn"        id="btn-reviews"  onclick="showTab('reviews')"> <span class="sb-ico">⭐</span> Відгуки</button>
+    <button class="sb-btn"        id="btn-reviews"  onclick="showTab('reviews')"> <span class="sb-ico">⭐</span> Відгуки <span class="sb-badge" id="sbRev" style="display:none">0</span></button>
   </nav>
   <div class="sb-sep"></div>
   <div class="sb-bottom">
@@ -628,6 +628,16 @@ async function showAdmin(){
   try { _products=await API.getProducts(); } catch(e){ _products=[]; }
   updateBadges();
   showTab('stats');
+  // Pre-load orders and reviews in background to update badges immediately
+  renderOrders(true);
+  _preloadReviews();
+}
+async function _preloadReviews(){
+  try{
+    var reviews=await API.getReviews();
+    var rb=document.getElementById('sbRev');
+    if(rb){ rb.textContent=reviews.length; rb.style.display=reviews.length?'inline-block':'none'; }
+  }catch(e){}
 }
 
 /* ── NAVIGATION ── */
@@ -1184,6 +1194,8 @@ async function renderReviews(){
   el.innerHTML='<div class="empty"><div class="empty-ico">⏳</div><p>Завантаження...</p></div>';
   var reviews=[];
   try{ reviews=await API.getReviews(); }catch(e){ el.innerHTML='<div class="empty"><div class="empty-ico">❌</div><p>Помилка</p></div>'; return; }
+  var rb=document.getElementById('sbRev');
+  if(rb){ rb.textContent=reviews.length; rb.style.display=reviews.length?'inline-block':'none'; }
   if(!reviews.length){ el.innerHTML='<div class="empty"><div class="empty-ico">⭐</div><p>Відгуків ще немає</p></div>'; return; }
   var stars=function(n){ return '★'.repeat(n)+'☆'.repeat(5-n); };
   el.innerHTML=reviews.map(function(r){
