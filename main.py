@@ -110,7 +110,7 @@ def _send_telegram(text: str):
     if not TG_BOT_TOKEN or not TG_CHAT_ID:
         return
     try:
-        import urllib.request as _ur, urllib.parse as _up
+        import urllib.request as _ur
         url = f"https://api.telegram.org/bot{TG_BOT_TOKEN}/sendMessage"
         data = json.dumps({"chat_id": TG_CHAT_ID, "text": text, "parse_mode": "HTML"}).encode()
         req = _ur.Request(url, data=data, headers={"Content-Type": "application/json"})
@@ -749,11 +749,7 @@ async def create_review(req: Request, background_tasks: BackgroundTasks):
     conn = get_db()
     conn.execute("INSERT INTO reviews (data) VALUES (?)", (json.dumps(review, ensure_ascii=False),))
     conn.commit(); conn.close()
-    loop = asyncio.get_running_loop()
-    try:
-        await asyncio.wait_for(loop.run_in_executor(_backup_executor, _backup_reviews), timeout=8)
-    except Exception as e:
-        print(f"[Backup] Reviews backup error (review saved to DB): {e}")
+    background_tasks.add_task(_backup_reviews)
     return {"ok": True}
 
 @app.delete("/api/reviews/{rid}")
