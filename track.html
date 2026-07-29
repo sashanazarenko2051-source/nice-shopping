@@ -38,6 +38,11 @@
     .step-line.done { background: #4ade80; }
 
     .order-items { font-size: .82rem; color: rgba(224,224,224,.65); line-height: 1.8; }
+    .ttn-block { margin-top: 12px; padding: 10px 14px; background: rgba(74,222,128,.06); border: 1px solid rgba(74,222,128,.15); border-radius: 10px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+    .ttn-label { font-size: .72rem; color: #4ade80; font-weight: 600; }
+    .ttn-num { font-size: .9rem; font-weight: 600; letter-spacing: .04em; }
+    .ttn-link { padding: 5px 14px; border-radius: 8px; background: #4ade80; color: #020d04; font-size: .78rem; font-weight: 700; text-decoration: none; white-space: nowrap; }
+    .ttn-link:hover { opacity: .85; }
     .empty-msg { text-align: center; padding: 40px 0; color: var(--gray); }
     .empty-msg .ico { font-size: 2.5rem; margin-bottom: 10px; }
   </style>
@@ -145,6 +150,16 @@ function renderOrders(orders) {
       '</div>' +
       renderSteps(o.status || 'processing') +
       '<div class="order-items">' + esc(itemsList) + '</div>' +
+      (o.ttn ? (function(){
+        var trackUrl = o.deliveryType === 'ukr'
+          ? 'https://track.ukrposhta.ua/tracking_UA.html?barcode=' + encodeURIComponent(o.ttn)
+          : 'https://novaposhta.ua/tracking/?cargo_number=' + encodeURIComponent(o.ttn);
+        var postName = o.deliveryType === 'ukr' ? 'Укрпошта' : 'Нова Пошта';
+        return '<div class="ttn-block">' +
+          '<div><div class="ttn-label">ТТН ' + postName + '</div><div class="ttn-num">' + esc(o.ttn) + '</div></div>' +
+          '<a href="' + trackUrl + '" target="_blank" class="ttn-link">📍 Відстежити на сайті пошти</a>' +
+        '</div>';
+      })() : '') +
     '</div>';
   }).join('');
 }

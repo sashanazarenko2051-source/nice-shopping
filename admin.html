@@ -1159,10 +1159,16 @@ function displayOrders(orders, el){
         '<div style="padding:0 20px 12px"><div class="ord-label" style="margin-bottom:6px">Товари</div><ul style="padding-left:16px;color:var(--text);font-size:.82rem;line-height:1.9">'+
           (o.items||[]).map(function(it){ var m=(it.size?it.size:'')+(it.color?', '+it.color:''); return '<li>'+esc(it.name)+(m?' ('+esc(m)+')':'')+' — ×'+(it.qty||1)+' — ₴'+((it.price||0)*(it.qty||1))+'</li>'; }).join('')+
         '</ul></div>'+
-        '<div style="padding:8px 20px 0;display:flex;gap:6px;flex-wrap:wrap">'+
-          '<span style="font-size:.72rem;color:var(--dim);align-self:center">Статус:</span>'+
+        '<div style="padding:8px 20px 4px;display:flex;gap:6px;flex-wrap:wrap;align-items:center">'+
+          '<span style="font-size:.72rem;color:var(--dim)">Статус:</span>'+
           '<button onclick="setOrderStatus('+o._id+',\'processing\')" class="btn-sm'+((!o.status||o.status==='processing')?' primary':'')+'" style="font-size:.72rem">📋 В обробці</button>'+
           '<button onclick="setOrderStatus('+o._id+',\'transit\')" class="btn-sm'+(o.status==='transit'?' primary':'')+'" style="font-size:.72rem">🚚 В дорозі</button>'+
+        '</div>'+
+        '<div style="padding:4px 20px 8px;display:flex;gap:8px;align-items:center">'+
+          '<span style="font-size:.72rem;color:var(--dim);white-space:nowrap">ТТН пошти:</span>'+
+          '<input id="ttn-'+o._id+'" class="iinp" style="width:160px;font-size:.8rem" placeholder="20450000000000" value="'+esc(o.ttn||'')+'">'+
+          '<button onclick="saveTTN('+o._id+')" class="btn-sm primary" style="font-size:.72rem">Зберегти</button>'+
+          (o.ttn?'<a href="'+(o.deliveryType==='ukr'?'https://track.ukrposhta.ua/tracking_UA.html?barcode=':'https://novaposhta.ua/tracking/?cargo_number=')+esc(o.ttn)+'" target="_blank" class="btn-sm" style="font-size:.72rem">🔗 Трекінг</a>':'')+
         '</div>'+
         '<div class="ord-footer">'+
           (isDone
@@ -1236,6 +1242,16 @@ function markDone(id){
     displayOrders(_ordCache,document.getElementById('ordList'));
   }
   toast('✅ Замовлення виконано');
+}
+async function saveTTN(id){
+  var inp=document.getElementById('ttn-'+id);
+  var ttn=inp?inp.value.trim():'';
+  try{
+    await API.patchOrder(id,{ttn:ttn});
+    if(_ordCache){ var o=_ordCache.find(function(x){return String(x._id)===String(id);}); if(o) o.ttn=ttn; }
+    toast(ttn?'✅ ТТН збережено':'ТТН видалено');
+    if(_ordCache) displayOrders(_ordCache,document.getElementById('ordList'));
+  }catch(e){ toast('❌ Помилка збереження ТТН'); }
 }
 async function setOrderStatus(id,status){
   try{

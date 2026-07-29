@@ -698,6 +698,8 @@ async def patch_order(oid: int, req: Request, background_tasks: BackgroundTasks,
     data = json.loads(row["data"])
     if "status" in body and body["status"] in ("processing", "transit", "done"):
         data["status"] = body["status"]
+    if "ttn" in body:
+        data["ttn"] = str(body.get("ttn") or "")[:30].strip()
     conn.execute("UPDATE orders SET data=? WHERE id=?", (json.dumps(data, ensure_ascii=False), oid))
     conn.commit(); conn.close()
     background_tasks.add_task(_backup_orders)
@@ -719,6 +721,8 @@ def track_order(phone: str = ""):
                 "_id": r["id"],
                 "date": d.get("date", ""),
                 "status": d.get("status", "processing"),
+                "ttn": d.get("ttn", ""),
+                "deliveryType": d.get("deliveryType", "nova"),
                 "items": [{"name": i.get("name", ""), "qty": i.get("qty", 1)} for i in d.get("items", [])[:10]],
                 "total": d.get("total", 0),
                 "firstName": d.get("firstName", ""),
