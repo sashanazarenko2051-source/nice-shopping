@@ -1237,13 +1237,48 @@ async function renderReviews(){
   if(rb){ rb.textContent=reviews.length; rb.style.display=reviews.length?'inline-block':'none'; }
   if(!reviews.length){ el.innerHTML='<div class="empty"><div class="empty-ico">⭐</div><p>Відгуків ще немає</p></div>'; return; }
   var stars=function(n){ return '★'.repeat(n)+'☆'.repeat(5-n); };
+  var likedIds=new Set(JSON.parse(localStorage.getItem('ns_liked_reviews')||'[]').map(String));
   el.innerHTML=reviews.map(function(r){
     var d=r.ts?new Date(r.ts).toLocaleDateString('uk-UA'):'';
-    return '<div class="rcard"><div class="rcard-hdr">'+
-      '<div style="display:flex;align-items:center;gap:10px"><div class="rcard-name">'+esc(r.name||'—')+'</div><div class="rcard-stars">'+stars(r.rating||5)+'</div></div>'+
-      '<button class="btn-sm danger" onclick="deleteReview('+r._id+')" title="Видалити відгук">🗑 Видалити</button>'+
-    '</div><div class="rcard-text">'+esc(r.text||'')+'</div>'+(d?'<div style="font-size:.7rem;color:var(--dim);margin-top:4px">'+d+'</div>':'')+'</div>';
+    var liked=likedIds.has(String(r._id));
+    var likes=r.likes||0;
+    return '<div class="rcard">'+
+      '<div class="rcard-hdr">'+
+        '<div style="display:flex;align-items:center;gap:10px">'+
+          '<div class="rcard-name">'+esc(r.name||'—')+'</div>'+
+          '<div class="rcard-stars">'+stars(r.rating||5)+'</div>'+
+        '</div>'+
+        '<div style="display:flex;gap:6px;align-items:center">'+
+          '<button onclick="toggleLike('+r._id+','+likes+')" class="btn-sm'+(liked?' primary':'')+'" title="Лайк">'+
+            (liked?'❤️':'🤍')+' '+likes+
+          '</button>'+
+          '<button class="btn-sm danger" onclick="deleteReview('+r._id+')" title="Видалити">🗑</button>'+
+        '</div>'+
+      '</div>'+
+      '<div class="rcard-text">'+esc(r.text||'')+'</div>'+
+      (d?'<div style="font-size:.7rem;color:var(--dim);margin-top:4px">'+d+'</div>':'')+
+      (r.reply?'<div style="margin-top:8px;padding:8px 12px;background:rgba(74,222,128,.06);border-left:2px solid var(--green);border-radius:0 6px 6px 0;font-size:.8rem">💬 '+esc(r.reply)+'</div>':'')+
+      '<div style="display:flex;gap:8px;margin-top:10px">'+
+        '<input id="rep-'+r._id+'" class="linp" style="flex:1;padding:7px 10px;font-size:.8rem" placeholder="Відповісти на відгук..." value="'+esc(r.reply||'')+'">'+
+        '<button onclick="saveReply('+r._id+')" class="btn-sm primary">Зберегти</button>'+
+      '</div>'+
+    '</div>';
   }).join('');
+}
+async function toggleLike(id, curLikes){
+  var ids=JSON.parse(localStorage.getItem('ns_liked_reviews')||'[]').map(String);
+  var liked=ids.indexOf(String(id))!==-1;
+  var newLikes=liked?Math.max(0,curLikes-1):curLikes+1;
+  if(liked) ids=ids.filter(function(x){return x!==String(id);});
+  else ids.push(String(id));
+  localStorage.setItem('ns_liked_reviews',JSON.stringify(ids));
+  try{ await API.patchReview(id,{likes:newLikes}); renderReviews(); }catch(e){ toast('❌ Помилка'); }
+}
+async function saveReply(id){
+  var inp=document.getElementById('rep-'+id);
+  var reply=inp?inp.value.trim():'';
+  try{ await API.patchReview(id,{reply:reply}); toast('✅ Відповідь збережена'); renderReviews(); }
+  catch(e){ toast('❌ Помилка збереження'); }
 }
 async function deleteReview(id){
   if(!id){ toast('❌ ID відгуку не знайдено'); return; }

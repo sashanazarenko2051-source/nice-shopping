@@ -773,6 +773,32 @@ async def delete_review(rid: int, background_tasks: BackgroundTasks,
     background_tasks.add_task(_backup_reviews)
     return {"ok": True}
 
+@app.patch("/api/reviews/{rid}")
+async def patch_review(rid: int, req: Request, background_tasks: BackgroundTasks,
+                       token: str = Depends(require_admin)):
+    try:
+        body = await req.json()
+    except Exception:
+        raise HTTPException(status_code=400, detail="Invalid request")
+    conn = get_db()
+    row = conn.execute("SELECT data FROM reviews WHERE id=?", (rid,)).fetchone()
+    if not row:
+        conn.close()
+        raise HTTPException(status_code=404, detail="Review not found")
+    data = json.loads(row["data"])
+    if "likes" in body:
+        try:
+            data["likes"] = max(0, int(body["likes"]))
+        except (ValueError, TypeError):
+            pass
+    if "reply" in body:
+        data["reply"] = str(body.get("reply") or "")[:500].strip()
+    conn.execute("UPDATE reviews SET data=? WHERE id=?",
+                 (json.dumps(data, ensure_ascii=False), rid))
+    conn.commit(); conn.close()
+    background_tasks.add_task(_backup_reviews)
+    return {"ok": True}
+
 @app.post("/api/admin/restore")
 async def admin_restore(token: str = Depends(require_admin)):
     """Force-restore products, orders and reviews from Gist into SQLite."""

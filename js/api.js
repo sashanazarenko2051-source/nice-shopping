@@ -78,6 +78,9 @@ var API = (function() {
     deleteReview: function(id) {
       return _req('/api/reviews/' + id, { method: 'DELETE', headers: _headers() });
     },
+    patchReview: function(id, data) {
+      return _req('/api/reviews/' + id, { method: 'PATCH', headers: _headers(), body: JSON.stringify(data) });
+    },
 
     restoreFromGist: function() {
       return _req('/api/admin/restore', { method: 'POST', headers: _headers() });
