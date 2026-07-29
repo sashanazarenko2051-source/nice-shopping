@@ -1130,6 +1130,10 @@ async function renderOrders(silent){
 }
 
 function displayOrders(orders, el){
+  // Save which orders are open before re-render
+  var openIds=[];
+  el.querySelectorAll('.ord-detail.open').forEach(function(d){ openIds.push(d.id); });
+  var doneSecOpen=document.getElementById('doneSec')&&document.getElementById('doneSec').style.display!=='none';
   var doneIds=new Set(JSON.parse(localStorage.getItem('ns_done_orders')||'[]').map(String));
   var active=orders.filter(function(o){ return !doneIds.has(String(o._id)); });
   var done=orders.filter(function(o){ return doneIds.has(String(o._id)); });
@@ -1207,6 +1211,13 @@ function displayOrders(orders, el){
     '</div>';
   }
   el.innerHTML=html;
+  // Restore open states after re-render
+  openIds.forEach(function(eid){
+    var d=document.getElementById(eid);
+    var ar=document.getElementById('oa-'+eid.replace(/^od-/,''));
+    if(d){ d.classList.add('open'); if(ar) ar.textContent='▲'; }
+  });
+  if(doneSecOpen){ var ds=document.getElementById('doneSec'); if(ds) ds.style.display='block'; }
 }
 
 function toggleOrd(uid){
