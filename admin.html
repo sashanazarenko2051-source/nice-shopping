@@ -1130,19 +1130,20 @@ async function renderOrders(silent){
 }
 
 function displayOrders(orders, el){
+  var doneIds=new Set(JSON.parse(localStorage.getItem('ns_done_orders')||'[]').map(String));
+  var active=orders.filter(function(o){ return !doneIds.has(String(o._id)); });
+  var done=orders.filter(function(o){ return doneIds.has(String(o._id)); });
   var ob=document.getElementById('sbOrd');
-  ob.textContent=orders.length; ob.style.display=orders.length?'inline-block':'none';
+  ob.textContent=active.length; ob.style.display=active.length?'inline-block':'none';
   if(!orders.length){ el.innerHTML='<div class="empty"><div class="empty-ico">📋</div><p>Замовлень ще немає</p></div>'; return; }
   var todayStr=new Date().toLocaleDateString('uk-UA');
-  var todayList=orders.filter(function(o){return o.date===todayStr;});
-  var prevList=orders.filter(function(o){return o.date!==todayStr;});
   var payN={cod:'Накладений платіж',prepay:'Передоплата'};
 
-  function buildRows(list, offset){
-    return list.map(function(o,i){
-      var idx=offset+i;
+  function buildRows(list, isDone){
+    return list.map(function(o){
+      var uid='ord-'+o._id;
       var items=(o.items||[]).map(function(it){return esc(it.name)+' ×'+(it.qty||1);}).join(', ');
-      var detail='<div class="ord-detail" id="od-'+idx+'">'+
+      var detail='<div class="ord-detail" id="od-'+uid+'">'+
         '<div class="ord-grid">'+
           '<div><div class="ord-label">Клієнт</div><div class="ord-val" style="font-weight:600">'+esc((o.firstName||'')+' '+(o.lastName||''))+'</div></div>'+
           '<div><div class="ord-label">Телефон</div><a href="tel:'+esc(o.phone||'')+'" style="color:var(--green);font-size:.86rem">'+esc(o.phone||'—')+'</a></div>'+
@@ -1154,9 +1155,15 @@ function displayOrders(orders, el){
         '<div style="padding:0 20px 12px"><div class="ord-label" style="margin-bottom:6px">Товари</div><ul style="padding-left:16px;color:var(--text);font-size:.82rem;line-height:1.9">'+
           (o.items||[]).map(function(it){ var m=(it.size?it.size:'')+(it.color?', '+it.color:''); return '<li>'+esc(it.name)+(m?' ('+esc(m)+')':'')+' — ×'+(it.qty||1)+' — ₴'+((it.price||0)*(it.qty||1))+'</li>'; }).join('')+
         '</ul></div>'+
-        '<div class="ord-footer"><button onclick="deleteOrder('+o._id+')" class="btn-sm danger">🗑 Видалити</button><span style="font-size:1rem;font-weight:700;color:var(--green)">₴'+(o.total||0)+'</span></div>'+
+        '<div class="ord-footer">'+
+          (isDone
+            ? '<button onclick="unmarkDone('+o._id+')" class="btn-sm primary">↩ Відновити</button>'
+            : '<button onclick="markDone('+o._id+')" class="btn-sm primary">✅ Виконано</button>')+
+          '<button onclick="deleteOrder('+o._id+')" class="btn-sm danger" style="margin-left:6px">🗑 Видалити</button>'+
+          '<span style="font-size:1rem;font-weight:700;color:var(--green)">₴'+(o.total||0)+'</span>'+
+        '</div>'+
       '</div>';
-      var row='<tr style="cursor:pointer" onclick="toggleOrd('+idx+')">'+
+      var row='<tr style="cursor:pointer'+(isDone?';opacity:.45':'') +'" onclick="toggleOrd(\''+uid+'\')">'+
         '<td style="white-space:nowrap">'+esc(o.date||'—')+'</td>'+
         '<td style="font-weight:500">'+esc((o.firstName||'')+' '+(o.lastName||''))+'</td>'+
         '<td>'+esc(o.phone||'—')+'</td>'+
@@ -1164,24 +1171,56 @@ function displayOrders(orders, el){
         '<td>'+esc(payN[o.payment]||o.payment||'—')+'</td>'+
         '<td style="font-size:.76rem;color:var(--dim);max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(items)+'</td>'+
         '<td style="color:var(--green);font-weight:700">₴'+(o.total||0)+'</td>'+
-        '<td id="oa-'+idx+'">▼</td>'+
+        '<td id="oa-'+uid+'">▼</td>'+
       '</tr><tr><td colspan="8" style="padding:0">'+detail+'</td></tr>';
       return row;
     }).join('');
   }
 
+  var todayActive=active.filter(function(o){return o.date===todayStr;});
+  var prevActive=active.filter(function(o){return o.date!==todayStr;});
   var html='';
-  if(todayList.length) html+='<div style="font-size:.8rem;font-weight:700;color:var(--green);margin-bottom:8px">📅 Сьогодні — '+todayList.length+' замовл.</div>';
-  html+='<div class="box" style="margin-bottom:14px"><div class="tbl-wrap"><table class="dtbl"><thead><tr><th>Дата</th><th>Клієнт</th><th>Телефон</th><th>Місто</th><th>Оплата</th><th>Товари</th><th>Сума</th><th></th></tr></thead><tbody>'+
-    buildRows(todayList,0)+buildRows(prevList,todayList.length)+
-  '</tbody></table></div></div>';
+  if(!active.length){
+    html+='<div class="empty" style="padding:32px 0"><div class="empty-ico">✅</div><p>Всі замовлення виконані!</p></div>';
+  } else {
+    if(todayActive.length) html+='<div style="font-size:.8rem;font-weight:700;color:var(--green);margin-bottom:8px">📅 Сьогодні — '+todayActive.length+' замовл.</div>';
+    html+='<div class="box" style="margin-bottom:14px"><div class="tbl-wrap"><table class="dtbl"><thead><tr><th>Дата</th><th>Клієнт</th><th>Телефон</th><th>Місто</th><th>Оплата</th><th>Товари</th><th>Сума</th><th></th></tr></thead><tbody>'+
+      buildRows(todayActive,false)+buildRows(prevActive,false)+
+    '</tbody></table></div></div>';
+  }
+  if(done.length){
+    html+='<div style="margin-top:6px">'+
+      '<button onclick="var s=document.getElementById(\'doneSec\');s.style.display=s.style.display===\'none\'?\'block\':\'none\'" class="btn-out" style="font-size:.78rem;width:100%;justify-content:center">'+
+        '✅ Виконані замовлення ('+done.length+')'+
+      '</button>'+
+      '<div id="doneSec" style="display:none;margin-top:10px">'+
+        '<div class="box"><div class="tbl-wrap"><table class="dtbl"><thead><tr><th>Дата</th><th>Клієнт</th><th>Телефон</th><th>Місто</th><th>Оплата</th><th>Товари</th><th>Сума</th><th></th></tr></thead><tbody>'+
+        buildRows(done,true)+
+        '</tbody></table></div></div>'+
+      '</div>'+
+    '</div>';
+  }
   el.innerHTML=html;
 }
 
-function toggleOrd(idx){
-  var el=document.getElementById('od-'+idx), ar=document.getElementById('oa-'+idx);
+function toggleOrd(uid){
+  var el=document.getElementById('od-'+uid), ar=document.getElementById('oa-'+uid);
   var open=el.classList.toggle('open');
   if(ar) ar.textContent=open?'▲':'▼';
+}
+function markDone(id){
+  var ids=JSON.parse(localStorage.getItem('ns_done_orders')||'[]').map(String);
+  if(ids.indexOf(String(id))===-1) ids.push(String(id));
+  localStorage.setItem('ns_done_orders',JSON.stringify(ids));
+  if(_ordCache) displayOrders(_ordCache,document.getElementById('ordList'));
+  toast('✅ Замовлення виконано');
+}
+function unmarkDone(id){
+  var ids=JSON.parse(localStorage.getItem('ns_done_orders')||'[]').map(String);
+  ids=ids.filter(function(x){return x!==String(id);});
+  localStorage.setItem('ns_done_orders',JSON.stringify(ids));
+  if(_ordCache) displayOrders(_ordCache,document.getElementById('ordList'));
+  toast('Замовлення відновлено в активні');
 }
 async function deleteOrder(id){
   if(!confirm('Видалити замовлення?')) return;
