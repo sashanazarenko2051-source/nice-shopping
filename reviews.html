@@ -52,6 +52,15 @@
     .rev-reply { margin-top: 10px; padding: 8px 12px; background: rgba(74,222,128,.06); border-left: 2px solid #4ade80; border-radius: 0 6px 6px 0; font-size: .8rem; color: rgba(224,224,224,.75); }
     .rev-reply-label { font-size: .7rem; color: #4ade80; font-weight: 600; margin-bottom: 2px; }
     .rev-likes { font-size: .75rem; color: rgba(224,224,224,.4); margin-top: 6px; }
+    .rev-my-btns { display: flex; gap: 8px; margin-top: 10px; }
+    .rev-my-btn { padding: 4px 12px; border-radius: 6px; font-size: .75rem; border: 1px solid rgba(255,255,255,.15); background: rgba(255,255,255,.05); color: rgba(224,224,224,.6); cursor: pointer; }
+    .rev-my-btn:hover { background: rgba(255,255,255,.1); color: #e0e0e0; }
+    .rev-my-btn.del { border-color: rgba(248,113,113,.25); color: #f87171; }
+    .rev-my-btn.del:hover { background: rgba(248,113,113,.1); }
+    .rev-edit-form { margin-top: 12px; display: flex; flex-direction: column; gap: 8px; }
+    .rev-edit-form input, .rev-edit-form textarea { background: rgba(74,222,128,.05); border: 1px solid rgba(74,222,128,.15); border-radius: 8px; color: #e0e0e0; padding: 8px 12px; font-size: .85rem; width: 100%; outline: none; }
+    .rev-edit-form textarea { resize: vertical; min-height: 80px; }
+    .rev-edit-form input:focus, .rev-edit-form textarea:focus { border-color: #4ade80; }
 
     /* Success */
     .form-success { display: none; text-align: center; padding: 40px 20px; }
@@ -196,7 +205,7 @@ function formatDate(ts) {
 }
 
 function renderList(list) {
-  if (list === undefined) return; // called by translate.js on lang toggle — ignore
+  if (list === undefined) return;
   var el = document.getElementById('revList');
   var cnt = document.getElementById('revCount');
   if (cnt) cnt.textContent = (list && list.length) ? '  ·  ' + list.length : '';
@@ -204,22 +213,83 @@ function renderList(list) {
     el.innerHTML = '<div class="rev-empty"><div class="rev-empty__icon">💬</div><div class="rev-empty__text">' + window.i18n('rev.empty') + '</div></div>';
     return;
   }
+  var myRevs = JSON.parse(localStorage.getItem('ns_my_reviews') || '[]');
   el.innerHTML = '<div class="rev-list">' + list.map(function(r) {
     var nm = (r.name || '').trim() || '—';
-    return '<div class="rev-card">' +
-      '<div class="rev-head">' +
-        '<div class="rev-avatar">' + esc(nm.charAt(0).toUpperCase()) + '</div>' +
-        '<div class="rev-meta">' +
-          '<div class="rev-name">' + esc(nm) + '</div>' +
-          '<div class="rev-stars">' + starsHtml(r.rating) + '</div>' +
+    var myRev = myRevs.find(function(m) { return String(m.id) === String(r._id); });
+    var myBtns = myRev ?
+      '<div class="rev-my-btns">' +
+        '<button onclick="startEditReview(' + r._id + ')" class="rev-my-btn">✏️ Редагувати</button>' +
+        '<button onclick="deleteMyReview(' + r._id + ')" class="rev-my-btn del">🗑 Видалити</button>' +
+      '</div>' : '';
+    var editForm =
+      '<div id="re-' + r._id + '" class="rev-edit-form" style="display:none">' +
+        '<input id="en-' + r._id + '" value="' + esc(nm) + '" placeholder="Ваше ім\'я">' +
+        '<div class="star-row" style="margin:0">' +
+          [5,4,3,2,1].map(function(v){
+            return '<input type="radio" name="er-'+r._id+'" id="es'+v+'-'+r._id+'" value="'+v+'"'+(r.rating===v?' checked':'')+'>'+
+                   '<label for="es'+v+'-'+r._id+'">★</label>';
+          }).join('') +
         '</div>' +
-        '<div class="rev-date">' + esc(formatDate(r.ts)) + '</div>' +
+        '<textarea id="et-' + r._id + '">' + esc(r.text) + '</textarea>' +
+        '<div style="display:flex;gap:8px">' +
+          '<button onclick="saveEditReview(' + r._id + ')" class="rev-my-btn" style="background:rgba(74,222,128,.1);color:#4ade80;border-color:rgba(74,222,128,.3)">✅ Зберегти</button>' +
+          '<button onclick="cancelEditReview(' + r._id + ')" class="rev-my-btn">Скасувати</button>' +
+        '</div>' +
+      '</div>';
+    return '<div class="rev-card" id="rc-' + r._id + '">' +
+      '<div id="rv-' + r._id + '">' +
+        '<div class="rev-head">' +
+          '<div class="rev-avatar">' + esc(nm.charAt(0).toUpperCase()) + '</div>' +
+          '<div class="rev-meta">' +
+            '<div class="rev-name">' + esc(nm) + '</div>' +
+            '<div class="rev-stars">' + starsHtml(r.rating) + '</div>' +
+          '</div>' +
+          '<div class="rev-date">' + esc(formatDate(r.ts)) + '</div>' +
+        '</div>' +
+        '<div class="rev-text">«' + esc(r.text) + '»</div>' +
+        (r.reply ? '<div class="rev-reply"><div class="rev-reply-label">Відповідь магазину</div>' + esc(r.reply) + '</div>' : '') +
+        (r.likes ? '<div class="rev-likes">❤️ ' + r.likes + '</div>' : '') +
+        myBtns +
       '</div>' +
-      '<div class="rev-text">«' + esc(r.text) + '»</div>' +
-      (r.reply ? '<div class="rev-reply"><div class="rev-reply-label">Відповідь магазину</div>' + esc(r.reply) + '</div>' : '') +
-      (r.likes ? '<div class="rev-likes">❤️ ' + r.likes + '</div>' : '') +
+      editForm +
     '</div>';
   }).join('') + '</div>';
+}
+function startEditReview(id) {
+  document.getElementById('rv-' + id).style.display = 'none';
+  document.getElementById('re-' + id).style.display = 'flex';
+}
+function cancelEditReview(id) {
+  document.getElementById('rv-' + id).style.display = '';
+  document.getElementById('re-' + id).style.display = 'none';
+}
+async function saveEditReview(id) {
+  var myRevs = JSON.parse(localStorage.getItem('ns_my_reviews') || '[]');
+  var myRev = myRevs.find(function(m) { return String(m.id) === String(id); });
+  if (!myRev) return;
+  var name = (document.getElementById('en-' + id) || {}).value || '';
+  var text = (document.getElementById('et-' + id) || {}).value || '';
+  var rEl = document.querySelector('input[name="er-' + id + '"]:checked');
+  var rating = rEl ? parseInt(rEl.value) : 5;
+  if (!name.trim() || !text.trim()) { showToast(window.i18n('err.fill.required')); return; }
+  try {
+    await API.updateMyReview(id, myRev.token, { name: name.trim(), text: text.trim(), rating: rating });
+    showToast('✅ Відгук оновлено');
+    loadReviews();
+  } catch(e) { showToast('❌ Помилка збереження'); }
+}
+async function deleteMyReview(id) {
+  if (!confirm('Видалити свій відгук?')) return;
+  var myRevs = JSON.parse(localStorage.getItem('ns_my_reviews') || '[]');
+  var myRev = myRevs.find(function(m) { return String(m.id) === String(id); });
+  if (!myRev) return;
+  try {
+    await API.deleteMyReview(id, myRev.token);
+    localStorage.setItem('ns_my_reviews', JSON.stringify(myRevs.filter(function(m) { return String(m.id) !== String(id); })));
+    showToast('Відгук видалено');
+    loadReviews();
+  } catch(e) { showToast('❌ Помилка видалення'); }
 }
 
 function loadReviews() {
@@ -253,6 +323,13 @@ document.getElementById('revForm').addEventListener('submit', function(e) {
   var review = { name: name, rating: rating, text: text, ts: Date.now() };
 
   API.createReview(review)
+    .then(function(res) {
+      if (res && res.id && res.edit_token) {
+        var myRevs = JSON.parse(localStorage.getItem('ns_my_reviews') || '[]');
+        myRevs.push({ id: res.id, token: res.edit_token });
+        localStorage.setItem('ns_my_reviews', JSON.stringify(myRevs));
+      }
+    })
     .catch(function() {})
     .finally(function() {
       loadReviews();

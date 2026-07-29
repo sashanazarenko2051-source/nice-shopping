@@ -81,6 +81,12 @@ var API = (function() {
     patchReview: function(id, data) {
       return _req('/api/reviews/' + id, { method: 'PATCH', headers: _headers(), body: JSON.stringify(data) });
     },
+    updateMyReview: function(id, editToken, data) {
+      return _req('/api/reviews/' + id, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(Object.assign({ edit_token: editToken }, data)) });
+    },
+    deleteMyReview: function(id, editToken) {
+      return _req('/api/reviews/' + id + '/self-delete', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ edit_token: editToken }) });
+    },
 
     restoreFromGist: function() {
       return _req('/api/admin/restore', { method: 'POST', headers: _headers() });

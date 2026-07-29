@@ -725,7 +725,9 @@ def get_reviews():
     conn.close()
     result = []
     for r in rows:
-        d = json.loads(r["data"]); d["_id"] = r["id"]; result.append(d)
+        d = json.loads(r["data"]); d["_id"] = r["id"]
+        d.pop("edit_token", None)  # never expose to clients
+        result.append(d)
     return result
 
 @app.post("/api/reviews")
@@ -753,12 +755,14 @@ async def create_review(req: Request, background_tasks: BackgroundTasks):
         ts = int(body.get("ts") or int(time.time() * 1000))
     except (TypeError, ValueError):
         ts = int(time.time() * 1000)
-    review = {"name": name, "rating": rating, "text": text, "ts": ts}
+    edit_token = secrets.token_hex(16)
+    review = {"name": name, "rating": rating, "text": text, "ts": ts, "edit_token": edit_token}
     conn = get_db()
-    conn.execute("INSERT INTO reviews (data) VALUES (?)", (json.dumps(review, ensure_ascii=False),))
+    cursor = conn.execute("INSERT INTO reviews (data) VALUES (?)", (json.dumps(review, ensure_ascii=False),))
+    review_id = cursor.lastrowid
     conn.commit(); conn.close()
     background_tasks.add_task(_backup_reviews)
-    return {"ok": True}
+    return {"ok": True, "id": review_id, "edit_token": edit_token}
 
 @app.delete("/api/reviews/{rid}")
 async def delete_review(rid: int, background_tasks: BackgroundTasks,
@@ -769,6 +773,61 @@ async def delete_review(rid: int, background_tasks: BackgroundTasks,
         conn.close()
         raise HTTPException(status_code=404, detail="Review not found")
     conn.execute("DELETE FROM reviews WHERE id = ?", (rid,))
+    conn.commit(); conn.close()
+    background_tasks.add_task(_backup_reviews)
+    return {"ok": True}
+
+@app.put("/api/reviews/{rid}")
+async def update_own_review(rid: int, req: Request, background_tasks: BackgroundTasks):
+    try:
+        body = await req.json()
+    except Exception:
+        raise HTTPException(status_code=400, detail="Invalid request")
+    edit_token = str(body.get("edit_token") or "").strip()
+    if not edit_token:
+        raise HTTPException(status_code=403, detail="No edit token")
+    conn = get_db()
+    row = conn.execute("SELECT data FROM reviews WHERE id=?", (rid,)).fetchone()
+    if not row:
+        conn.close()
+        raise HTTPException(status_code=404, detail="Not found")
+    data = json.loads(row["data"])
+    if not hmac.compare_digest(data.get("edit_token", "x"), edit_token):
+        conn.close()
+        raise HTTPException(status_code=403, detail="Invalid token")
+    name = str(body.get("name") or "").strip()[:60]
+    text = str(body.get("text") or "").strip()[:1000]
+    try:
+        rating = max(1, min(5, int(body.get("rating") or data.get("rating") or 5)))
+    except (TypeError, ValueError):
+        rating = data.get("rating", 5)
+    if not name or not text:
+        raise HTTPException(status_code=400, detail="Name and text required")
+    data["name"] = name; data["text"] = text; data["rating"] = rating
+    conn.execute("UPDATE reviews SET data=? WHERE id=?", (json.dumps(data, ensure_ascii=False), rid))
+    conn.commit(); conn.close()
+    background_tasks.add_task(_backup_reviews)
+    return {"ok": True}
+
+@app.post("/api/reviews/{rid}/self-delete")
+async def delete_own_review(rid: int, req: Request, background_tasks: BackgroundTasks):
+    try:
+        body = await req.json()
+    except Exception:
+        raise HTTPException(status_code=400, detail="Invalid request")
+    edit_token = str(body.get("edit_token") or "").strip()
+    if not edit_token:
+        raise HTTPException(status_code=403, detail="No edit token")
+    conn = get_db()
+    row = conn.execute("SELECT data FROM reviews WHERE id=?", (rid,)).fetchone()
+    if not row:
+        conn.close()
+        raise HTTPException(status_code=404, detail="Not found")
+    data = json.loads(row["data"])
+    if not hmac.compare_digest(data.get("edit_token", "x"), edit_token):
+        conn.close()
+        raise HTTPException(status_code=403, detail="Invalid token")
+    conn.execute("DELETE FROM reviews WHERE id=?", (rid,))
     conn.commit(); conn.close()
     background_tasks.add_task(_backup_reviews)
     return {"ok": True}
