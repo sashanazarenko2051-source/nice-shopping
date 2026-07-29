@@ -509,7 +509,7 @@ nav{flex:1;padding:6px}
 
 <div id="toast"></div>
 
-<script src="js/api.js?v=3"></script>
+<script src="js/api.js?v=4"></script>
 <script>
 /* ── STATE ── */
 var _products = [];
@@ -1155,6 +1155,11 @@ function displayOrders(orders, el){
         '<div style="padding:0 20px 12px"><div class="ord-label" style="margin-bottom:6px">Товари</div><ul style="padding-left:16px;color:var(--text);font-size:.82rem;line-height:1.9">'+
           (o.items||[]).map(function(it){ var m=(it.size?it.size:'')+(it.color?', '+it.color:''); return '<li>'+esc(it.name)+(m?' ('+esc(m)+')':'')+' — ×'+(it.qty||1)+' — ₴'+((it.price||0)*(it.qty||1))+'</li>'; }).join('')+
         '</ul></div>'+
+        '<div style="padding:8px 20px 0;display:flex;gap:6px;flex-wrap:wrap">'+
+          '<span style="font-size:.72rem;color:var(--dim);align-self:center">Статус:</span>'+
+          '<button onclick="setOrderStatus('+o._id+',\'processing\')" class="btn-sm'+((!o.status||o.status==='processing')?' primary':'')+'" style="font-size:.72rem">📋 В обробці</button>'+
+          '<button onclick="setOrderStatus('+o._id+',\'transit\')" class="btn-sm'+(o.status==='transit'?' primary':'')+'" style="font-size:.72rem">🚚 В дорозі</button>'+
+        '</div>'+
         '<div class="ord-footer">'+
           (isDone
             ? '<button onclick="unmarkDone('+o._id+')" class="btn-sm primary">↩ Відновити</button>'
@@ -1163,8 +1168,9 @@ function displayOrders(orders, el){
           '<span style="font-size:1rem;font-weight:700;color:var(--green)">₴'+(o.total||0)+'</span>'+
         '</div>'+
       '</div>';
+      var stLabel={'processing':'📋','transit':'🚚','done':'✅'}[o.status||'processing']||'📋';
       var row='<tr style="cursor:pointer'+(isDone?';opacity:.45':'') +'" onclick="toggleOrd(\''+uid+'\')">'+
-        '<td style="white-space:nowrap">'+esc(o.date||'—')+'</td>'+
+        '<td style="white-space:nowrap">'+esc(o.date||'—')+'<br><span style="font-size:.68rem;color:var(--dim)">'+stLabel+'</span></td>'+
         '<td style="font-weight:500">'+esc((o.firstName||'')+' '+(o.lastName||''))+'</td>'+
         '<td>'+esc(o.phone||'—')+'</td>'+
         '<td>'+esc(o.city||'—')+'</td>'+
@@ -1212,8 +1218,25 @@ function markDone(id){
   var ids=JSON.parse(localStorage.getItem('ns_done_orders')||'[]').map(String);
   if(ids.indexOf(String(id))===-1) ids.push(String(id));
   localStorage.setItem('ns_done_orders',JSON.stringify(ids));
-  if(_ordCache) displayOrders(_ordCache,document.getElementById('ordList'));
+  API.patchOrder(id,{status:'done'}).catch(function(){});
+  if(_ordCache){
+    var o=_ordCache.find(function(x){return String(x._id)===String(id);});
+    if(o) o.status='done';
+    displayOrders(_ordCache,document.getElementById('ordList'));
+  }
   toast('✅ Замовлення виконано');
+}
+async function setOrderStatus(id,status){
+  try{
+    await API.patchOrder(id,{status:status});
+    if(_ordCache){
+      var o=_ordCache.find(function(x){return String(x._id)===String(id);});
+      if(o) o.status=status;
+      displayOrders(_ordCache,document.getElementById('ordList'));
+    }
+    var labels={processing:'📋 В обробці',transit:'🚚 В дорозі',done:'✅ Виконано'};
+    toast(labels[status]||'Оновлено');
+  }catch(e){ toast('❌ Помилка'); }
 }
 function unmarkDone(id){
   var ids=JSON.parse(localStorage.getItem('ns_done_orders')||'[]').map(String);

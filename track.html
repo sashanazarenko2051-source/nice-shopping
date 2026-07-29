@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="uk" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Відстеження замовлення — Файні покупки</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <style>
+    .track-wrap { max-width: 640px; margin: 0 auto; padding: 40px 16px 80px; }
+    .track-form { background: rgba(255,255,255,.03); border: 1px solid rgba(74,222,128,.12); border-radius: 16px; padding: 32px 28px; margin-bottom: 32px; }
+    .track-title { font-family: var(--serif); font-size: 1.7rem; margin-bottom: 6px; }
+    .track-sub { color: var(--gray); font-size: .88rem; margin-bottom: 24px; }
+    .track-row { display: flex; gap: 10px; }
+    .track-inp { flex: 1; padding: 12px 16px; background: rgba(255,255,255,.04); border: 1px solid rgba(74,222,128,.15); border-radius: 10px; color: var(--text); font-size: .95rem; outline: none; }
+    .track-inp:focus { border-color: #4ade80; }
+    .track-btn { padding: 12px 22px; background: #2ecc71; color: #020d04; border: none; border-radius: 10px; font-weight: 700; font-size: .9rem; cursor: pointer; white-space: nowrap; }
+    .track-btn:hover { opacity: .88; }
+    .track-btn:disabled { opacity: .5; cursor: default; }
+
+    .order-card { background: rgba(255,255,255,.03); border: 1px solid rgba(74,222,128,.1); border-radius: 14px; padding: 22px 24px; margin-bottom: 16px; }
+    .order-card__head { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 14px; gap: 12px; flex-wrap: wrap; }
+    .order-card__date { font-size: .78rem; color: var(--gray); }
+    .order-card__total { font-size: 1.05rem; font-weight: 700; color: #4ade80; }
+
+    /* Status steps */
+    .status-steps { display: flex; align-items: center; margin-bottom: 16px; }
+    .step { display: flex; flex-direction: column; align-items: center; gap: 4px; flex: 1; }
+    .step-dot { width: 28px; height: 28px; border-radius: 50%; border: 2px solid rgba(255,255,255,.12); background: rgba(255,255,255,.05); display: flex; align-items: center; justify-content: center; font-size: .85rem; transition: all .2s; }
+    .step-dot.active { border-color: #4ade80; background: rgba(74,222,128,.15); }
+    .step-dot.done { border-color: #4ade80; background: #4ade80; color: #020d04; }
+    .step-label { font-size: .68rem; color: var(--gray); text-align: center; white-space: nowrap; }
+    .step-label.active, .step-label.done { color: #4ade80; }
+    .step-line { flex: 1; height: 2px; background: rgba(255,255,255,.08); margin: 0 4px; margin-bottom: 18px; }
+    .step-line.done { background: #4ade80; }
+
+    .order-items { font-size: .82rem; color: rgba(224,224,224,.65); line-height: 1.8; }
+    .empty-msg { text-align: center; padding: 40px 0; color: var(--gray); }
+    .empty-msg .ico { font-size: 2.5rem; margin-bottom: 10px; }
+  </style>
+</head>
+<body>
+
+<header class="header">
+  <div class="container header__inner">
+    <a href="index.html" class="logo"><svg class="logo-icon" width="22" height="27" viewBox="0 0 24 30" fill="currentColor" aria-hidden="true"><circle cx="12" cy="6" r="5.8"/><circle cx="12" cy="18" r="5.8"/><circle cx="6" cy="12" r="5.8"/><circle cx="18" cy="12" r="5.8"/><path d="M12,24 Q10,27 9,29" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none" opacity=".85"/></svg>Nice Shopping</a>
+    <nav class="nav" id="nav">
+      <a href="index.html">Головна</a>
+      <a href="catalog.html">Каталог</a>
+      <a href="reviews.html">Відгуки</a>
+      <a href="contacts.html">Контакти</a>
+    </nav>
+    <div style="display:flex;align-items:center;gap:4px">
+      <button class="lang-btn" id="langBtn" onclick="toggleLang()">EN</button>
+      <a href="cart.html" class="cart-btn" title="Кошик">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
+        <span class="cart-count" style="display:none">0</span>
+      </a>
+    </div>
+    <button class="menu-toggle" id="menuToggle">☰</button>
+  </div>
+</header>
+
+<div class="page-hero">
+  <div class="container">
+    <h1 class="page-hero__title">Відстеження замовлення</h1>
+    <div class="breadcrumb"><a href="index.html">Головна</a> / <span>Відстеження</span></div>
+  </div>
+</div>
+
+<div class="container">
+  <div class="track-wrap">
+    <div class="track-form">
+      <div class="track-title">Де моє замовлення?</div>
+      <div class="track-sub">Введіть номер телефону, який вказували при оформленні замовлення</div>
+      <div class="track-row">
+        <input type="tel" id="trackPhone" class="track-inp" placeholder="+380501234567">
+        <button class="track-btn" id="trackBtn" onclick="doTrack()">Перевірити</button>
+      </div>
+    </div>
+    <div id="trackResult"></div>
+  </div>
+</div>
+
+<footer class="footer" style="margin-top:48px">
+  <div class="container">
+    <div class="footer__bottom" style="border-top:1px solid rgba(255,255,255,.1);padding-top:20px">
+      <span>© 2025 Файні покупки</span>
+      <a href="mailto:ornazartatyana@gmail.com" style="opacity:.45;font-size:.8125rem">ornazartatyana@gmail.com</a>
+    </div>
+  </div>
+</footer>
+
+<script src="js/config.js"></script>
+<script src="js/i18n.js"></script>
+<script src="js/cart.js"></script>
+<script src="js/translate.js"></script>
+<script>
+function esc(s) {
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+var STATUS_STEPS = [
+  { key: 'processing', icon: '📋', label: 'В обробці' },
+  { key: 'transit',    icon: '🚚', label: 'В дорозі'  },
+  { key: 'done',       icon: '✅', label: 'Виконано'  }
+];
+
+function stepIndex(status) {
+  var idx = STATUS_STEPS.findIndex(function(s){ return s.key === status; });
+  return idx < 0 ? 0 : idx;
+}
+
+function renderSteps(status) {
+  var cur = stepIndex(status);
+  var html = '<div class="status-steps">';
+  STATUS_STEPS.forEach(function(s, i) {
+    var state = i < cur ? 'done' : (i === cur ? 'active' : '');
+    html += '<div class="step"><div class="step-dot ' + state + '">' + (state === 'done' ? '✓' : s.icon) + '</div><div class="step-label ' + state + '">' + s.label + '</div></div>';
+    if (i < STATUS_STEPS.length - 1) {
+      html += '<div class="step-line ' + (i < cur ? 'done' : '') + '"></div>';
+    }
+  });
+  return html + '</div>';
+}
+
+function renderOrders(orders) {
+  var el = document.getElementById('trackResult');
+  if (!orders || !orders.length) {
+    el.innerHTML = '<div class="empty-msg"><div class="ico">🔍</div><p>Замовлень за цим номером не знайдено.<br>Перевірте правильність номера.</p></div>';
+    return;
+  }
+  el.innerHTML = orders.map(function(o) {
+    var itemsList = (o.items || []).map(function(it){ return esc(it.name) + ' × ' + (it.qty||1); }).join(', ');
+    return '<div class="order-card">' +
+      '<div class="order-card__head">' +
+        '<div>' +
+          '<div style="font-weight:600;margin-bottom:2px">' + esc((o.firstName||'')+ ' ' +(o.lastName||'')) + '</div>' +
+          '<div class="order-card__date">Замовлення від ' + esc(o.date||'') + '</div>' +
+        '</div>' +
+        '<div class="order-card__total">₴' + (o.total||0) + '</div>' +
+      '</div>' +
+      renderSteps(o.status || 'processing') +
+      '<div class="order-items">' + esc(itemsList) + '</div>' +
+    '</div>';
+  }).join('');
+}
+
+async function doTrack() {
+  var phone = document.getElementById('trackPhone').value.trim();
+  if (!phone) { return; }
+  var btn = document.getElementById('trackBtn');
+  btn.disabled = true; btn.textContent = '…';
+  var el = document.getElementById('trackResult');
+  el.innerHTML = '<div class="empty-msg"><div class="ico">⏳</div><p>Шукаємо…</p></div>';
+  try {
+    var res = await fetch('/api/orders/track?phone=' + encodeURIComponent(phone));
+    if (!res.ok) throw new Error(res.status);
+    var orders = await res.json();
+    renderOrders(orders);
+  } catch(e) {
+    el.innerHTML = '<div class="empty-msg"><div class="ico">❌</div><p>Помилка з\'єднання. Спробуйте пізніше.</p></div>';
+  } finally {
+    btn.disabled = false; btn.textContent = 'Перевірити';
+  }
+}
+
+document.getElementById('trackPhone').addEventListener('keydown', function(e){ if(e.key==='Enter') doTrack(); });
+document.getElementById('menuToggle').addEventListener('click', function() {
+  document.getElementById('nav').classList.toggle('open');
+});
+applyLang();
+</script>
+</body>
+</html>

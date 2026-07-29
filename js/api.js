@@ -67,6 +67,9 @@ var API = (function() {
     createOrder: function(data) {
       return _req('/api/orders', { method: 'POST', headers: _headers(), body: JSON.stringify(data) });
     },
+    patchOrder: function(id, data) {
+      return _req('/api/orders/' + id, { method: 'PATCH', headers: _headers(), body: JSON.stringify(data) });
+    },
     deleteOrder: function(id) {
       return _req('/api/orders/' + id, { method: 'DELETE', headers: _headers() });
     },

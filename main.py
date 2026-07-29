@@ -606,6 +606,7 @@ async def create_order(req: Request, background_tasks: BackgroundTasks):
         raise HTTPException(status_code=400, detail="Empty order")
     if len(items) > 200:
         raise HTTPException(status_code=400, detail="Too many items")
+    body.setdefault("status", "processing")
     conn = get_db()
     conn.execute("INSERT INTO orders (data) VALUES (?)", (json.dumps(body, ensure_ascii=False),))
 
@@ -681,6 +682,49 @@ async def create_order(req: Request, background_tasks: BackgroundTasks):
         except Exception as e:
             print(f"[TG] Send timeout/error: {e}")
     return {"ok": True}
+
+@app.patch("/api/orders/{oid}")
+async def patch_order(oid: int, req: Request, background_tasks: BackgroundTasks,
+                      token: str = Depends(require_admin)):
+    try:
+        body = await req.json()
+    except Exception:
+        raise HTTPException(status_code=400, detail="Invalid request")
+    conn = get_db()
+    row = conn.execute("SELECT data FROM orders WHERE id=?", (oid,)).fetchone()
+    if not row:
+        conn.close()
+        raise HTTPException(status_code=404, detail="Not found")
+    data = json.loads(row["data"])
+    if "status" in body and body["status"] in ("processing", "transit", "done"):
+        data["status"] = body["status"]
+    conn.execute("UPDATE orders SET data=? WHERE id=?", (json.dumps(data, ensure_ascii=False), oid))
+    conn.commit(); conn.close()
+    background_tasks.add_task(_backup_orders)
+    return {"ok": True}
+
+@app.get("/api/orders/track")
+def track_order(phone: str = ""):
+    if not phone or len(phone.strip()) < 5:
+        raise HTTPException(status_code=400, detail="Phone required")
+    ph = phone.strip().replace(" ", "").replace("-", "")
+    conn = get_db()
+    rows = conn.execute("SELECT id, data FROM orders ORDER BY id DESC").fetchall()
+    conn.close()
+    result = []
+    for r in rows:
+        d = json.loads(r["data"])
+        if d.get("phone", "").replace(" ", "").replace("-", "") == ph:
+            result.append({
+                "_id": r["id"],
+                "date": d.get("date", ""),
+                "status": d.get("status", "processing"),
+                "items": [{"name": i.get("name", ""), "qty": i.get("qty", 1)} for i in d.get("items", [])[:10]],
+                "total": d.get("total", 0),
+                "firstName": d.get("firstName", ""),
+                "lastName": d.get("lastName", ""),
+            })
+    return result
 
 @app.delete("/api/orders/{oid}")
 def delete_order_api(oid: int, background_tasks: BackgroundTasks,
