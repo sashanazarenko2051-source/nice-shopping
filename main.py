@@ -15,7 +15,7 @@ _origins = [o.strip() for o in os.getenv("ALLOWED_ORIGINS", "").split(",") if o.
 app.add_middleware(
     CORSMiddleware,
     allow_origins=_origins,
-    allow_methods=["GET", "POST", "PUT", "DELETE"],
+    allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE"],
     allow_headers=["Authorization", "Content-Type"],
 )
 
