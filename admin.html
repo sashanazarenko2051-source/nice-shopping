@@ -737,7 +737,7 @@ function renderChart(visits){
 function fmtNum(n){ var r=Math.round(n*100)/100; return r===Math.round(r)?String(Math.round(r)):r.toFixed(2); }
 function renderStatsTable(soldMap){
   if(!_products.length){ document.getElementById('statsTable').innerHTML=''; return; }
-  var rows=_products.map(function(p){
+  var rows=_products.filter(function(p){ return (soldMap[p.name]||0)>0; }).map(function(p){
     var sold=soldMap[p.name]||0, stock=p.stock||0;
     var hasCost=p.purchasePrice!=null&&p.purchasePrice!=='';
     var cost=hasCost?Number(p.purchasePrice):null;
@@ -754,7 +754,8 @@ function renderStatsTable(soldMap){
       '<td style="text-align:center;'+soldStyle+'">'+sold+'</td>'+
     '</tr>';
   }).join('');
-  document.getElementById('statsTable').innerHTML='<div class="box"><div class="tbl-wrap"><table class="dtbl"><thead><tr><th>Товар</th><th style="text-align:center">Ціна</th><th style="text-align:center">Закупівля</th><th style="text-align:center">Прибуток/од</th><th style="text-align:center">Залишок</th><th style="text-align:center">Продано</th></tr></thead><tbody>'+rows+'</tbody></table></div></div>';
+  if(!rows){ document.getElementById('statsTable').innerHTML='<div style="color:var(--dim);font-size:.8rem;padding:8px 0">Продажів ще немає</div>'; return; }
+  document.getElementById('statsTable').innerHTML='<div style="font-size:.75rem;color:var(--dim);margin-bottom:6px">Продані товари</div><div class="box"><div class="tbl-wrap"><table class="dtbl"><thead><tr><th>Товар</th><th style="text-align:center">Ціна</th><th style="text-align:center">Закупівля</th><th style="text-align:center">Прибуток/од</th><th style="text-align:center">Залишок</th><th style="text-align:center">Продано</th></tr></thead><tbody>'+rows+'</tbody></table></div></div>';
 }
 
 function renderRecentOrders(orders){
