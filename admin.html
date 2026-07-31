@@ -1392,38 +1392,33 @@ async function deleteReview(id){
 }
 
 /* ── TTN HELPER ── */
-var _ttnOrderId=null;
+var _ttnOrderId=null, _ttnVals=[];
 function openTTNHelper(id){
   _ttnOrderId=id;
   var o=_ordCache?_ordCache.find(function(x){return String(x._id)===String(id);}):null;
   if(!o){ toast('Замовлення не знайдено'); return; }
   var name=((o.firstName||'')+' '+(o.lastName||'')).trim()||'—';
-  var phone=o.phone||'—';
-  var city=o.city||'—';
-  var branch=o.branch||'—';
-  var payment=({cod:'Накладений платіж',prepay:'Передоплата'})[o.payment]||o.payment||'—';
-  var delivery=o.deliveryType==='ukr'?'Укрпошта':'Нова Пошта';
   var itemsList=(o.items||[]).map(function(it){
-    return it.name+(it.size?' ('+it.size+(it.color?', '+it.color:'')+')'':'')+'  ×'+( it.qty||1);
+    return it.name+(it.size?' ('+it.size+(it.color?', '+it.color:'')+')'':'')+'  ×'+(it.qty||1);
   }).join('\n');
-  var total=(o.total||0)+' грн';
   var fields=[
-    {label:'ПІБ отримувача',val:name},
-    {label:'Телефон',val:phone},
-    {label:'Місто',val:city},
-    {label:'Відділення / адреса',val:branch},
-    {label:'Спосіб доставки',val:delivery},
-    {label:'Оплата',val:payment},
-    {label:'Оголошена вартість',val:total},
-    {label:'Товари',val:itemsList,multi:true},
+    {label:'ПІБ отримувача', val:name},
+    {label:'Телефон',         val:o.phone||'—'},
+    {label:'Місто',           val:o.city||'—'},
+    {label:'Відділення / адреса', val:o.branch||'—'},
+    {label:'Спосіб доставки', val:o.deliveryType==='ukr'?'Укрпошта':'Нова Пошта'},
+    {label:'Оплата',          val:({cod:'Накладений платіж',prepay:'Передоплата'})[o.payment]||o.payment||'—'},
+    {label:'Оголошена вартість', val:(o.total||0)+' грн'},
+    {label:'Товари',          val:itemsList, multi:true},
   ];
+  _ttnVals=fields.map(function(f){return f.val;});
   var body=document.getElementById('ttnHelperBody');
-  body.innerHTML=fields.map(function(f){
+  body.innerHTML=fields.map(function(f,i){
     return '<div style="background:#0a1a0c;border:1px solid rgba(74,222,128,.12);border-radius:8px;padding:10px 12px">'+
       '<div style="font-size:.65rem;color:var(--dim);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px">'+esc(f.label)+'</div>'+
       '<div style="display:flex;gap:8px;align-items:'+(f.multi?'flex-start':'center')+'">'+
         '<div style="flex:1;font-size:.88rem;'+(f.multi?'white-space:pre-wrap;font-size:.78rem':'white-space:nowrap;overflow:hidden;text-overflow:ellipsis')+'">'+esc(f.val)+'</div>'+
-        '<button onclick="copyField(\''+esc(f.val).replace(/'/g,'&#39;')+'\')" class="btn-sm primary" style="flex-shrink:0;font-size:.7rem;padding:4px 10px">Копіювати</button>'+
+        '<button onclick="copyTTNField('+i+')" class="btn-sm primary" style="flex-shrink:0;font-size:.7rem;padding:4px 10px">Копіювати</button>'+
       '</div>'+
     '</div>';
   }).join('');
@@ -1431,21 +1426,20 @@ function openTTNHelper(id){
 }
 function closeTTNModal(){
   document.getElementById('ttnModal').classList.remove('open');
-  _ttnOrderId=null;
 }
-function copyField(text){
-  var t=text.replace(/&amp;/g,'&').replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&quot;/g,'"').replace(/&#39;/g,"'");
-  navigator.clipboard.writeText(t).then(function(){ toast('✅ Скопійовано'); }).catch(function(){
-    var ta=document.createElement('textarea'); ta.value=t; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta); toast('✅ Скопійовано');
+function _clipCopy(text){
+  navigator.clipboard.writeText(text).then(function(){ toast('✅ Скопійовано'); }).catch(function(){
+    var ta=document.createElement('textarea'); ta.value=text; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta); toast('✅ Скопійовано');
   });
 }
+function copyTTNField(i){ _clipCopy(_ttnVals[i]||''); }
 function copyAllTTN(){
   var o=_ordCache?_ordCache.find(function(x){return String(x._id)===String(_ttnOrderId);}):null;
   if(!o) return;
   var name=((o.firstName||'')+' '+(o.lastName||'')).trim()||'—';
   var items=(o.items||[]).map(function(it){ return '• '+it.name+(it.size?' ('+it.size+(it.color?', '+it.color:'')+')'':'')+'  ×'+(it.qty||1); }).join('\n');
   var text='ПІБ: '+name+'\nТелефон: '+(o.phone||'—')+'\nМісто: '+(o.city||'—')+'\nВідділення: '+(o.branch||'—')+'\nДоставка: '+(o.deliveryType==='ukr'?'Укрпошта':'Нова Пошта')+'\nОплата: '+(({cod:'Накладений платіж',prepay:'Передоплата'})[o.payment]||o.payment||'—')+'\nСума: '+(o.total||0)+' грн\n\nТовари:\n'+items;
-  copyField(text);
+  _clipCopy(text);
 }
 
 /* ── INIT ── */
