@@ -1134,6 +1134,10 @@ function displayOrders(orders, el){
   var openIds=[];
   el.querySelectorAll('.ord-detail.open').forEach(function(d){ openIds.push(d.id); });
   var doneSecOpen=document.getElementById('doneSec')&&document.getElementById('doneSec').style.display!=='none';
+  // Save TTN input values being currently typed and active element id
+  var ttnSaved={};
+  el.querySelectorAll('[id^="ttn-"]').forEach(function(inp){ ttnSaved[inp.id]=inp.value; });
+  var activeElId=(document.activeElement&&document.activeElement.id)||'';
   var doneIds=new Set(JSON.parse(localStorage.getItem('ns_done_orders')||'[]').map(String));
   var active=orders.filter(function(o){ return !doneIds.has(String(o._id)); });
   var done=orders.filter(function(o){ return doneIds.has(String(o._id)); });
@@ -1224,6 +1228,16 @@ function displayOrders(orders, el){
     if(d){ d.classList.add('open'); if(ar) ar.textContent='▲'; }
   });
   if(doneSecOpen){ var ds=document.getElementById('doneSec'); if(ds) ds.style.display='block'; }
+  // Restore TTN input values (prevents auto-poll from erasing what user is typing)
+  Object.keys(ttnSaved).forEach(function(tid){
+    var tinp=document.getElementById(tid);
+    if(tinp) tinp.value=ttnSaved[tid];
+  });
+  // Restore focus if user was typing in a TTN field
+  if(activeElId&&activeElId.indexOf('ttn-')===0){
+    var aEl=document.getElementById(activeElId);
+    if(aEl){ aEl.focus(); try{ aEl.setSelectionRange(aEl.value.length,aEl.value.length); }catch(e){} }
+  }
 }
 
 function toggleOrd(uid){
@@ -1269,7 +1283,12 @@ function unmarkDone(id){
   var ids=JSON.parse(localStorage.getItem('ns_done_orders')||'[]').map(String);
   ids=ids.filter(function(x){return x!==String(id);});
   localStorage.setItem('ns_done_orders',JSON.stringify(ids));
-  if(_ordCache) displayOrders(_ordCache,document.getElementById('ordList'));
+  API.patchOrder(id,{status:'processing'}).catch(function(){});
+  if(_ordCache){
+    var o=_ordCache.find(function(x){return String(x._id)===String(id);});
+    if(o) o.status='processing';
+    displayOrders(_ordCache,document.getElementById('ordList'));
+  }
   toast('Замовлення відновлено в активні');
 }
 async function deleteOrder(id){
