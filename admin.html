@@ -653,7 +653,10 @@ function showTab(name){
     document.getElementById('btn-'+t).classList.toggle('active', t===name);
   });
   if(name==='stats')    loadStats();
-  if(name==='products'){ buildFilterBar(); renderProducts(); }
+  if(name==='products'){
+    buildFilterBar(); renderProducts();
+    API.getProducts().then(function(list){ _products=list; updateBadges(); buildFilterBar(); renderProducts(); }).catch(function(){});
+  }
   if(name==='cats')     renderCats();
   if(name==='orders')   { startOrderPoll(); renderOrders(false); }
   else                  stopOrderPoll();
