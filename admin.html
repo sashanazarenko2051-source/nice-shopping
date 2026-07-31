@@ -3,6 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
 <title>Адмін — Nice Shopping</title>
 <script>try{if(localStorage.getItem('ns_admin_token'))document.documentElement.setAttribute('data-auth','1');}catch(e){}</script>
 <style>
@@ -299,6 +301,7 @@ nav{flex:1;padding:6px}
     <a href="index.html" target="_blank" class="sb-link">↗ Відкрити сайт</a>
     <a href="catalog.html" target="_blank" class="sb-link">↗ Каталог</a>
     <button class="sb-link" onclick="doRefresh()">↻ Оновити сторінку</button>
+    <button class="sb-link" onclick="doRestore()">☁️ Відновити з Gist</button>
     <button class="sb-link" onclick="doDebug()">🔍 Стан системи</button>
     <button class="sb-logout" onclick="doLogout()">Вийти з панелі</button>
   </div>
@@ -525,7 +528,7 @@ nav{flex:1;padding:6px}
 
 <div id="toast"></div>
 
-<script src="js/api.js?v=4"></script>
+<script src="js/api.js?v=5"></script>
 <script>
 /* ── STATE ── */
 var _products = [];
@@ -636,6 +639,18 @@ async function doDebug(){
       +'Gist власник: sashanazarenko2051-source';
     alert(msg);
   }catch(e){ alert('❌ Помилка: '+e.message); }
+}
+async function doRestore(){
+  if(!confirm('Завантажити товари, замовлення та відгуки з резервної копії (Gist)?')) return;
+  toast('⏳ Відновлення...');
+  try{
+    var d=await API.restoreFromGist();
+    var msg='✅ Відновлено:\n  Товарів: '+(d.products>=0?d.products:'❌ помилка')+'\n  Замовлень: '+(d.orders>=0?d.orders:'❌ помилка')+'\n  Відгуків: '+(d.reviews>=0?d.reviews:'❌ помилка');
+    alert(msg);
+    try{ _products=await API.getProducts(); }catch(e){ _products=[]; }
+    updateBadges(); buildFilterBar(); renderProducts();
+    if(_ordCache!==null){ _ordCache=null; renderOrders(false); }
+  }catch(e){ toast('❌ Помилка відновлення: '+(e.message||e)); }
 }
 
 async function showAdmin(){
