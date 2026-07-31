@@ -611,6 +611,7 @@ async def create_order(req: Request, background_tasks: BackgroundTasks):
     conn.execute("INSERT INTO orders (data) VALUES (?)", (json.dumps(body, ensure_ascii=False),))
 
     # Decrement stock for each ordered item
+    _updated_prods = None
     if items:
         prod_rows = conn.execute("SELECT id, data FROM products").fetchall()
         updated = False
@@ -629,9 +630,8 @@ async def create_order(req: Request, background_tasks: BackgroundTasks):
                     updated = True
                     break
         if updated:
-            all_products = [json.loads(r["data"]) for r in
-                            conn.execute("SELECT data FROM products ORDER BY id ASC").fetchall()]
-            background_tasks.add_task(_gist_save_fast, all_products)
+            _updated_prods = [json.loads(r["data"]) for r in
+                              conn.execute("SELECT data FROM products ORDER BY id ASC").fetchall()]
 
     conn.commit()
     conn.close()
@@ -642,6 +642,12 @@ async def create_order(req: Request, background_tasks: BackgroundTasks):
         await asyncio.wait_for(loop.run_in_executor(_backup_executor, _backup_orders), timeout=8)
     except Exception as e:
         print(f"[Backup] Orders backup error (order saved to DB): {e}")
+    # Backup decremented stock synchronously — prevents losing stock changes if server restarts
+    if _updated_prods is not None:
+        try:
+            await asyncio.wait_for(loop.run_in_executor(_backup_executor, _gist_save_fast, _updated_prods), timeout=5)
+        except Exception as e:
+            print(f"[Backup] Products stock backup error: {e}")
     # Telegram notification — build message then send synchronously in thread pool
     # (not as background task, so it runs before response and is guaranteed to complete)
     _tg_msg = None
@@ -731,9 +737,10 @@ def track_order(phone: str = ""):
     return result
 
 @app.delete("/api/orders/{oid}")
-def delete_order_api(oid: int, background_tasks: BackgroundTasks,
-                     token: str = Depends(require_admin)):
+async def delete_order_api(oid: int, background_tasks: BackgroundTasks,
+                           token: str = Depends(require_admin)):
     conn = get_db()
+    _restore_prods = None
     # Restore stock before deleting
     row = conn.execute("SELECT data FROM orders WHERE id = ?", (oid,)).fetchone()
     if row:
@@ -757,12 +764,18 @@ def delete_order_api(oid: int, background_tasks: BackgroundTasks,
                         updated = True
                         break
             if updated:
-                all_products = [json.loads(r["data"]) for r in
-                                conn.execute("SELECT data FROM products ORDER BY id ASC").fetchall()]
-                background_tasks.add_task(_gist_save_fast, all_products)
+                _restore_prods = [json.loads(r["data"]) for r in
+                                  conn.execute("SELECT data FROM products ORDER BY id ASC").fetchall()]
     conn.execute("DELETE FROM orders WHERE id = ?", (oid,))
     conn.commit(); conn.close()
-    background_tasks.add_task(_backup_orders)  # fire-and-forget is fine for delete
+    loop = asyncio.get_running_loop()
+    background_tasks.add_task(_backup_orders)
+    # Save restored stock synchronously so it persists through server restarts
+    if _restore_prods is not None:
+        try:
+            await asyncio.wait_for(loop.run_in_executor(_backup_executor, _gist_save_fast, _restore_prods), timeout=5)
+        except Exception as e:
+            print(f"[Backup] Products restore backup error: {e}")
     return {"ok": True}
 
 # ── Reviews ───────────────────────────────────────────────
