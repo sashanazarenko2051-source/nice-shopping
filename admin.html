@@ -487,6 +487,22 @@ nav{flex:1;padding:6px}
   </div>
 </div>
 
+<!-- TTN HELPER MODAL -->
+<div id="ttnModal" class="moverlay" onclick="if(event.target===this)closeTTNModal()" style="align-items:center;justify-content:center">
+  <div class="mbox" style="width:480px;max-width:95vw">
+    <div class="mhdr">
+      <div class="mtitle">📦 Дані для ТТН</div>
+      <button class="btn-sm" onclick="closeTTNModal()">✕</button>
+    </div>
+    <div id="ttnHelperBody" style="display:flex;flex-direction:column;gap:10px"></div>
+    <div style="margin-top:16px;display:flex;gap:8px;flex-wrap:wrap">
+      <a id="ttnLinkNP" href="https://my.novaposhta.ua/orders/createENByShablonConsignmentForm/" target="_blank" class="btn-green" style="font-size:.8rem;flex:1;justify-content:center">🟡 Кабінет Нової Пошти</a>
+      <a id="ttnLinkUP" href="https://cabinet.ukrposhta.ua/" target="_blank" class="btn-out" style="font-size:.8rem;flex:1;justify-content:center">🔵 Кабінет Укрпошти</a>
+    </div>
+    <button class="btn-out" style="width:100%;margin-top:8px;font-size:.78rem" onclick="copyAllTTN()">📋 Копіювати все одним текстом</button>
+  </div>
+</div>
+
 <!-- CATEGORY MODAL -->
 <div id="catModal" class="moverlay" onclick="if(event.target===this)closeCatForm()">
   <div class="mbox">
@@ -1186,6 +1202,7 @@ function displayOrders(orders, el){
           '<input id="ttn-'+o._id+'" class="iinp" style="width:160px;font-size:.8rem" placeholder="20450000000000" value="'+esc(o.ttn||'')+'">'+
           '<button onclick="saveTTN('+o._id+')" class="btn-sm primary" style="font-size:.72rem">Зберегти</button>'+
           (o.ttn?'<a href="'+(o.deliveryType==='ukr'?'https://track.ukrposhta.ua/tracking_UA.html?barcode=':'https://novaposhta.ua/tracking/?cargo_number=')+esc(o.ttn)+'" target="_blank" class="btn-sm" style="font-size:.72rem">🔗 Трекінг</a>':'')+
+          (isDone?'<button onclick="openTTNHelper('+o._id+')" class="btn-sm" style="font-size:.72rem;margin-left:auto;border-color:rgba(74,222,128,.3);color:var(--green)">📋 Дані для ТТН</button>':'')+
         '</div>'+
         '<div class="ord-footer">'+
           (isDone
@@ -1372,6 +1389,63 @@ async function deleteReview(id){
   }catch(e){
     toast('❌ Помилка: '+(e.message||e));
   }
+}
+
+/* ── TTN HELPER ── */
+var _ttnOrderId=null;
+function openTTNHelper(id){
+  _ttnOrderId=id;
+  var o=_ordCache?_ordCache.find(function(x){return String(x._id)===String(id);}):null;
+  if(!o){ toast('Замовлення не знайдено'); return; }
+  var name=((o.firstName||'')+' '+(o.lastName||'')).trim()||'—';
+  var phone=o.phone||'—';
+  var city=o.city||'—';
+  var branch=o.branch||'—';
+  var payment=({cod:'Накладений платіж',prepay:'Передоплата'})[o.payment]||o.payment||'—';
+  var delivery=o.deliveryType==='ukr'?'Укрпошта':'Нова Пошта';
+  var itemsList=(o.items||[]).map(function(it){
+    return it.name+(it.size?' ('+it.size+(it.color?', '+it.color:'')+')'':'')+'  ×'+( it.qty||1);
+  }).join('\n');
+  var total=(o.total||0)+' грн';
+  var fields=[
+    {label:'ПІБ отримувача',val:name},
+    {label:'Телефон',val:phone},
+    {label:'Місто',val:city},
+    {label:'Відділення / адреса',val:branch},
+    {label:'Спосіб доставки',val:delivery},
+    {label:'Оплата',val:payment},
+    {label:'Оголошена вартість',val:total},
+    {label:'Товари',val:itemsList,multi:true},
+  ];
+  var body=document.getElementById('ttnHelperBody');
+  body.innerHTML=fields.map(function(f){
+    return '<div style="background:#0a1a0c;border:1px solid rgba(74,222,128,.12);border-radius:8px;padding:10px 12px">'+
+      '<div style="font-size:.65rem;color:var(--dim);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px">'+esc(f.label)+'</div>'+
+      '<div style="display:flex;gap:8px;align-items:'+(f.multi?'flex-start':'center')+'">'+
+        '<div style="flex:1;font-size:.88rem;'+(f.multi?'white-space:pre-wrap;font-size:.78rem':'white-space:nowrap;overflow:hidden;text-overflow:ellipsis')+'">'+esc(f.val)+'</div>'+
+        '<button onclick="copyField(\''+esc(f.val).replace(/'/g,'&#39;')+'\')" class="btn-sm primary" style="flex-shrink:0;font-size:.7rem;padding:4px 10px">Копіювати</button>'+
+      '</div>'+
+    '</div>';
+  }).join('');
+  document.getElementById('ttnModal').classList.add('open');
+}
+function closeTTNModal(){
+  document.getElementById('ttnModal').classList.remove('open');
+  _ttnOrderId=null;
+}
+function copyField(text){
+  var t=text.replace(/&amp;/g,'&').replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&quot;/g,'"').replace(/&#39;/g,"'");
+  navigator.clipboard.writeText(t).then(function(){ toast('✅ Скопійовано'); }).catch(function(){
+    var ta=document.createElement('textarea'); ta.value=t; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta); toast('✅ Скопійовано');
+  });
+}
+function copyAllTTN(){
+  var o=_ordCache?_ordCache.find(function(x){return String(x._id)===String(_ttnOrderId);}):null;
+  if(!o) return;
+  var name=((o.firstName||'')+' '+(o.lastName||'')).trim()||'—';
+  var items=(o.items||[]).map(function(it){ return '• '+it.name+(it.size?' ('+it.size+(it.color?', '+it.color:'')+')'':'')+'  ×'+(it.qty||1); }).join('\n');
+  var text='ПІБ: '+name+'\nТелефон: '+(o.phone||'—')+'\nМісто: '+(o.city||'—')+'\nВідділення: '+(o.branch||'—')+'\nДоставка: '+(o.deliveryType==='ukr'?'Укрпошта':'Нова Пошта')+'\nОплата: '+(({cod:'Накладений платіж',prepay:'Передоплата'})[o.payment]||o.payment||'—')+'\nСума: '+(o.total||0)+' грн\n\nТовари:\n'+items;
+  copyField(text);
 }
 
 /* ── INIT ── */
