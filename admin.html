@@ -742,7 +742,7 @@ function renderStatsTable(soldMap){
     var hasCost=p.purchasePrice!=null&&p.purchasePrice!=='';
     var cost=hasCost?Number(p.purchasePrice):null;
     var prof=hasCost?Math.round(((p.price||0)-cost)*100)/100:null;
-    var sc=stock===0?'color:#f87171':stock<=3?'color:#fbbf24':'color:#4ade80';
+    var sc=stock===0?'color:#f87171':sold>0?'color:#fbbf24':'color:#4ade80';
     var pc=prof!=null?(prof>=0?'color:#4ade80':'color:#f87171'):'color:var(--dim)';
     var soldStyle=sold>0?'color:#4ade80;font-weight:700':'color:var(--dim)';
     return '<tr'+(sold>0?' style="background:rgba(74,222,128,.03)"':'')+'>'+
