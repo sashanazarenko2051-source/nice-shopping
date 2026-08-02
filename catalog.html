@@ -17,62 +17,83 @@
     .filter-reset{font-size:.72rem;color:var(--gray);border-bottom:1px solid currentColor;cursor:pointer;transition:color .15s;padding-bottom:1px}
     .filter-reset:hover{color:#f87171}
     /* ── Filter tags vertical on desktop ── */
-    .filter-tags{display:flex;flex-direction:column;gap:3px}
+    .filter-tags{display:flex;flex-direction:column;gap:4px}
     .filter-tag{
       display:flex;align-items:center;justify-content:space-between;
-      padding:8px 12px;border:1.5px solid var(--border);border-radius:10px;
-      font-size:.8rem;cursor:pointer;transition:all .18s;
-      background:transparent;color:var(--gray);text-align:left;width:100%;
-      position:relative;overflow:hidden;
+      padding:9px 12px 9px 14px;
+      border:1.5px solid transparent;border-radius:10px;
+      font-size:.8rem;cursor:pointer;transition:all .2s;
+      text-align:left;width:100%;position:relative;font-weight:500;
     }
-    .filter-tag::before{
-      content:'';position:absolute;left:0;top:0;bottom:0;width:3px;
-      border-radius:0 2px 2px 0;opacity:0;transition:opacity .18s;
-    }
-    .filter-tag:hover{border-color:var(--border-h);color:var(--dark);background:rgba(255,255,255,.04)}
-    .filter-tag:hover::before{opacity:.6}
-    .filter-tag.active{font-weight:600}
     .filter-tag .ftag-cnt{font-size:.68rem;opacity:.45;margin-left:4px;font-weight:400}
+    .filter-tag:hover{filter:brightness(1.15);transform:translateX(2px)}
+    .filter-tag.active{font-weight:700;transform:translateX(3px)}
 
-    /* ── Category colours ── */
-    [data-cat="all"].active{border-color:rgba(139,92,246,.6);background:rgba(139,92,246,.14);color:#c4b5fd}
-    [data-cat="all"].active::before{background:#8b5cf6;opacity:1}
-    [data-cat="bras"]{--cc:210,70%,60%}
-    [data-cat="bras"].active{border-color:hsla(var(--cc),.6);background:hsla(var(--cc),.1);color:hsl(var(--cc))}
-    [data-cat="bras"].active::before{background:hsl(var(--cc));opacity:1}
-    [data-cat="lingerie"][data-gender="women"]{--cc:330,80%,65%}
-    [data-cat="lingerie"][data-gender="women"].active{border-color:hsla(var(--cc),.6);background:hsla(var(--cc),.1);color:hsl(var(--cc))}
-    [data-cat="lingerie"][data-gender="women"].active::before{background:hsl(var(--cc));opacity:1}
-    [data-cat="winter"][data-gender="women"]{--cc:190,75%,55%}
-    [data-cat="winter"][data-gender="women"].active{border-color:hsla(var(--cc),.6);background:hsla(var(--cc),.1);color:hsl(var(--cc))}
-    [data-cat="winter"][data-gender="women"].active::before{background:hsl(var(--cc));opacity:1}
-    [data-cat="summer"][data-gender="women"]{--cc:145,65%,55%}
-    [data-cat="summer"][data-gender="women"].active{border-color:hsla(var(--cc),.6);background:hsla(var(--cc),.1);color:hsl(var(--cc))}
-    [data-cat="summer"][data-gender="women"].active::before{background:hsl(var(--cc));opacity:1}
-    [data-cat="stockings"]{--cc:280,70%,65%}
-    [data-cat="stockings"].active{border-color:hsla(var(--cc),.6);background:hsla(var(--cc),.1);color:hsl(var(--cc))}
-    [data-cat="stockings"].active::before{background:hsl(var(--cc));opacity:1}
-    [data-cat="tshirts"][data-gender="women"]{--cc:25,90%,60%}
-    [data-cat="tshirts"][data-gender="women"].active{border-color:hsla(var(--cc),.6);background:hsla(var(--cc),.1);color:hsl(var(--cc))}
-    [data-cat="tshirts"][data-gender="women"].active::before{background:hsl(var(--cc));opacity:1}
-    [data-cat="peignoirs"]{--cc:350,75%,62%}
-    [data-cat="peignoirs"].active{border-color:hsla(var(--cc),.6);background:hsla(var(--cc),.1);color:hsl(var(--cc))}
-    [data-cat="peignoirs"].active::before{background:hsl(var(--cc));opacity:1}
-    [data-cat="jewelry"]{--cc:45,90%,58%}
-    [data-cat="jewelry"].active{border-color:hsla(var(--cc),.6);background:hsla(var(--cc),.1);color:hsl(var(--cc))}
-    [data-cat="jewelry"].active::before{background:hsl(var(--cc));opacity:1}
-    [data-cat="lingerie"][data-gender="men"]{--cc:215,65%,60%}
-    [data-cat="lingerie"][data-gender="men"].active{border-color:hsla(var(--cc),.6);background:hsla(var(--cc),.1);color:hsl(var(--cc))}
-    [data-cat="lingerie"][data-gender="men"].active::before{background:hsl(var(--cc));opacity:1}
-    [data-cat="tshirts"][data-gender="men"]{--cc:168,60%,52%}
-    [data-cat="tshirts"][data-gender="men"].active{border-color:hsla(var(--cc),.6);background:hsla(var(--cc),.1);color:hsl(var(--cc))}
-    [data-cat="tshirts"][data-gender="men"].active::before{background:hsl(var(--cc));opacity:1}
-    [data-cat="winter"][data-gender="men"]{--cc:200,70%,55%}
-    [data-cat="winter"][data-gender="men"].active{border-color:hsla(var(--cc),.6);background:hsla(var(--cc),.1);color:hsl(var(--cc))}
-    [data-cat="winter"][data-gender="men"].active::before{background:hsl(var(--cc));opacity:1}
-    [data-cat="summer"][data-gender="men"]{--cc:120,55%,52%}
-    [data-cat="summer"][data-gender="men"].active{border-color:hsla(var(--cc),.6);background:hsla(var(--cc),.1);color:hsl(var(--cc))}
-    [data-cat="summer"][data-gender="men"].active::before{background:hsl(var(--cc));opacity:1}
+    /* ── Category colours (always visible) ── */
+    [data-cat="all"]{
+      background:rgba(139,92,246,.12);border-color:rgba(139,92,246,.3);color:#c4b5fd;
+    }
+    [data-cat="all"].active{background:rgba(139,92,246,.22);border-color:rgba(139,92,246,.6);color:#ddd6fe}
+
+    [data-cat="bras"]{
+      background:rgba(96,165,250,.1);border-color:rgba(96,165,250,.28);color:#93c5fd;
+    }
+    [data-cat="bras"].active{background:rgba(96,165,250,.2);border-color:rgba(96,165,250,.55);color:#bfdbfe}
+
+    [data-cat="lingerie"][data-gender="women"]{
+      background:rgba(244,114,182,.1);border-color:rgba(244,114,182,.28);color:#f9a8d4;
+    }
+    [data-cat="lingerie"][data-gender="women"].active{background:rgba(244,114,182,.2);border-color:rgba(244,114,182,.55);color:#fbcfe8}
+
+    [data-cat="winter"][data-gender="women"]{
+      background:rgba(34,211,238,.1);border-color:rgba(34,211,238,.25);color:#67e8f9;
+    }
+    [data-cat="winter"][data-gender="women"].active{background:rgba(34,211,238,.2);border-color:rgba(34,211,238,.5);color:#a5f3fc}
+
+    [data-cat="summer"][data-gender="women"]{
+      background:rgba(52,211,153,.1);border-color:rgba(52,211,153,.25);color:#6ee7b7;
+    }
+    [data-cat="summer"][data-gender="women"].active{background:rgba(52,211,153,.2);border-color:rgba(52,211,153,.5);color:#a7f3d0}
+
+    [data-cat="stockings"]{
+      background:rgba(192,132,252,.1);border-color:rgba(192,132,252,.28);color:#d8b4fe;
+    }
+    [data-cat="stockings"].active{background:rgba(192,132,252,.2);border-color:rgba(192,132,252,.55);color:#ede9fe}
+
+    [data-cat="tshirts"][data-gender="women"]{
+      background:rgba(251,146,60,.1);border-color:rgba(251,146,60,.28);color:#fdba74;
+    }
+    [data-cat="tshirts"][data-gender="women"].active{background:rgba(251,146,60,.2);border-color:rgba(251,146,60,.55);color:#fed7aa}
+
+    [data-cat="peignoirs"]{
+      background:rgba(251,113,133,.1);border-color:rgba(251,113,133,.28);color:#fda4af;
+    }
+    [data-cat="peignoirs"].active{background:rgba(251,113,133,.2);border-color:rgba(251,113,133,.55);color:#fecdd3}
+
+    [data-cat="jewelry"]{
+      background:rgba(251,191,36,.1);border-color:rgba(251,191,36,.28);color:#fcd34d;
+    }
+    [data-cat="jewelry"].active{background:rgba(251,191,36,.2);border-color:rgba(251,191,36,.55);color:#fde68a}
+
+    [data-cat="lingerie"][data-gender="men"]{
+      background:rgba(99,179,237,.1);border-color:rgba(99,179,237,.25);color:#90cdf4;
+    }
+    [data-cat="lingerie"][data-gender="men"].active{background:rgba(99,179,237,.2);border-color:rgba(99,179,237,.5);color:#bee3f8}
+
+    [data-cat="tshirts"][data-gender="men"]{
+      background:rgba(52,211,153,.08);border-color:rgba(52,211,153,.22);color:#6ee7b7;
+    }
+    [data-cat="tshirts"][data-gender="men"].active{background:rgba(52,211,153,.18);border-color:rgba(52,211,153,.48);color:#a7f3d0}
+
+    [data-cat="winter"][data-gender="men"]{
+      background:rgba(56,189,248,.1);border-color:rgba(56,189,248,.25);color:#7dd3fc;
+    }
+    [data-cat="winter"][data-gender="men"].active{background:rgba(56,189,248,.2);border-color:rgba(56,189,248,.5);color:#bae6fd}
+
+    [data-cat="summer"][data-gender="men"]{
+      background:rgba(74,222,128,.08);border-color:rgba(74,222,128,.22);color:#86efac;
+    }
+    [data-cat="summer"][data-gender="men"].active{background:rgba(74,222,128,.18);border-color:rgba(74,222,128,.48);color:#bbf7d0}
     /* ── Price range ── */
     .price-range{display:flex;align-items:center;gap:8px}
     .price-inp{width:72px;padding:7px 9px;border:1.5px solid var(--border);border-radius:8px;font-size:.8rem;background:rgba(139,92,246,.04);color:var(--dark);outline:none;font-family:inherit;transition:border-color .18s}
