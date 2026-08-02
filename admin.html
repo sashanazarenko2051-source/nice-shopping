@@ -160,7 +160,7 @@ nav{flex:1;padding:6px}
 .ls-item:last-child{border-bottom:none}
 
 /* ── CHART ── */
-.chart-wrap{display:flex;align-items:flex-end;gap:6px;height:100px}
+.chart-wrap{display:flex;align-items:flex-end;gap:6px;height:110px}
 .bcol{display:flex;flex-direction:column;align-items:center;flex:1;height:100%;gap:3px}
 .bval{font-size:.62rem;color:var(--dim)}
 .bbg{flex:1;width:100%;background:rgba(74,222,128,.06);border-radius:4px;display:flex;align-items:flex-end}
@@ -856,12 +856,13 @@ async function loadStats(){
 }
 
 function renderChart(visits){
+  var dn=['Нд','Пн','Вт','Ср','Чт','Пт','Сб'];
   var days=[];
-  for(var i=6;i>=0;i--){ var d=new Date(); d.setDate(d.getDate()-i); var k=d.toISOString().split('T')[0]; days.push({l:d.getDate()+'.'+(d.getMonth()+1),n:visits[k]||0}); }
+  for(var i=6;i>=0;i--){ var d=new Date(); d.setDate(d.getDate()-i); var k=d.toISOString().split('T')[0]; days.push({l:d.getDate()+'.'+(d.getMonth()+1),w:dn[d.getDay()],n:visits[k]||0}); }
   var max=Math.max.apply(null,days.map(function(d){return d.n;}))||1;
   document.getElementById('chart').innerHTML=days.map(function(d){
     var pct=Math.round((d.n/max)*100);
-    return '<div class="bcol"><div class="bval">'+(d.n||'')+'</div><div class="bbg"><div class="bfill" style="height:'+pct+'%"></div></div><div class="blbl">'+d.l+'</div></div>';
+    return '<div class="bcol"><div class="bval">'+(d.n||'')+'</div><div class="bbg"><div class="bfill" style="height:'+pct+'%"></div></div><div class="blbl">'+d.w+'</div><div class="blbl" style="opacity:.5">'+d.l+'</div></div>';
   }).join('');
 }
 
