@@ -68,7 +68,20 @@ function showToast(message, type) {
 
 var _cardColors = {};
 
+function getWishlist() {
+  try { return JSON.parse(localStorage.getItem('ns_wishlist')) || []; } catch(e) { return []; }
+}
+function toggleWishlist(pid, el) {
+  var list = getWishlist();
+  var idx = list.indexOf(pid);
+  if (idx === -1) { list.push(pid); el.classList.add('active'); el.textContent = '♥'; el.title = 'В вибраних'; }
+  else { list.splice(idx, 1); el.classList.remove('active'); el.textContent = '♡'; el.title = 'Додати до вибраних'; }
+  localStorage.setItem('ns_wishlist', JSON.stringify(list));
+}
+
 function renderProductCard(product) {
+  var isOos = product.stock != null && product.stock === 0;
+  var liked = getWishlist().indexOf(product.id) !== -1;
   var discount = product.oldPrice ? Math.round((1 - product.price / product.oldPrice) * 100) : null;
   var fullStars = Math.round(product.rating);
   var stars = '★'.repeat(fullStars) + '☆'.repeat(5 - fullStars);
@@ -77,10 +90,9 @@ function renderProductCard(product) {
   var isData = imgSrc && imgSrc.indexOf('data:') === 0;
   var imgHtml = imgSrc
     ? '<img src="' + imgSrc + '" alt="' + displayName + '"' + (isData ? '' : ' loading="lazy"') + ' onerror="this.onerror=null;this.style.display=\'none\'">'
-    : '<div style="width:100%;height:100%;background:linear-gradient(135deg,#f0e8e8,#e0d0d0)"></div>';
+    : '<div style="width:100%;height:100%;background:linear-gradient(135deg,var(--card2),var(--card))"></div>';
   var quickLabel = (window.i18n && window.i18n('quick.add')) || 'Швидко додати';
 
-  // Color swatches for catalog cards
   var colorsHtml = '';
   if (product.colors && product.colors.length > 1) {
     var selectedColor = _cardColors[product.id] || product.colors[0].name;
@@ -96,24 +108,34 @@ function renderProductCard(product) {
   var selColor = _cardColors[product.id] || (product.colors && product.colors.length ? product.colors[0].name : '');
   if (selColor) productUrl += '&color=' + encodeURIComponent(selColor);
 
-  return '<div class="product-card">' +
+  var wishBtn = '<button class="wishlist-btn' + (liked ? ' active' : '') + '" onclick="event.preventDefault();toggleWishlist(' + product.id + ',this)" title="' + (liked ? 'В вибраних' : 'Додати до вибраних') + '">' + (liked ? '♥' : '♡') + '</button>';
+
+  var stockHtml = '';
+  if (product.stock != null) {
+    var s = product.stock;
+    var cls = s === 0 ? ' out' : s <= 3 ? ' limited' : '';
+    var lbl = s === 0 ? ('❌ ' + (window.i18n('stock.out') || 'Немає в наявності')) : s <= 3 ? '⚡ Обмежена кількість' : ('✅ ' + (window.i18n('stock.in') || 'В наявності'));
+    stockHtml = '<div class="product-card__stock' + cls + '">' + lbl + '</div>';
+    if (s === 0) stockHtml += '<button class="oos-notify" onclick="showToast(\'🔔 Ми сповістимо вас як тільки товар з\'явиться!\')">Сповістити про наявність</button>';
+  }
+
+  return '<div class="product-card' + (isOos ? ' product-card--oos' : '') + '">' +
     '<div class="product-card__img-wrap">' +
+      wishBtn +
       '<a href="' + productUrl + '">' + imgHtml + '</a>' +
       (discount ? '<span class="badge-sale">-' + discount + '%</span>' : '') +
-      '<div class="product-card__quick" onclick="quickAdd(' + product.id + ')">' + quickLabel + '</div>' +
+      (!isOos ? '<div class="product-card__quick" onclick="quickAdd(' + product.id + ')">' + quickLabel + '</div>' : '') +
     '</div>' +
-    '<div class="product-card__name"><a href="' + productUrl + '">' + displayName + '</a></div>' +
-    colorsHtml +
-    '<div class="product-card__prices">' +
-      '<span class="price">' + CONFIG.currency + product.price + '</span>' +
-      (product.oldPrice ? '<span class="price-old">' + CONFIG.currency + product.oldPrice + '</span>' : '') +
+    '<div class="product-card__body">' +
+      '<div class="product-card__name"><a href="' + productUrl + '">' + displayName + '</a></div>' +
+      colorsHtml +
+      '<div class="product-card__prices">' +
+        '<span class="price">' + CONFIG.currency + product.price + '</span>' +
+        (product.oldPrice ? '<span class="price-old">' + CONFIG.currency + product.oldPrice + '</span>' : '') +
+      '</div>' +
+      '<div class="product-card__rating"><span class="stars">' + stars + '</span><span class="reviews">(' + product.reviews + ')</span></div>' +
+      stockHtml +
     '</div>' +
-    '<div class="product-card__rating"><span class="stars">' + stars + '</span><span class="reviews">(' + product.reviews + ')</span></div>' +
-    (product.stock != null ? (function(s){
-      var cls = s === 0 ? ' out' : s <= 3 ? ' limited' : '';
-      var lbl = s === 0 ? ('❌ ' + window.i18n('stock.out')) : s <= 3 ? ('⚡ Обмежена кількість') : ('✅ ' + window.i18n('stock.in'));
-      return '<div class="product-card__stock' + cls + '">' + lbl + '</div>';
-    })(product.stock) : '') +
   '</div>';
 }
 

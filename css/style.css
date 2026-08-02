@@ -101,9 +101,24 @@ select{font-family:inherit}
 .product-card__rating{display:flex;align-items:center;gap:4px}
 .stars{color:#fbbf24;font-size:.75rem}
 .reviews{color:var(--gray);font-size:.75rem}
+.product-card__body{padding:10px 14px 14px}
 .product-card__stock{font-size:.72rem;font-weight:600;color:#4ade80;margin-top:5px}
 .product-card__stock.out{color:#f87171}
 .product-card__stock.limited{color:#fbbf24}
+/* Out-of-stock card */
+.product-card--oos{opacity:.52;filter:grayscale(.15)}
+.product-card--oos:hover{opacity:.78;filter:none}
+/* Wishlist heart */
+.wishlist-btn{position:absolute;top:10px;right:10px;width:34px;height:34px;border-radius:50%;background:rgba(8,7,18,.72);backdrop-filter:blur(8px);border:1px solid rgba(139,92,246,.22);color:rgba(236,234,248,.55);font-size:1.05rem;display:flex;align-items:center;justify-content:center;z-index:2;transition:all .18s;line-height:1;flex-shrink:0}
+.wishlist-btn:hover{background:rgba(248,113,113,.18);border-color:rgba(248,113,113,.45);color:#f87171;transform:scale(1.12)}
+.wishlist-btn.active{background:rgba(248,113,113,.15);border-color:rgba(248,113,113,.42);color:#f87171}
+/* Notify me (OOS) */
+.oos-notify{display:block;width:100%;text-align:center;padding:6px;font-size:.72rem;color:rgba(139,92,246,.85);border:none;border-top:1px solid rgba(139,92,246,.1);cursor:pointer;transition:all .15s;background:none;font-family:inherit}
+.oos-notify:hover{background:rgba(139,92,246,.08);color:rgba(196,181,253,.95)}
+/* Catalog search */
+.cat-search{width:100%;padding:8px 12px;border:1.5px solid var(--border);border-radius:var(--r);font-size:.875rem;background:rgba(139,92,246,.04);color:var(--dark);outline:none;transition:border-color var(--tr);font-family:var(--font)}
+.cat-search::placeholder{color:var(--gray)}
+.cat-search:focus{border-color:var(--border-h)}
 
 /* ─── Product Detail ─── */
 .product-detail{padding:48px 0}
@@ -200,7 +215,7 @@ select{font-family:inherit}
 .color-swatch{width:28px;height:28px;border-radius:50%;cursor:pointer;border:3px solid rgba(255,255,255,.15);transition:all .2s;flex-shrink:0;box-shadow:0 1px 4px rgba(0,0,0,.5)}
 .color-swatch:hover{transform:scale(1.12)}
 .color-swatch.active{border-color:#8b5cf6;transform:scale(1.12);box-shadow:0 0 0 2px #8b5cf6}
-.card-colors{display:flex;flex-wrap:wrap;gap:5px;padding:8px 12px 2px}
+.card-colors{display:flex;flex-wrap:wrap;gap:5px;padding:4px 0 6px}
 .card-swatch{width:16px;height:16px;border-radius:50%;cursor:pointer;border:2px solid rgba(255,255,255,.15);transition:all .15s;flex-shrink:0}
 .card-swatch.active{border-color:#8b5cf6;transform:scale(1.2)}
 .color-swatch-label{font-size:.82rem;color:var(--gray);margin-bottom:14px}

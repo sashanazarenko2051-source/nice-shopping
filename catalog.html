@@ -11,55 +11,19 @@
   <link rel="icon" type="image/svg+xml" href="favicon.svg">
   <link rel="preload" href="/api/products" as="fetch" crossorigin>
   <style>
-    .catalog-page { padding: 40px 0 80px; }
-    .catalog-grid { display: grid; grid-template-columns: 256px 1fr; gap: 40px; align-items: start; }
-
-    /* Sidebar */
-    .filters { position: sticky; top: calc(var(--hh) + 20px); background: #fff; border-radius: 20px; padding: 24px; border: 1.5px solid #e5e7eb; box-shadow: 0 2px 16px rgba(0,0,0,.05); }
-    .filter-group { margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px solid var(--border); }
-    .filter-group:last-child { margin-bottom: 0; padding-bottom: 0; border-bottom: none; }
-    .filter-group__title { font-size: .75rem; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; margin-bottom: 12px; color: #9CA3AF; }
-
-    /* Filter tags */
-    .filter-tags { display: flex; flex-direction: column; gap: 4px; }
-    .filter-tag { display: flex; align-items: center; gap: 8px; padding: 8px 12px; border: none; border-radius: 10px; font-size: .875rem; cursor: pointer; transition: all var(--tr); background: transparent; color: var(--dark); text-align: left; width: 100%; }
-    .filter-tag:hover { background: #F3F4F6; }
-    .filter-tag.active { background: #111; color: #fff; font-weight: 500; }
-    .filter-tag::before { content: ''; width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; background: #D1D5DB; transition: background var(--tr); }
-    .filter-tag[data-cat="all"]::before { display: none; }
-    .filter-tag[data-cat="lingerie"][data-gender="women"]::before { background: #8b5cf6; }
-    .filter-tag[data-cat="lingerie"][data-gender="men"]::before { background: #10b981; }
-    .filter-tag[data-cat="bras"]::before { background: #f43f5e; }
-    .filter-tag[data-cat="winter"]::before { background: #60a5fa; }
-    .filter-tag[data-cat="summer"]::before { background: #fbbf24; }
-    .filter-tag.active::before { background: rgba(255,255,255,.6); }
-
-    /* Sort & count */
-    .catalog-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; }
-    .catalog-count { color: var(--gray); font-size: .875rem; }
-    .catalog-sort { padding: 9px 14px; border: 1.5px solid var(--border); border-radius: var(--r); font-size: .875rem; cursor: pointer; background: var(--white); color: var(--dark); transition: border-color var(--tr); }
-    .catalog-sort:focus { outline: none; border-color: #111; }
-
-    /* Grid — handled by style.css (.products__grid.catalog) */
-
     /* Empty state */
-    .catalog-empty { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 80px 24px; text-align: center; color: var(--gray); grid-column: 1/-1; }
-    .catalog-empty__icon { font-size: 3.5rem; margin-bottom: 16px; opacity: .5; }
-    .catalog-empty__title { font-size: 1.1rem; font-weight: 600; color: var(--dark); margin-bottom: 8px; }
-    .catalog-empty__sub { font-size: .9rem; line-height: 1.6; }
-
-    /* Dark mode */
-    html.dark .filters { background: #161616; border-color: #2A2A2A; box-shadow: 0 2px 16px rgba(0,0,0,.4); }
-    html.dark .filter-group__title { color: #555; }
-    html.dark .filter-tag { color: #C0C0C0; }
-    html.dark .filter-tag:hover { background: #222; }
-    html.dark .filter-tag.active { background: #E0E0E0; color: #0D0D0D; }
-    html.dark .filter-tag.active::before { background: rgba(0,0,0,.4); }
-    html.dark .catalog-sort { background: #161616; border-color: #2A2A2A; color: #E0E0E0; }
-    html.dark .catalog-sort:focus { border-color: #E0E0E0; }
-
-    @media(max-width:1024px) { .catalog-grid { grid-template-columns: 1fr; } .filters { position: static; } .filter-tags { flex-direction: row; flex-wrap: wrap; } .filter-tag { width: auto; } }
-    @keyframes spin { to { transform: rotate(360deg); } }
+    .catalog-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:80px 24px;text-align:center;color:var(--gray);grid-column:1/-1}
+    .catalog-empty__icon{font-size:3.5rem;margin-bottom:16px;opacity:.5}
+    .catalog-empty__title{font-size:1.1rem;font-weight:600;color:var(--dark);margin-bottom:8px}
+    .catalog-empty__sub{font-size:.9rem;line-height:1.6}
+    /* Filter sidebar — vertical list on desktop */
+    .filter-tags{display:flex;flex-direction:column;gap:3px}
+    @media(max-width:1024px){
+      .filter-tags{flex-direction:row;flex-wrap:nowrap;overflow-x:auto;gap:6px;padding-bottom:4px;scrollbar-width:none}
+      .filter-tags::-webkit-scrollbar{display:none}
+      .filter-tag{flex-shrink:0;white-space:nowrap;width:auto}
+    }
+    @keyframes spin{to{transform:rotate(360deg)}}
   </style>
 </head>
 <body>
@@ -96,6 +60,10 @@
   <div class="container">
     <div class="catalog-grid">
       <aside class="filters">
+        <div class="filter-group">
+          <div class="filter-group__title">Пошук</div>
+          <input type="search" id="searchInput" class="cat-search" placeholder="Назва товару..." autocomplete="off">
+        </div>
         <div class="filter-group">
           <div class="filter-group__title" data-i18n="filter.cat">Категорія</div>
           <div class="filter-tags">
@@ -168,6 +136,7 @@ var activeGender = '';
 var activePrice = 'all';
 var activeSize = '';
 var activeSort = 'default';
+var activeSearch = '';
 
 var catNames = {
   'lingerie:women':  window.i18n('filter.wl'),
@@ -237,6 +206,7 @@ function fmtCount(n) {
 }
 
 function render() {
+  var q = activeSearch.trim().toLowerCase();
   var products = PRODUCTS.filter(function(p) {
     if (activeCat !== 'all' && p.category !== activeCat) return false;
     if (activeGender && p.gender !== activeGender) return false;
@@ -245,12 +215,17 @@ function render() {
       var parts = activePrice.split('-'), mn = +parts[0], mx = +parts[1];
       if (p.price < mn || p.price > mx) return false;
     }
+    if (q && (p.name || '').toLowerCase().indexOf(q) === -1 && (p.description || '').toLowerCase().indexOf(q) === -1) return false;
     return true;
   });
   if (activeSort === 'price-asc') products.sort(function(a,b){return a.price-b.price;});
   else if (activeSort === 'price-desc') products.sort(function(a,b){return b.price-a.price;});
   else if (activeSort === 'rating') products.sort(function(a,b){return b.rating-a.rating;});
   else if (activeSort === 'discount') products = products.filter(function(p){return p.oldPrice;}).concat(products.filter(function(p){return !p.oldPrice;}));
+  /* Always push out-of-stock to bottom */
+  var inStk = products.filter(function(p){ return p.stock == null || p.stock > 0; });
+  var outStk = products.filter(function(p){ return p.stock != null && p.stock === 0; });
+  products = inStk.concat(outStk);
   document.getElementById('count').textContent = fmtCount(products.length);
   if (products.length === 0) {
     document.getElementById('grid').innerHTML =
@@ -289,6 +264,7 @@ sizeEl.addEventListener('click', function(e) {
   render();
 });
 document.getElementById('sortSelect').addEventListener('change', function() { activeSort = this.value; render(); });
+document.getElementById('searchInput').addEventListener('input', function() { activeSearch = this.value; render(); });
 
 function injectDynamicCats() {
   var container = document.querySelector('.filter-tags');
