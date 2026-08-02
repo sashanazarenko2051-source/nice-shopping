@@ -264,7 +264,7 @@ function render() {
   document.getElementById('grid').innerHTML = products.map(renderProductCard).join('');
 }
 
-document.querySelectorAll('[data-cat]').forEach(function(btn) {
+function bindCatBtn(btn) {
   btn.addEventListener('click', function() {
     document.querySelectorAll('[data-cat]').forEach(function(b){b.classList.remove('active');});
     btn.classList.add('active');
@@ -273,7 +273,9 @@ document.querySelectorAll('[data-cat]').forEach(function(btn) {
     renderSizes(activeCat, activeGender);
     render();
   });
-});
+}
+document.querySelectorAll('[data-cat]').forEach(bindCatBtn);
+
 document.querySelectorAll('[data-price]').forEach(function(btn) {
   btn.addEventListener('click', function() {
     document.querySelectorAll('[data-price]').forEach(function(b){b.classList.remove('active');});
@@ -287,7 +289,45 @@ sizeEl.addEventListener('click', function(e) {
   render();
 });
 document.getElementById('sortSelect').addEventListener('change', function() { activeSort = this.value; render(); });
-onProductsReady(render);
+
+function injectDynamicCats() {
+  var container = document.querySelector('.filter-tags');
+  if (!container) return;
+  var existing = {};
+  container.querySelectorAll('[data-cat]').forEach(function(b) {
+    existing[(b.dataset.cat||'') + ':' + (b.dataset.gender||'')] = true;
+  });
+  var customCats = [];
+  try { customCats = JSON.parse(localStorage.getItem('ns_cats')) || []; } catch(e) {}
+  var labelMap = {};
+  customCats.forEach(function(c) { labelMap[(c.key||'') + ':' + (c.gender||'')] = { label: c.label, icon: c.icon||'📦' }; });
+  var seen = {};
+  PRODUCTS.forEach(function(p) {
+    if (!p.category) return;
+    var combo = p.category + ':' + (p.gender||'');
+    if (!seen[combo]) seen[combo] = { cat: p.category, gender: p.gender||'' };
+  });
+  Object.keys(seen).forEach(function(combo) {
+    if (existing[combo]) return;
+    var info = seen[combo];
+    var meta = labelMap[combo];
+    var label = (meta && meta.label) || catNames[combo] || info.cat;
+    var icon = (meta && meta.icon) || '📦';
+    var btn = document.createElement('button');
+    btn.className = 'filter-tag';
+    btn.dataset.cat = info.cat;
+    btn.dataset.gender = info.gender;
+    btn.textContent = icon + ' ' + label;
+    bindCatBtn(btn);
+    container.appendChild(btn);
+    if (urlCat === info.cat && urlGender === info.gender) {
+      document.querySelectorAll('[data-cat]').forEach(function(b){b.classList.remove('active');});
+      btn.classList.add('active');
+    }
+  });
+}
+
+onProductsReady(function() { injectDynamicCats(); render(); });
 
 document.getElementById('menuToggle').addEventListener('click', function() {
   document.getElementById('nav').classList.toggle('open');
