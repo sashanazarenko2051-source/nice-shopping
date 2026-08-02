@@ -124,21 +124,47 @@ nav{flex:1;padding:6px}
 .vbtn{padding:6px 10px;border-radius:8px;border:1px solid var(--border);background:none;color:var(--dim);font-size:.82rem;transition:all .15s}
 .vbtn.active{background:var(--glow);color:var(--green);border-color:rgba(74,222,128,.3)}
 
+/* ── STAT SECTIONS ── */
+.stat-sec{padding:16px 22px 6px}
+.stat-sec-label{font-size:.67rem;font-weight:700;color:var(--dim);text-transform:uppercase;letter-spacing:.09em;margin-bottom:10px}
+.sgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px}
+
 /* ── STAT CARDS ── */
-.sgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;padding:16px 22px}
-.scard{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px 16px;position:relative}
-.scard-ico{position:absolute;top:12px;right:14px;font-size:1.3rem;opacity:.55}
-.scard-label{font-size:.68rem;color:var(--dim);text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px;padding-right:28px}
-.scard-val{font-size:1.4rem;font-weight:700}
+.scard{background:var(--card);border:1px solid var(--border);border-left:3px solid transparent;border-radius:12px;padding:14px 16px;transition:border-color .15s}
+.scard:hover{border-color:rgba(74,222,128,.25)}
+.scard.s-green{border-left-color:var(--green)}
+.scard.s-blue{border-left-color:#60a5fa}
+.scard.s-purple{border-left-color:#a78bfa}
+.scard.s-teal{border-left-color:#34d399}
+.scard.s-warn{border-left-color:var(--warn)}
+.scard-label{font-size:.67rem;color:var(--dim);text-transform:uppercase;letter-spacing:.07em;margin-bottom:5px}
+.scard-val{font-size:1.45rem;font-weight:700}
 .scard-val.green{color:var(--green)}
+.scard-val.blue{color:#60a5fa}
+.scard-val.purple{color:#a78bfa}
+.scard-val.teal{color:#34d399}
 .scard-val.warn{color:var(--warn)}
+.scard-sub{font-size:.7rem;color:var(--dim);margin-top:4px}
+
+/* ── STATUS CHIPS ── */
+.sch-row{display:flex;gap:8px;flex-wrap:wrap}
+.sch{display:flex;align-items:center;gap:10px;padding:10px 16px;background:var(--card);border:1px solid var(--border);border-radius:10px;flex:1;min-width:120px}
+.sch-ico{font-size:1.1rem}
+.sch-label{font-size:.65rem;color:var(--dim);text-transform:uppercase;letter-spacing:.05em}
+.sch-val{font-size:1.15rem;font-weight:700}
+
+/* ── LOW STOCK ── */
+.ls-card{background:rgba(248,113,113,.05);border:1px solid rgba(248,113,113,.2);border-radius:12px;padding:14px 16px}
+.ls-title{font-size:.7rem;font-weight:700;color:var(--danger);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px}
+.ls-item{display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid rgba(248,113,113,.08);font-size:.8rem}
+.ls-item:last-child{border-bottom:none}
 
 /* ── CHART ── */
-.chart-wrap{display:flex;align-items:flex-end;gap:5px;height:72px}
+.chart-wrap{display:flex;align-items:flex-end;gap:6px;height:100px}
 .bcol{display:flex;flex-direction:column;align-items:center;flex:1;height:100%;gap:3px}
 .bval{font-size:.62rem;color:var(--dim)}
 .bbg{flex:1;width:100%;background:rgba(74,222,128,.06);border-radius:4px;display:flex;align-items:flex-end}
-.bfill{width:100%;background:var(--green);border-radius:4px;min-height:3px}
+.bfill{width:100%;background:linear-gradient(to top,#2ecc71,#4ade8088);border-radius:4px;min-height:3px}
 .blbl{font-size:.62rem;color:var(--dim)}
 
 /* ── CATALOG CARDS ── */
@@ -249,6 +275,8 @@ nav{flex:1;padding:6px}
   #panel{width:100%;border-left:none;height:auto;max-height:90vh}
   #overlay{align-items:flex-end}
   .sgrid{grid-template-columns:repeat(2,1fr)}
+  .sch-row{flex-direction:column}
+  .stat-sec{padding:10px 14px 4px}
   .frow.c2,.frow.c3{grid-template-columns:1fr}
   .dtbl{min-width:480px}
   .ord-grid{grid-template-columns:1fr}
@@ -312,27 +340,98 @@ nav{flex:1;padding:6px}
 <div id="tab-stats" class="tab active">
   <div class="tab-scroll">
     <div class="phdr"><div class="phdr-title">Статистика</div></div>
-    <div class="sgrid" id="statGrid">
-      <div class="scard"><span class="scard-ico">👁</span><div class="scard-label">Відвідувачів</div><div class="scard-val" id="sVisits">—</div></div>
-      <div class="scard"><span class="scard-ico">📦</span><div class="scard-label">Товарів</div><div class="scard-val green" id="sProducts">—</div></div>
-      <div class="scard"><span class="scard-ico">📋</span><div class="scard-label">Замовлень</div><div class="scard-val" id="sOrders">—</div></div>
-      <div class="scard"><span class="scard-ico">💵</span><div class="scard-label">Виручка</div><div class="scard-val green" id="sRevenue">—</div></div>
-      <div class="scard"><span class="scard-ico">🏷️</span><div class="scard-label">Залишок (шт)</div><div class="scard-val" id="sStockQty">—</div></div>
-      <div class="scard"><span class="scard-ico">💎</span><div class="scard-label">Вартість залишку</div><div class="scard-val green" id="sStockVal">—</div></div>
-      <div class="scard"><span class="scard-ico">🛒</span><div class="scard-label">Продано (шт)</div><div class="scard-val" id="sSold">—</div></div>
-      <div class="scard"><span class="scard-ico">💰</span><div class="scard-label">На суму продано</div><div class="scard-val green" id="sSoldVal">—</div></div>
-      <div class="scard"><span class="scard-ico">🧾</span><div class="scard-label">Собівартість залишку</div><div class="scard-val" id="sStockCost">—</div></div>
-      <div class="scard"><span class="scard-ico">📈</span><div class="scard-label">Потенц. прибуток</div><div class="scard-val green" id="sStockProfit">—</div></div>
-      <div class="scard"><span class="scard-ico">🤑</span><div class="scard-label">Прибуток (продано)</div><div class="scard-val green" id="sSoldProfit">—</div></div>
-      <div class="scard"><span class="scard-ico">📊</span><div class="scard-label">Середня маржа</div><div class="scard-val" id="sMargin">—</div></div>
+
+    <!-- PRIMARY KPIs -->
+    <div class="stat-sec">
+      <div class="stat-sec-label">Продажі</div>
+      <div class="sgrid" style="grid-template-columns:repeat(auto-fit,minmax(175px,1fr))">
+        <div class="scard s-green">
+          <div class="scard-label">Виручка</div>
+          <div class="scard-val green" id="sRevenue">—</div>
+          <div class="scard-sub">на суму продано: <span id="sSoldVal">—</span></div>
+        </div>
+        <div class="scard s-blue">
+          <div class="scard-label">Замовлень</div>
+          <div class="scard-val blue" id="sOrders">—</div>
+          <div class="scard-sub">товарів продано: <span id="sSold">—</span> шт</div>
+        </div>
+        <div class="scard s-purple">
+          <div class="scard-label">Середній чек</div>
+          <div class="scard-val purple" id="sAvgOrder">—</div>
+        </div>
+        <div class="scard s-teal">
+          <div class="scard-label">Конверсія</div>
+          <div class="scard-val teal" id="sConv">—</div>
+          <div class="scard-sub">відвідувачів до замовлень</div>
+        </div>
+      </div>
     </div>
-    <div style="padding:0 22px 14px">
-      <div style="font-size:.75rem;color:var(--dim);margin-bottom:8px">Відвідування за 7 днів</div>
+
+    <!-- STATUS CHIPS -->
+    <div class="stat-sec">
+      <div class="stat-sec-label">Статуси замовлень</div>
+      <div class="sch-row">
+        <div class="sch"><span class="sch-ico">📋</span><div><div class="sch-label">В обробці</div><div class="sch-val" id="sStatusProc">—</div></div></div>
+        <div class="sch"><span class="sch-ico">🚚</span><div><div class="sch-label">В дорозі</div><div class="sch-val" style="color:#60a5fa" id="sStatusTrans">—</div></div></div>
+        <div class="sch"><span class="sch-ico">✅</span><div><div class="sch-label">Виконано</div><div class="sch-val" style="color:var(--green)" id="sStatusDone">—</div></div></div>
+      </div>
+    </div>
+
+    <!-- SECONDARY KPIs -->
+    <div class="stat-sec">
+      <div class="stat-sec-label">Склад і фінанси</div>
+      <div class="sgrid">
+        <div class="scard">
+          <div class="scard-label">Відвідувачів</div>
+          <div class="scard-val" id="sVisits">—</div>
+          <div class="scard-sub">за 7 днів</div>
+        </div>
+        <div class="scard">
+          <div class="scard-label">Товарів</div>
+          <div class="scard-val green" id="sProducts">—</div>
+          <div class="scard-sub">у каталозі</div>
+        </div>
+        <div class="scard">
+          <div class="scard-label">Залишок (шт)</div>
+          <div class="scard-val" id="sStockQty">—</div>
+          <div class="scard-sub">вартість: <span id="sStockVal">—</span></div>
+        </div>
+        <div class="scard">
+          <div class="scard-label">Собівартість залишку</div>
+          <div class="scard-val" id="sStockCost">—</div>
+        </div>
+        <div class="scard s-green">
+          <div class="scard-label">Прибуток (факт)</div>
+          <div class="scard-val green" id="sSoldProfit">—</div>
+          <div class="scard-sub">потенціал: <span id="sStockProfit">—</span></div>
+        </div>
+        <div class="scard s-purple">
+          <div class="scard-label">Середня маржа</div>
+          <div class="scard-val purple" id="sMargin">—</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- LOW STOCK ALERT -->
+    <div class="stat-sec" id="lowStockSection" style="display:none">
+      <div class="ls-card">
+        <div class="ls-title">⚠️ Закінчується на складі (≤ 3 шт)</div>
+        <div id="lowStockList"></div>
+      </div>
+    </div>
+
+    <!-- CHART -->
+    <div class="stat-sec">
+      <div class="stat-sec-label">Відвідування за 7 днів</div>
       <div class="chart-wrap" id="chart"></div>
     </div>
-    <div style="padding:0 22px 22px" id="statsTable"></div>
-    <div style="padding:0 22px 22px">
-      <div style="font-size:.82rem;font-weight:600;margin-bottom:10px">Нещодавні замовлення</div>
+
+    <!-- PRODUCT TABLE -->
+    <div class="stat-sec" id="statsTable"></div>
+
+    <!-- RECENT ORDERS -->
+    <div class="stat-sec" style="padding-bottom:22px">
+      <div class="stat-sec-label">Нещодавні замовлення</div>
       <div id="recentOrders"></div>
     </div>
   </div>
@@ -719,6 +818,12 @@ async function loadStats(){
     return s+(p.price>0?((p.price-costByName[p.name])/p.price)*100:0);
   },0)/prods.length):null;
 
+  var avgOrder=orders.length>0?Math.round(revenue/orders.length):0;
+  var convRate=totalV>0?((orders.length/totalV)*100).toFixed(1):'0.0';
+  var stCounts={processing:0,transit:0,done:0};
+  orders.forEach(function(o){ var s=o.status||'processing'; if(stCounts[s]!==undefined) stCounts[s]++; });
+  var lowStock=_products.filter(function(p){ return (p.stock||0)>0&&(p.stock||0)<=3; });
+
   document.getElementById('sVisits').textContent=totalV||0;
   document.getElementById('sProducts').textContent=_products.length;
   document.getElementById('sOrders').textContent=orders.length;
@@ -731,6 +836,19 @@ async function loadStats(){
   document.getElementById('sStockProfit').textContent=fmt(stockProfit);
   document.getElementById('sSoldProfit').textContent=fmt(soldProfit);
   document.getElementById('sMargin').textContent=avgMargin!=null?avgMargin+'%':'—';
+  document.getElementById('sAvgOrder').textContent=avgOrder?fmt(avgOrder):'—';
+  document.getElementById('sConv').textContent=convRate+'%';
+  document.getElementById('sStatusProc').textContent=stCounts.processing;
+  document.getElementById('sStatusTrans').textContent=stCounts.transit;
+  document.getElementById('sStatusDone').textContent=stCounts.done;
+
+  var lsSection=document.getElementById('lowStockSection');
+  if(lowStock.length>0){
+    lsSection.style.display='';
+    document.getElementById('lowStockList').innerHTML=lowStock.sort(function(a,b){return (a.stock||0)-(b.stock||0);}).map(function(p){
+      return '<div class="ls-item"><span>'+esc(p.name)+'</span><span style="color:var(--warn);font-weight:700">'+p.stock+' шт</span></div>';
+    }).join('');
+  } else { lsSection.style.display='none'; }
 
   renderChart(visits);
   renderStatsTable(soldMap);
@@ -750,32 +868,40 @@ function renderChart(visits){
 function fmtNum(n){ var r=Math.round(n*100)/100; return r===Math.round(r)?String(Math.round(r)):r.toFixed(2); }
 function renderStatsTable(soldMap){
   if(!_products.length){ document.getElementById('statsTable').innerHTML=''; return; }
-  var rows=_products.filter(function(p){ return (soldMap[p.name]||0)>0; }).map(function(p){
+  var sold_prods=_products.filter(function(p){ return (soldMap[p.name]||0)>0; })
+    .sort(function(a,b){ return (soldMap[b.name]||0)-(soldMap[a.name]||0); });
+  if(!sold_prods.length){ document.getElementById('statsTable').innerHTML='<div style="color:var(--dim);font-size:.8rem;padding:4px 0">Продажів ще немає</div>'; return; }
+  var medals=['🥇','🥈','🥉'];
+  var rows=sold_prods.map(function(p,idx){
     var sold=soldMap[p.name]||0, stock=p.stock||0;
     var hasCost=p.purchasePrice!=null&&p.purchasePrice!=='';
     var cost=hasCost?Number(p.purchasePrice):null;
     var prof=hasCost?Math.round(((p.price||0)-cost)*100)/100:null;
-    var sc=stock===0?'color:#f87171':sold>0?'color:#fbbf24':'color:#4ade80';
+    var sc=stock===0?'color:#f87171':stock<=3?'color:var(--warn)':'color:var(--dim)';
     var pc=prof!=null?(prof>=0?'color:#4ade80':'color:#f87171'):'color:var(--dim)';
-    var soldStyle=sold>0?'color:#4ade80;font-weight:700':'color:var(--dim)';
-    return '<tr'+(sold>0?' style="background:rgba(74,222,128,.03)"':'')+'>'+
-      '<td>'+esc(p.name)+'</td>'+
+    var rank=medals[idx]?'<span style="margin-right:4px">'+medals[idx]+'</span>':'<span style="margin-right:4px;color:var(--dim);font-size:.75rem">'+(idx+1)+'.</span>';
+    return '<tr style="background:rgba(74,222,128,.025)">'+
+      '<td>'+rank+esc(p.name)+'</td>'+
       '<td style="text-align:center">₴'+(p.price||0)+'</td>'+
       '<td style="text-align:center;color:var(--dim)">'+(hasCost?'₴'+fmtNum(cost):'—')+'</td>'+
       '<td style="text-align:center;font-weight:600;'+pc+'">'+(prof!=null?'₴'+fmtNum(prof):'—')+'</td>'+
       '<td style="text-align:center;font-weight:600;'+sc+'">'+stock+'</td>'+
-      '<td style="text-align:center;'+soldStyle+'">'+sold+'</td>'+
+      '<td style="text-align:center;color:#4ade80;font-weight:700">'+sold+'</td>'+
     '</tr>';
   }).join('');
-  if(!rows){ document.getElementById('statsTable').innerHTML='<div style="color:var(--dim);font-size:.8rem;padding:8px 0">Продажів ще немає</div>'; return; }
-  document.getElementById('statsTable').innerHTML='<div style="font-size:.75rem;color:var(--dim);margin-bottom:6px">Продані товари</div><div class="box"><div class="tbl-wrap"><table class="dtbl"><thead><tr><th>Товар</th><th style="text-align:center">Ціна</th><th style="text-align:center">Закупівля</th><th style="text-align:center">Прибуток/од</th><th style="text-align:center">Залишок</th><th style="text-align:center">Продано</th></tr></thead><tbody>'+rows+'</tbody></table></div></div>';
+  document.getElementById('statsTable').innerHTML='<div class="stat-sec-label" style="margin-bottom:8px">Рейтинг продажів</div><div class="box"><div class="tbl-wrap"><table class="dtbl"><thead><tr><th>Товар</th><th style="text-align:center">Ціна</th><th style="text-align:center">Закупівля</th><th style="text-align:center">Прибуток/од</th><th style="text-align:center">Залишок</th><th style="text-align:center">Продано</th></tr></thead><tbody>'+rows+'</tbody></table></div></div>';
 }
 
 function renderRecentOrders(orders){
   var el=document.getElementById('recentOrders');
   if(!orders.length){ el.innerHTML='<div style="color:var(--dim);font-size:.8rem">Замовлень ще немає</div>'; return; }
-  el.innerHTML='<div class="box"><div class="tbl-wrap"><table class="dtbl"><thead><tr><th>Дата</th><th>Клієнт</th><th>Телефон</th><th>Сума</th></tr></thead><tbody>'+
-    orders.map(function(o){ return '<tr><td>'+esc(o.date||'-')+'</td><td>'+esc((o.firstName||'')+' '+(o.lastName||''))+'</td><td>'+esc(o.phone||'-')+'</td><td style="color:var(--green);font-weight:700">₴'+(o.total||0)+'</td></tr>'; }).join('')+
+  var stL={'processing':'📋 В обробці','transit':'🚚 В дорозі','done':'✅ Виконано'};
+  var stC={'processing':'color:var(--dim)','transit':'color:#60a5fa','done':'color:var(--green)'};
+  el.innerHTML='<div class="box"><div class="tbl-wrap"><table class="dtbl"><thead><tr><th>Дата</th><th>Клієнт</th><th>Телефон</th><th>Сума</th><th>Статус</th></tr></thead><tbody>'+
+    orders.map(function(o){
+      var st=o.status||'processing';
+      return '<tr><td>'+esc(o.date||'-')+'</td><td>'+esc((o.firstName||'')+' '+(o.lastName||''))+'</td><td>'+esc(o.phone||'-')+'</td><td style="color:var(--green);font-weight:700">₴'+(o.total||0)+'</td><td style="font-size:.75rem;white-space:nowrap;'+(stC[st]||'')+'">'+( stL[st]||st)+'</td></tr>';
+    }).join('')+
   '</tbody></table></div></div>';
 }
 
