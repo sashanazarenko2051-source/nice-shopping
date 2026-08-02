@@ -110,9 +110,10 @@ nav{flex:1;padding:8px 0}
 .iinp{background:rgba(255,255,255,.04);border:1px solid rgba(139,92,246,.15);border-radius:6px;color:var(--text);padding:4px 8px;width:68px;text-align:center;transition:border-color .15s}
 .iinp:focus{outline:none;border-color:var(--green);box-shadow:0 0 0 2px rgba(74,222,128,.12)}
 .stk-cell{display:flex;align-items:center;gap:6px}
-.stk-tog{padding:3px 8px;border-radius:6px;font-size:.68rem;font-weight:600;border:1px solid;cursor:pointer;background:none}
-.stk-tog.avail{border-color:rgba(74,222,128,.3);color:var(--green)}
-.stk-tog.out{border-color:rgba(248,113,113,.3);color:var(--danger)}
+.stk-tog{padding:3px 9px;border-radius:6px;font-size:.68rem;font-weight:600;border:1px solid;cursor:pointer;background:none;transition:all .15s}
+.stk-tog.avail{border-color:rgba(74,222,128,.35);color:var(--green)}
+.stk-tog.limited{border-color:rgba(251,191,36,.35);color:#fbbf24}
+.stk-tog.out{border-color:rgba(248,113,113,.35);color:var(--danger)}
 
 /* ── PROD GRID ── */
 .pgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:12px;padding:0 22px 22px}
@@ -966,22 +967,45 @@ function thumbHtml(p){
 }
 function getCatIcon(p){ var c=catById(productCatId(p)); return c?c.icon:'📦'; }
 
+var _sortField=null, _sortDir=1;
+function toggleSort(field){
+  if(_sortField===field){ _sortDir*=-1; } else { _sortField=field; _sortDir=1; }
+  renderProducts();
+}
+function sortArrow(field){ return _sortField===field?(_sortDir===1?' ↑':' ↓'):''; }
+
 function renderList(list, el){
-  var rows=list.map(function(p){
-    var cat=catById(productCatId(p));
-    var clabel=cat?(cat.icon+' '+cat.label):(p.category||'—');
+  var sorted=list.slice();
+  if(_sortField==='price') sorted.sort(function(a,b){return ((a.price||0)-(b.price||0))*_sortDir;});
+  else if(_sortField==='stock') sorted.sort(function(a,b){return ((a.stock||0)-(b.stock||0))*_sortDir;});
+
+  var catOpts=getCats().map(function(c){ return {id:c.id,label:c.icon+' '+c.label,key:c.key,gender:c.gender}; });
+
+  var rows=sorted.map(function(p){
+    var curCatId=productCatId(p);
     var stock=p.stock!=null?p.stock:0;
-    var isOut=stock===0;
+    var stkCls=stock===0?'out':stock<=3?'limited':'avail';
+    var stkLbl=stock===0?'❌ Нема':stock<=3?'⚡ Мало':'✅ Є';
+    var stkClick=stock===0?'quickStock('+p.id+',1,true)':'quickStock('+p.id+',0,true)';
+    var catSelect='<select class="iinp" style="max-width:155px;font-size:.74rem;padding:3px 6px" onchange="quickCat('+p.id+',this.value)">'+
+      catOpts.map(function(c){ return '<option value="'+c.id+'"'+(curCatId===c.id?' selected':'')+'>'+c.label+'</option>'; }).join('')+
+    '</select>';
     return '<tr>'+
       '<td style="width:44px">'+thumbHtml(p)+'</td>'+
-      '<td style="font-weight:500;max-width:180px"><div style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(p.name)+'</div>'+(p.oldPrice?'<div style="font-size:.7rem;color:var(--dim);text-decoration:line-through">₴'+p.oldPrice+'</div>':'')+'</td>'+
-      '<td><span class="badge">'+esc(clabel)+'</span></td>'+
+      '<td style="max-width:200px">'+
+        '<div style="font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-bottom:3px">'+esc(p.name)+'</div>'+
+        '<input class="iinp" type="text" style="width:100%;font-size:.72rem;color:var(--dim)" placeholder="Опис..." value="'+esc(p.description||'')+'" onblur="quickDesc('+p.id+',this)">'+
+      '</td>'+
+      '<td>'+catSelect+'</td>'+
       '<td><input class="iinp" type="number" value="'+p.price+'" onchange="quickPrice('+p.id+',this.value)"></td>'+
-      '<td><div class="stk-cell"><input class="iinp" type="number" min="0" value="'+stock+'" onchange="quickStock('+p.id+',this.value)"><button class="stk-tog '+(isOut?'avail':'out')+'" onclick="quickStock('+p.id+','+(isOut?'1':'0')+',true)">'+(isOut?'✓ Є':'✕ Нема')+'</button></div></td>'+
-      '<td style="white-space:nowrap"><button class="btn-sm primary" onclick="openForm('+p.id+')" style="margin-right:4px">✏️ Змінити</button><button class="btn-sm" onclick="openMoveModal('+p.id+')" style="margin-right:4px">↔</button><button class="btn-sm danger" onclick="delProduct('+p.id+')">🗑</button></td>'+
+      '<td><div class="stk-cell"><input class="iinp" type="number" min="0" value="'+stock+'" onchange="quickStock('+p.id+',this.value)"><button class="stk-tog '+stkCls+'" onclick="'+stkClick+'">'+stkLbl+'</button></div></td>'+
+      '<td style="white-space:nowrap"><button class="btn-sm primary" onclick="openForm('+p.id+')" style="margin-right:4px">✏️ Редагувати</button><button class="btn-sm danger" onclick="delProduct('+p.id+')">🗑</button></td>'+
     '</tr>';
   }).join('');
-  el.innerHTML='<div class="box"><div class="tbl-wrap"><table class="dtbl"><thead><tr><th>Фото</th><th>Назва</th><th>Каталог</th><th>Ціна ₴</th><th>Залишок</th><th>Дії</th></tr></thead><tbody>'+rows+'</tbody></table></div></div>';
+
+  var thPrice='<th style="cursor:pointer;user-select:none" onclick="toggleSort(\'price\')">Ціна ₴'+sortArrow('price')+'</th>';
+  var thStock='<th style="cursor:pointer;user-select:none" onclick="toggleSort(\'stock\')">Залишок'+sortArrow('stock')+'</th>';
+  el.innerHTML='<div class="box"><div class="tbl-wrap"><table class="dtbl"><thead><tr><th>Фото</th><th>Назва / Опис</th><th>Категорія</th>'+thPrice+thStock+'<th>Дії</th></tr></thead><tbody>'+rows+'</tbody></table></div></div>';
 }
 
 function renderGrid(list, el){
@@ -990,7 +1014,7 @@ function renderGrid(list, el){
     var imgH=p.imageUrl?'<img src="'+esc(p.imageUrl)+'" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover">':'<span style="font-size:2rem">'+getCatIcon(p)+'</span>';
     return '<div class="pgc"><div class="pgc-img">'+imgH+(p.oldPrice?'<div style="position:absolute;top:6px;left:6px;background:#ef5350;color:#fff;font-size:.62rem;font-weight:700;padding:2px 6px;border-radius:4px">SALE</div>':'')+'</div>'+
       '<div class="pgc-body"><div class="pgc-name" title="'+esc(p.name)+'">'+esc(p.name)+'</div><div><span class="pgc-price">₴'+p.price+'</span>'+(p.oldPrice?'<span class="pgc-old">₴'+p.oldPrice+'</span>':'')+'</div></div>'+
-      '<div class="pgc-acts"><button class="btn-sm primary" onclick="openForm('+p.id+')">✏️</button><button class="btn-sm" onclick="openMoveModal('+p.id+')">↔</button><button class="btn-sm danger" onclick="delProduct('+p.id+')">🗑</button></div></div>';
+      '<div class="pgc-acts"><button class="btn-sm primary" onclick="openForm('+p.id+')">✏️</button><button class="btn-sm danger" onclick="delProduct('+p.id+')">🗑</button></div></div>';
   }).join('')+'</div>';
 }
 
@@ -1003,6 +1027,19 @@ async function quickStock(id, val, rerender){
   var p=_products.find(function(x){return x.id===id;}); if(!p) return;
   p.stock=Math.max(0,parseInt(val)||0);
   try{ await API.updateProduct(id,p); toast(p.stock===0?'Позначено: немає':'Залишок: '+p.stock+' шт'); if(rerender) renderProducts(); }catch(e){ toast('❌ Помилка'); }
+}
+async function quickCat(id, catId){
+  var p=_products.find(function(x){return x.id===id;}); if(!p) return;
+  var cat=catById(catId); if(!cat) return;
+  p.category=cat.key; p.gender=cat.gender;
+  try{ await API.updateProduct(id,p); toast('✅ Категорію змінено'); buildFilterBar(); }catch(e){ toast('❌ Помилка'); }
+}
+async function quickDesc(id, el){
+  var p=_products.find(function(x){return x.id===id;}); if(!p) return;
+  var desc=(el.value||'').trim();
+  if(desc===((p.description||'').trim())) return;
+  p.description=desc;
+  try{ await API.updateProduct(id,p); toast('✅ Опис збережено'); }catch(e){ toast('❌ Помилка'); }
 }
 async function delProduct(id){
   if(!confirm('Видалити цей товар?')) return;

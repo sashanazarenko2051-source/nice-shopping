@@ -109,7 +109,11 @@ function renderProductCard(product) {
       (product.oldPrice ? '<span class="price-old">' + CONFIG.currency + product.oldPrice + '</span>' : '') +
     '</div>' +
     '<div class="product-card__rating"><span class="stars">' + stars + '</span><span class="reviews">(' + product.reviews + ')</span></div>' +
-    (product.stock != null ? '<div class="product-card__stock' + (product.stock === 0 ? ' out' : '') + '">' + (product.stock === 0 ? '❌ ' + window.i18n('stock.out') : '✅ ' + window.i18n('stock.in') + ': ' + product.stock + ' ' + window.i18n('stock.pcs')) + '</div>' : '') +
+    (product.stock != null ? (function(s){
+      var cls = s === 0 ? ' out' : s <= 3 ? ' limited' : '';
+      var lbl = s === 0 ? ('❌ ' + window.i18n('stock.out')) : s <= 3 ? ('⚡ Обмежена кількість') : ('✅ ' + window.i18n('stock.in'));
+      return '<div class="product-card__stock' + cls + '">' + lbl + '</div>';
+    })(product.stock) : '') +
   '</div>';
 }
 
