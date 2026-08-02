@@ -26,74 +26,48 @@
       text-align:left;width:100%;position:relative;font-weight:500;
     }
     .filter-tag .ftag-cnt{font-size:.68rem;opacity:.45;margin-left:4px;font-weight:400}
-    .filter-tag:hover{filter:brightness(1.15);transform:translateX(2px)}
-    .filter-tag.active{font-weight:700;transform:translateX(3px)}
-
-    /* ── Category colours (always visible) ── */
-    [data-cat="all"]{
-      background:rgba(139,92,246,.12);border-color:rgba(139,92,246,.3);color:#c4b5fd;
+    /* ── Default: all violet ── */
+    .filter-tag{
+      background:rgba(139,92,246,.08);
+      border-color:rgba(139,92,246,.22);
+      color:rgba(196,181,253,.75);
     }
-    [data-cat="all"].active{background:rgba(139,92,246,.22);border-color:rgba(139,92,246,.6);color:#ddd6fe}
-
-    [data-cat="bras"]{
-      background:rgba(96,165,250,.1);border-color:rgba(96,165,250,.28);color:#93c5fd;
+    .filter-tag.active{
+      background:rgba(139,92,246,.2);
+      border-color:rgba(139,92,246,.5);
+      color:#ddd6fe;
+      font-weight:700;
+      transform:translateX(3px);
     }
-    [data-cat="bras"].active{background:rgba(96,165,250,.2);border-color:rgba(96,165,250,.55);color:#bfdbfe}
+    /* hover — показуємо власний колір категорії */
+    .filter-tag:hover{transform:translateX(2px);transition:all .18s}
 
-    [data-cat="lingerie"][data-gender="women"]{
-      background:rgba(244,114,182,.1);border-color:rgba(244,114,182,.28);color:#f9a8d4;
-    }
-    [data-cat="lingerie"][data-gender="women"].active{background:rgba(244,114,182,.2);border-color:rgba(244,114,182,.55);color:#fbcfe8}
+    /* ── Hover colours per category ── */
+    [data-cat="all"]:hover{background:rgba(139,92,246,.2);border-color:rgba(139,92,246,.55);color:#ddd6fe}
 
-    [data-cat="winter"][data-gender="women"]{
-      background:rgba(34,211,238,.1);border-color:rgba(34,211,238,.25);color:#67e8f9;
-    }
-    [data-cat="winter"][data-gender="women"].active{background:rgba(34,211,238,.2);border-color:rgba(34,211,238,.5);color:#a5f3fc}
+    [data-cat="bras"]:hover{background:rgba(96,165,250,.18);border-color:rgba(96,165,250,.5);color:#bfdbfe}
 
-    [data-cat="summer"][data-gender="women"]{
-      background:rgba(52,211,153,.1);border-color:rgba(52,211,153,.25);color:#6ee7b7;
-    }
-    [data-cat="summer"][data-gender="women"].active{background:rgba(52,211,153,.2);border-color:rgba(52,211,153,.5);color:#a7f3d0}
+    [data-cat="lingerie"][data-gender="women"]:hover{background:rgba(244,114,182,.18);border-color:rgba(244,114,182,.5);color:#fbcfe8}
 
-    [data-cat="stockings"]{
-      background:rgba(192,132,252,.1);border-color:rgba(192,132,252,.28);color:#d8b4fe;
-    }
-    [data-cat="stockings"].active{background:rgba(192,132,252,.2);border-color:rgba(192,132,252,.55);color:#ede9fe}
+    [data-cat="winter"][data-gender="women"]:hover{background:rgba(34,211,238,.15);border-color:rgba(34,211,238,.45);color:#a5f3fc}
 
-    [data-cat="tshirts"][data-gender="women"]{
-      background:rgba(251,146,60,.1);border-color:rgba(251,146,60,.28);color:#fdba74;
-    }
-    [data-cat="tshirts"][data-gender="women"].active{background:rgba(251,146,60,.2);border-color:rgba(251,146,60,.55);color:#fed7aa}
+    [data-cat="summer"][data-gender="women"]:hover{background:rgba(52,211,153,.15);border-color:rgba(52,211,153,.45);color:#a7f3d0}
 
-    [data-cat="peignoirs"]{
-      background:rgba(251,113,133,.1);border-color:rgba(251,113,133,.28);color:#fda4af;
-    }
-    [data-cat="peignoirs"].active{background:rgba(251,113,133,.2);border-color:rgba(251,113,133,.55);color:#fecdd3}
+    [data-cat="stockings"]:hover{background:rgba(192,132,252,.18);border-color:rgba(192,132,252,.5);color:#ede9fe}
 
-    [data-cat="jewelry"]{
-      background:rgba(251,191,36,.1);border-color:rgba(251,191,36,.28);color:#fcd34d;
-    }
-    [data-cat="jewelry"].active{background:rgba(251,191,36,.2);border-color:rgba(251,191,36,.55);color:#fde68a}
+    [data-cat="tshirts"][data-gender="women"]:hover{background:rgba(251,146,60,.18);border-color:rgba(251,146,60,.5);color:#fed7aa}
 
-    [data-cat="lingerie"][data-gender="men"]{
-      background:rgba(99,179,237,.1);border-color:rgba(99,179,237,.25);color:#90cdf4;
-    }
-    [data-cat="lingerie"][data-gender="men"].active{background:rgba(99,179,237,.2);border-color:rgba(99,179,237,.5);color:#bee3f8}
+    [data-cat="peignoirs"]:hover{background:rgba(251,113,133,.18);border-color:rgba(251,113,133,.5);color:#fecdd3}
 
-    [data-cat="tshirts"][data-gender="men"]{
-      background:rgba(52,211,153,.08);border-color:rgba(52,211,153,.22);color:#6ee7b7;
-    }
-    [data-cat="tshirts"][data-gender="men"].active{background:rgba(52,211,153,.18);border-color:rgba(52,211,153,.48);color:#a7f3d0}
+    [data-cat="jewelry"]:hover{background:rgba(251,191,36,.18);border-color:rgba(251,191,36,.5);color:#fde68a}
 
-    [data-cat="winter"][data-gender="men"]{
-      background:rgba(56,189,248,.1);border-color:rgba(56,189,248,.25);color:#7dd3fc;
-    }
-    [data-cat="winter"][data-gender="men"].active{background:rgba(56,189,248,.2);border-color:rgba(56,189,248,.5);color:#bae6fd}
+    [data-cat="lingerie"][data-gender="men"]:hover{background:rgba(99,179,237,.15);border-color:rgba(99,179,237,.45);color:#bee3f8}
 
-    [data-cat="summer"][data-gender="men"]{
-      background:rgba(74,222,128,.08);border-color:rgba(74,222,128,.22);color:#86efac;
-    }
-    [data-cat="summer"][data-gender="men"].active{background:rgba(74,222,128,.18);border-color:rgba(74,222,128,.48);color:#bbf7d0}
+    [data-cat="tshirts"][data-gender="men"]:hover{background:rgba(52,211,153,.15);border-color:rgba(52,211,153,.45);color:#a7f3d0}
+
+    [data-cat="winter"][data-gender="men"]:hover{background:rgba(56,189,248,.15);border-color:rgba(56,189,248,.45);color:#bae6fd}
+
+    [data-cat="summer"][data-gender="men"]:hover{background:rgba(74,222,128,.15);border-color:rgba(74,222,128,.45);color:#bbf7d0}
     /* ── Price range ── */
     .price-range{display:flex;align-items:center;gap:8px}
     .price-inp{width:72px;padding:7px 9px;border:1.5px solid var(--border);border-radius:8px;font-size:.8rem;background:rgba(139,92,246,.04);color:var(--dark);outline:none;font-family:inherit;transition:border-color .18s}

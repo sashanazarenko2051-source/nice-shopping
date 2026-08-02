@@ -98,9 +98,13 @@ select{font-family:inherit}
   display:flex;flex-direction:column;
 }
 .product-card:hover{
-  border-color:rgba(251,113,133,.45);
-  transform:translateY(-4px);
-  box-shadow:0 16px 48px rgba(0,0,0,.5),0 0 24px rgba(251,113,133,.18),0 0 0 1px rgba(251,113,133,.15);
+  border-color:rgba(56,189,248,.55);
+  transform:translateY(-5px);
+  box-shadow:
+    0 20px 60px rgba(0,0,0,.55),
+    0 0 0 1px rgba(56,189,248,.2),
+    0 0 40px rgba(56,189,248,.22),
+    0 0 80px rgba(56,189,248,.08);
 }
 .product-card__img-wrap{
   position:relative;overflow:hidden;
