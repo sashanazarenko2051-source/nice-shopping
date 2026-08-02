@@ -415,7 +415,7 @@ nav{flex:1;padding:6px}
     <!-- LOW STOCK ALERT -->
     <div class="stat-sec" id="lowStockSection" style="display:none">
       <div class="ls-card">
-        <div class="ls-title">⚠️ Закінчується на складі (≤ 3 шт)</div>
+        <div class="ls-title">⚠️ Немає на складі (0 шт)</div>
         <div id="lowStockList"></div>
       </div>
     </div>
@@ -822,7 +822,7 @@ async function loadStats(){
   var convRate=totalV>0?((orders.length/totalV)*100).toFixed(1):'0.0';
   var stCounts={processing:0,transit:0,done:0};
   orders.forEach(function(o){ var s=o.status||'processing'; if(stCounts[s]!==undefined) stCounts[s]++; });
-  var lowStock=_products.filter(function(p){ return (p.stock||0)>0&&(p.stock||0)<=3; });
+  var lowStock=_products.filter(function(p){ return (p.stock||0)===0; });
 
   document.getElementById('sVisits').textContent=totalV||0;
   document.getElementById('sProducts').textContent=_products.length;
