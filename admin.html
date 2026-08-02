@@ -76,6 +76,25 @@ nav{flex:1;padding:8px 6px}
 #btn-products .sb-badge{background:rgba(59,130,246,.25);color:#93c5fd;border:1px solid rgba(59,130,246,.3)}
 #btn-orders .sb-badge{background:rgba(248,113,113,.25);color:#fca5a5;border:1px solid rgba(248,113,113,.3)}
 #btn-reviews .sb-badge{background:rgba(251,191,36,.22);color:#fde047;border:1px solid rgba(251,191,36,.28)}
+/* new tabs */
+#btn-clients.active{background:rgba(244,63,94,.1);color:rgba(253,164,175,.95)}
+#btn-clients.active .sb-ico{background:rgba(244,63,94,.2);border-color:rgba(244,63,94,.3);box-shadow:0 0 14px rgba(244,63,94,.2)}
+#btn-clients:hover .sb-ico{background:rgba(244,63,94,.1)}
+#btn-promos.active{background:rgba(16,185,129,.1);color:rgba(110,231,183,.95)}
+#btn-promos.active .sb-ico{background:rgba(16,185,129,.2);border-color:rgba(16,185,129,.3);box-shadow:0 0 14px rgba(16,185,129,.2)}
+#btn-promos:hover .sb-ico{background:rgba(16,185,129,.1)}
+#btn-banners.active{background:rgba(217,70,239,.1);color:rgba(240,171,252,.95)}
+#btn-banners.active .sb-ico{background:rgba(217,70,239,.2);border-color:rgba(217,70,239,.3);box-shadow:0 0 14px rgba(217,70,239,.2)}
+#btn-banners:hover .sb-ico{background:rgba(217,70,239,.1)}
+#btn-delivery.active{background:rgba(14,165,233,.1);color:rgba(125,211,252,.95)}
+#btn-delivery.active .sb-ico{background:rgba(14,165,233,.2);border-color:rgba(14,165,233,.3);box-shadow:0 0 14px rgba(14,165,233,.2)}
+#btn-delivery:hover .sb-ico{background:rgba(14,165,233,.1)}
+#btn-media.active{background:rgba(148,163,184,.1);color:rgba(203,213,225,.95)}
+#btn-media.active .sb-ico{background:rgba(148,163,184,.15);border-color:rgba(148,163,184,.25);box-shadow:0 0 14px rgba(148,163,184,.15)}
+#btn-media:hover .sb-ico{background:rgba(148,163,184,.1)}
+#btn-settings.active{background:rgba(139,92,246,.1);color:rgba(196,181,253,.95)}
+#btn-settings.active .sb-ico{background:rgba(139,92,246,.2);border-color:rgba(139,92,246,.3);box-shadow:0 0 14px rgba(139,92,246,.2)}
+#btn-settings:hover .sb-ico{background:rgba(139,92,246,.1)}
 .sb-bottom{padding:10px 8px 14px;border-top:1px solid var(--border);display:flex;flex-direction:column;gap:3px}
 .sb-link{display:flex;align-items:center;gap:9px;padding:9px 14px;border-radius:var(--r);font-size:.79rem;font-weight:600;border:1px solid transparent;background:none;width:100%;text-align:left;text-decoration:none;cursor:pointer;font-family:inherit;transition:all .18s}
 .sb-link.green{color:#4ade80;border-color:rgba(74,222,128,.18);background:rgba(74,222,128,.05)}
@@ -201,6 +220,44 @@ nav{flex:1;padding:8px 6px}
 .bbg{flex:1;width:100%;background:rgba(74,222,128,.06);border-radius:4px;display:flex;align-items:flex-end}
 .bfill{width:100%;background:linear-gradient(to top,#2ecc71,#4ade8088);border-radius:4px;min-height:3px}
 .blbl{font-size:.62rem;color:var(--dim)}
+
+/* ── NEW TABS SHARED ── */
+.nt-body{padding:20px 22px 40px}
+.nt-sec{background:var(--card2);border:1px solid var(--border);border-radius:16px;padding:20px 22px;margin-bottom:16px}
+.nt-sec-title{font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--dim);margin-bottom:14px}
+.nt-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.nt-grid.c3{grid-template-columns:1fr 1fr 1fr}
+.nt-field{display:flex;flex-direction:column;gap:5px}
+.nt-label{font-size:.72rem;font-weight:600;color:var(--dim)}
+.nt-inp{padding:9px 12px;background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:8px;color:var(--text);outline:none;width:100%;transition:border-color .15s;font-size:.85rem}
+.nt-inp:focus{border-color:rgba(139,92,246,.5)}
+.nt-save{display:inline-flex;align-items:center;gap:6px;padding:9px 20px;background:rgba(139,92,246,.2);border:1px solid rgba(139,92,246,.35);border-radius:9px;color:rgba(196,181,253,.95);font-size:.82rem;font-weight:700;cursor:pointer;transition:all .18s}
+.nt-save:hover{background:rgba(139,92,246,.35)}
+/* client table */
+.cli-tbl{width:100%;border-collapse:collapse;font-size:.82rem}
+.cli-tbl th{padding:8px 12px;text-align:left;font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--dim);border-bottom:1px solid var(--border)}
+.cli-tbl td{padding:9px 12px;border-bottom:1px solid rgba(139,92,246,.06)}
+.cli-tbl tr:hover td{background:rgba(139,92,246,.04)}
+/* promo codes */
+.promo-card{background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:14px 16px;display:flex;align-items:center;gap:12px;margin-bottom:8px}
+.promo-code{font-size:.9rem;font-weight:800;letter-spacing:.08em;color:#4ade80;background:rgba(74,222,128,.1);border:1px solid rgba(74,222,128,.2);border-radius:8px;padding:4px 12px}
+.promo-info{flex:1;font-size:.8rem;color:var(--dim)}
+.promo-badge{font-size:.72rem;font-weight:700;padding:3px 10px;border-radius:20px;background:rgba(139,92,246,.15);color:rgba(196,181,253,.9)}
+/* media grid */
+.media-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:10px;padding:18px 22px}
+.media-item{border-radius:10px;overflow:hidden;border:1px solid var(--border);cursor:pointer;position:relative;aspect-ratio:1;background:var(--card2)}
+.media-item img{width:100%;height:100%;object-fit:cover;display:block}
+.media-item:hover::after{content:'Копіювати';position:absolute;inset:0;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;font-size:.72rem;font-weight:700;color:#fff}
+.media-name{font-size:.62rem;color:var(--dim);padding:4px 6px;text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+/* delivery toggle */
+.del-toggle{display:flex;gap:8px;flex-wrap:wrap}
+.del-tog-btn{padding:7px 16px;border-radius:9px;border:1px solid var(--border);background:none;color:var(--dim);font-size:.8rem;cursor:pointer;transition:all .18s}
+.del-tog-btn.active{background:rgba(14,165,233,.15);border-color:rgba(14,165,233,.35);color:rgba(125,211,252,.95)}
+/* banner preview */
+.banner-preview{border-radius:14px;overflow:hidden;margin-top:14px;min-height:80px;display:flex;align-items:center;padding:20px 24px;border:1px solid var(--border)}
+.banner-preview-title{font-size:1.1rem;font-weight:800;margin-bottom:4px}
+.banner-preview-sub{font-size:.8rem;opacity:.7;margin-bottom:10px}
+.banner-preview-btn{display:inline-flex;padding:7px 16px;border-radius:8px;font-size:.8rem;font-weight:700;background:rgba(255,255,255,.15);color:#fff;border:1px solid rgba(255,255,255,.3)}
 
 /* ── CATALOG CARDS ── */
 .catgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:14px;padding:18px 22px}
@@ -389,6 +446,13 @@ nav{flex:1;padding:8px 6px}
     <button class="sb-btn"        id="btn-cats"     onclick="showTab('cats')">    <span class="sb-ico">🗂</span> Каталоги</button>
     <button class="sb-btn"        id="btn-orders"   onclick="showTab('orders')">  <span class="sb-ico">📋</span> Замовлення <span class="sb-badge" id="sbOrd">0</span></button>
     <button class="sb-btn"        id="btn-reviews"  onclick="showTab('reviews')"> <span class="sb-ico">⭐</span> Відгуки <span class="sb-badge" id="sbRev" style="display:none">0</span></button>
+    <div class="sb-section-label" style="margin-top:6px">Управління</div>
+    <button class="sb-btn" id="btn-clients"  onclick="showTab('clients')"> <span class="sb-ico">👥</span> Клієнти</button>
+    <button class="sb-btn" id="btn-promos"   onclick="showTab('promos')">  <span class="sb-ico">🎁</span> Промокоди</button>
+    <button class="sb-btn" id="btn-banners"  onclick="showTab('banners')"> <span class="sb-ico">📢</span> Акції/Банери</button>
+    <button class="sb-btn" id="btn-delivery" onclick="showTab('delivery')"><span class="sb-ico">🚚</span> Доставка</button>
+    <button class="sb-btn" id="btn-media"    onclick="showTab('media')">   <span class="sb-ico">📸</span> Медіабанк</button>
+    <button class="sb-btn" id="btn-settings" onclick="showTab('settings')"><span class="sb-ico">⚙️</span> Налаштування</button>
   </nav>
   <div class="sb-sep"></div>
   <div class="sb-bottom">
@@ -554,6 +618,126 @@ nav{flex:1;padding:8px 6px}
   <div class="tab-scroll">
     <div style="padding:14px 22px 22px" id="revList"></div>
   </div>
+</div>
+
+<!-- CLIENTS TAB -->
+<div id="tab-clients" class="tab">
+  <div class="phdr"><div class="phdr-title">Клієнти</div><div id="cliUpdated" style="font-size:.72rem;color:var(--dim)"></div></div>
+  <div class="tab-scroll"><div class="nt-body" id="cliList"><div class="empty"><div class="empty-ico">⏳</div><p>Завантаження...</p></div></div></div>
+</div>
+
+<!-- PROMOS TAB -->
+<div id="tab-promos" class="tab">
+  <div class="phdr"><div class="phdr-title">Промокоди</div></div>
+  <div class="tab-scroll"><div class="nt-body">
+    <div class="nt-sec">
+      <div class="nt-sec-title">Новий промокод</div>
+      <div class="nt-grid" style="margin-bottom:12px">
+        <div class="nt-field"><div class="nt-label">Код</div><input class="nt-inp" id="promoCode" placeholder="SALE10" style="text-transform:uppercase"></div>
+        <div class="nt-field"><div class="nt-label">Знижка %</div><input class="nt-inp" id="promoVal" type="number" min="1" max="100" placeholder="10"></div>
+        <div class="nt-field"><div class="nt-label">Опис</div><input class="nt-inp" id="promoDesc" placeholder="Літній розпродаж"></div>
+        <div class="nt-field"><div class="nt-label">Макс. використань (0 = без ліміту)</div><input class="nt-inp" id="promoMax" type="number" min="0" value="0"></div>
+      </div>
+      <button class="nt-save" onclick="addPromo()">+ Створити промокод</button>
+    </div>
+    <div class="nt-sec">
+      <div class="nt-sec-title">Активні коди</div>
+      <div id="promoList"></div>
+    </div>
+  </div></div>
+</div>
+
+<!-- BANNERS TAB -->
+<div id="tab-banners" class="tab">
+  <div class="phdr"><div class="phdr-title">Акції та Банери</div></div>
+  <div class="tab-scroll"><div class="nt-body">
+    <div class="nt-sec">
+      <div class="nt-sec-title">Головний банер</div>
+      <div class="nt-grid" style="margin-bottom:12px">
+        <div class="nt-field"><div class="nt-label">Заголовок</div><input class="nt-inp" id="banTitle" placeholder="Нова колекція 2025" oninput="previewBanner()"></div>
+        <div class="nt-field"><div class="nt-label">Підзаголовок</div><input class="nt-inp" id="banSub" placeholder="Знижки до 50%" oninput="previewBanner()"></div>
+        <div class="nt-field"><div class="nt-label">Текст кнопки</div><input class="nt-inp" id="banBtn" placeholder="Переглянути →" oninput="previewBanner()"></div>
+        <div class="nt-field"><div class="nt-label">Посилання кнопки</div><input class="nt-inp" id="banLink" placeholder="catalog.html"></div>
+        <div class="nt-field"><div class="nt-label">Колір фону (CSS)</div><input class="nt-inp" id="banBg" placeholder="linear-gradient(135deg,#1a0d3a,#0d3d20)" oninput="previewBanner()"></div>
+        <div class="nt-field"><div class="nt-label">Статус</div>
+          <select class="nt-inp" id="banActive"><option value="1">✅ Активний</option><option value="0">❌ Вимкнений</option></select>
+        </div>
+      </div>
+      <div class="banner-preview" id="banPreview">
+        <div><div class="banner-preview-title" id="bpTitle">Заголовок</div><div class="banner-preview-sub" id="bpSub">Підзаголовок</div><div class="banner-preview-btn" id="bpBtn">Кнопка</div></div>
+      </div>
+      <div style="margin-top:14px"><button class="nt-save" onclick="saveBanner()">💾 Зберегти банер</button></div>
+    </div>
+  </div></div>
+</div>
+
+<!-- DELIVERY TAB -->
+<div id="tab-delivery" class="tab">
+  <div class="phdr"><div class="phdr-title">Налаштування доставки</div></div>
+  <div class="tab-scroll"><div class="nt-body">
+    <div class="nt-sec">
+      <div class="nt-sec-title">Перевізник за замовчуванням</div>
+      <div class="del-toggle" id="delCarrier">
+        <button class="del-tog-btn active" data-val="nova" onclick="selDelCarrier(this)">🟡 Нова Пошта</button>
+        <button class="del-tog-btn" data-val="ukr" onclick="selDelCarrier(this)">🔵 Укрпошта</button>
+        <button class="del-tog-btn" data-val="both" onclick="selDelCarrier(this)">🟢 Обидва</button>
+      </div>
+    </div>
+    <div class="nt-sec">
+      <div class="nt-sec-title">Умови доставки</div>
+      <div class="nt-grid" style="margin-bottom:14px">
+        <div class="nt-field"><div class="nt-label">Безкоштовна доставка від (₴, 0 = завжди платна)</div><input class="nt-inp" id="delFreeFrom" type="number" min="0" placeholder="500"></div>
+        <div class="nt-field"><div class="nt-label">Мінімальна сума замовлення (₴)</div><input class="nt-inp" id="delMinOrder" type="number" min="0" placeholder="0"></div>
+        <div class="nt-field"><div class="nt-label">Вартість доставки (₴)</div><input class="nt-inp" id="delCost" type="number" min="0" placeholder="60"></div>
+        <div class="nt-field"><div class="nt-label">Термін доставки (днів)</div><input class="nt-inp" id="delDays" placeholder="2-4"></div>
+      </div>
+      <button class="nt-save" onclick="saveDelivery()">💾 Зберегти доставку</button>
+    </div>
+  </div></div>
+</div>
+
+<!-- MEDIA TAB -->
+<div id="tab-media" class="tab">
+  <div class="phdr"><div class="phdr-title">Медіабанк</div><div style="font-size:.72rem;color:var(--dim)" id="mediaCount"></div></div>
+  <div class="tab-scroll"><div class="media-grid" id="mediaGrid"></div></div>
+</div>
+
+<!-- SETTINGS TAB -->
+<div id="tab-settings" class="tab">
+  <div class="phdr"><div class="phdr-title">Налаштування магазину</div></div>
+  <div class="tab-scroll"><div class="nt-body">
+    <div class="nt-sec">
+      <div class="nt-sec-title">Основне</div>
+      <div class="nt-grid" style="margin-bottom:14px">
+        <div class="nt-field"><div class="nt-label">Назва магазину</div><input class="nt-inp" id="stName" placeholder="Nice Shopping"></div>
+        <div class="nt-field"><div class="nt-label">Валюта</div><input class="nt-inp" id="stCurrency" placeholder="₴" style="max-width:80px"></div>
+        <div class="nt-field"><div class="nt-label">Телефон</div><input class="nt-inp" id="stPhone" placeholder="+380..."></div>
+        <div class="nt-field"><div class="nt-label">Ім'я контакту</div><input class="nt-inp" id="stPhoneName" placeholder="Тетяна"></div>
+        <div class="nt-field"><div class="nt-label">Email</div><input class="nt-inp" id="stEmail" type="email" placeholder="shop@gmail.com"></div>
+        <div class="nt-field"><div class="nt-label">Telegram (без @)</div><input class="nt-inp" id="stTelegram" placeholder="NazarT85"></div>
+        <div class="nt-field"><div class="nt-label">Instagram (без @)</div><input class="nt-inp" id="stInstagram" placeholder="fayni_pokupky"></div>
+        <div class="nt-field"><div class="nt-label">TikTok (без @)</div><input class="nt-inp" id="stTiktok" placeholder="fayni_pokupky"></div>
+      </div>
+      <button class="nt-save" onclick="saveSettings()">💾 Зберегти</button>
+    </div>
+    <div class="nt-sec">
+      <div class="nt-sec-title">Telegram бот (сповіщення про замовлення)</div>
+      <div class="nt-grid" style="margin-bottom:14px">
+        <div class="nt-field"><div class="nt-label">Bot Token</div><input class="nt-inp" id="stBotToken" placeholder="123456:ABC..."></div>
+        <div class="nt-field"><div class="nt-label">Chat ID</div><input class="nt-inp" id="stChatId" placeholder="-100..."></div>
+      </div>
+      <button class="nt-save" onclick="saveSettings()">💾 Зберегти</button>
+    </div>
+    <div class="nt-sec">
+      <div class="nt-sec-title">Зміна пароля адміна</div>
+      <div class="nt-grid c3" style="margin-bottom:14px">
+        <div class="nt-field"><div class="nt-label">Поточний пароль</div><input class="nt-inp" id="pwOld" type="password"></div>
+        <div class="nt-field"><div class="nt-label">Новий пароль</div><input class="nt-inp" id="pwNew" type="password"></div>
+        <div class="nt-field"><div class="nt-label">Повторити новий</div><input class="nt-inp" id="pwNew2" type="password"></div>
+      </div>
+      <button class="nt-save" onclick="changePass()">🔑 Змінити пароль</button>
+    </div>
+  </div></div>
 </div>
 
 </div><!-- /main -->
@@ -832,7 +1016,7 @@ async function _preloadReviews(){
 function openSb(){ document.getElementById('sidebar').classList.add('open'); document.getElementById('sbOverlay').classList.add('open'); }
 function closeSb(){ document.getElementById('sidebar').classList.remove('open'); document.getElementById('sbOverlay').classList.remove('open'); }
 
-var TABS=['stats','products','cats','orders','reviews'];
+var TABS=['stats','products','cats','orders','reviews','clients','promos','banners','delivery','media','settings'];
 function showTab(name){
   closeSb();
   S.tab=name;
@@ -849,6 +1033,12 @@ function showTab(name){
   if(name==='orders')   { startOrderPoll(); renderOrders(false); }
   else                  stopOrderPoll();
   if(name==='reviews')  renderReviews();
+  if(name==='clients')  renderClients();
+  if(name==='promos')   renderPromos();
+  if(name==='banners')  loadBannerForm();
+  if(name==='delivery') loadDeliveryForm();
+  if(name==='media')    renderMedia();
+  if(name==='settings') loadSettingsForm();
 }
 
 function updateBadges(){
@@ -1705,6 +1895,234 @@ async function deleteReview(id){
     toast('❌ Помилка: '+(e.message||e));
   }
 }
+
+/* ══════════════════════════════════════════════
+   CLIENTS
+══════════════════════════════════════════════ */
+async function renderClients(){
+  var el=document.getElementById('cliList');
+  el.innerHTML='<div class="empty"><div class="empty-ico">⏳</div><p>Завантаження...</p></div>';
+  var orders=[];
+  try{ orders=await API.getOrders(); }catch(e){ el.innerHTML='<div class="empty"><div class="empty-ico">❌</div><p>Помилка завантаження</p></div>'; return; }
+  // group by phone
+  var map={};
+  orders.forEach(function(o){
+    var phone=(o.phone||'').replace(/\s/g,'');
+    if(!phone) return;
+    if(!map[phone]){ map[phone]={name:(o.firstName||'')+' '+(o.lastName||''),phone:phone,city:o.city||'',orders:0,total:0,last:''}; }
+    map[phone].orders++;
+    map[phone].total+=(o.total||0);
+    if(!map[phone].last||o.date>map[phone].last) map[phone].last=o.date||'';
+  });
+  var clients=Object.values(map).sort(function(a,b){return b.total-a.total;});
+  document.getElementById('cliUpdated').textContent=clients.length+' клієнтів';
+  if(!clients.length){ el.innerHTML='<div class="empty"><div class="empty-ico">👥</div><p>Замовлень ще немає</p></div>'; return; }
+  el.innerHTML='<div class="box"><div class="tbl-wrap"><table class="cli-tbl"><thead><tr>'+
+    '<th>#</th><th>Ім\'я</th><th>Телефон</th><th>Місто</th><th>Замовлень</th><th>Витрачено</th><th>Останнє</th>'+
+    '</tr></thead><tbody>'+
+    clients.map(function(c,i){
+      return '<tr>'+
+        '<td style="color:var(--dim)">'+(i+1)+'</td>'+
+        '<td style="font-weight:600">'+esc(c.name.trim()||'—')+'</td>'+
+        '<td><a href="tel:'+esc(c.phone)+'" style="color:var(--green)">'+esc(c.phone)+'</a></td>'+
+        '<td style="color:var(--dim)">'+esc(c.city||'—')+'</td>'+
+        '<td style="text-align:center">'+c.orders+'</td>'+
+        '<td style="color:#4ade80;font-weight:700">₴'+c.total+'</td>'+
+        '<td style="color:var(--dim);font-size:.76rem">'+esc(c.last||'—')+'</td>'+
+      '</tr>';
+    }).join('')+
+  '</tbody></table></div></div>';
+}
+
+/* ══════════════════════════════════════════════
+   PROMO CODES
+══════════════════════════════════════════════ */
+function getPromos(){ try{ return JSON.parse(localStorage.getItem('ns_promos')||'[]'); }catch(e){ return []; } }
+function savePromos(a){ localStorage.setItem('ns_promos',JSON.stringify(a)); }
+function renderPromos(){
+  var list=getPromos();
+  var el=document.getElementById('promoList');
+  if(!list.length){ el.innerHTML='<div style="color:var(--dim);font-size:.82rem;padding:10px 0">Промокодів ще немає</div>'; return; }
+  el.innerHTML=list.map(function(p,i){
+    return '<div class="promo-card">'+
+      '<span class="promo-code">'+esc(p.code)+'</span>'+
+      '<div class="promo-info">'+esc(p.desc||'')+'<br><span style="color:var(--dim);font-size:.73rem">Використано: '+( p.used||0)+(p.max>0?' / '+p.max:' / ∞')+'</span></div>'+
+      '<span class="promo-badge">-'+p.val+'%</span>'+
+      '<button class="btn-sm danger" style="margin-left:8px" onclick="delPromo('+i+')">🗑</button>'+
+    '</div>';
+  }).join('');
+}
+function addPromo(){
+  var code=document.getElementById('promoCode').value.trim().toUpperCase();
+  var val=parseInt(document.getElementById('promoVal').value)||0;
+  var desc=document.getElementById('promoDesc').value.trim();
+  var max=parseInt(document.getElementById('promoMax').value)||0;
+  if(!code||!val){ toast('❌ Введіть код і знижку'); return; }
+  var list=getPromos();
+  if(list.find(function(p){return p.code===code;})){ toast('❌ Такий код вже є'); return; }
+  list.push({code:code,val:val,desc:desc,max:max,used:0});
+  savePromos(list);
+  document.getElementById('promoCode').value='';
+  document.getElementById('promoVal').value='';
+  document.getElementById('promoDesc').value='';
+  renderPromos(); toast('✅ Промокод '+code+' створено');
+}
+function delPromo(i){
+  var list=getPromos();
+  list.splice(i,1);
+  savePromos(list);
+  renderPromos(); toast('Промокод видалено');
+}
+
+/* ══════════════════════════════════════════════
+   BANNERS
+══════════════════════════════════════════════ */
+function getBannerCfg(){ try{ return JSON.parse(localStorage.getItem('ns_banner')||'null'); }catch(e){ return null; } }
+function loadBannerForm(){
+  var b=getBannerCfg()||{title:'',sub:'',btn:'Переглянути →',link:'catalog.html',bg:'linear-gradient(135deg,#1a0d3a,#0a2a1a)',active:1};
+  document.getElementById('banTitle').value=b.title||'';
+  document.getElementById('banSub').value=b.sub||'';
+  document.getElementById('banBtn').value=b.btn||'';
+  document.getElementById('banLink').value=b.link||'';
+  document.getElementById('banBg').value=b.bg||'';
+  document.getElementById('banActive').value=b.active?'1':'0';
+  previewBanner();
+}
+function previewBanner(){
+  var bg=document.getElementById('banBg').value||'linear-gradient(135deg,#1a0d3a,#0a2a1a)';
+  document.getElementById('banPreview').style.background=bg;
+  document.getElementById('bpTitle').textContent=document.getElementById('banTitle').value||'Заголовок';
+  document.getElementById('bpSub').textContent=document.getElementById('banSub').value||'Підзаголовок';
+  document.getElementById('bpBtn').textContent=document.getElementById('banBtn').value||'Кнопка';
+}
+function saveBanner(){
+  var b={
+    title:document.getElementById('banTitle').value.trim(),
+    sub:document.getElementById('banSub').value.trim(),
+    btn:document.getElementById('banBtn').value.trim(),
+    link:document.getElementById('banLink').value.trim(),
+    bg:document.getElementById('banBg').value.trim(),
+    active:document.getElementById('banActive').value==='1'
+  };
+  localStorage.setItem('ns_banner',JSON.stringify(b));
+  toast('✅ Банер збережено');
+}
+
+/* ══════════════════════════════════════════════
+   DELIVERY
+══════════════════════════════════════════════ */
+function getDeliveryCfg(){ try{ return JSON.parse(localStorage.getItem('ns_delivery')||'null'); }catch(e){ return null; } }
+function selDelCarrier(btn){
+  document.querySelectorAll('#delCarrier .del-tog-btn').forEach(function(b){ b.classList.remove('active'); });
+  btn.classList.add('active');
+}
+function loadDeliveryForm(){
+  var d=getDeliveryCfg()||{carrier:'nova',freeFrom:500,minOrder:0,cost:60,days:'2-4'};
+  document.getElementById('delFreeFrom').value=d.freeFrom||0;
+  document.getElementById('delMinOrder').value=d.minOrder||0;
+  document.getElementById('delCost').value=d.cost||0;
+  document.getElementById('delDays').value=d.days||'';
+  document.querySelectorAll('#delCarrier .del-tog-btn').forEach(function(b){
+    b.classList.toggle('active', b.dataset.val===(d.carrier||'nova'));
+  });
+}
+function saveDelivery(){
+  var active=document.querySelector('#delCarrier .del-tog-btn.active');
+  var d={
+    carrier:active?active.dataset.val:'nova',
+    freeFrom:parseInt(document.getElementById('delFreeFrom').value)||0,
+    minOrder:parseInt(document.getElementById('delMinOrder').value)||0,
+    cost:parseInt(document.getElementById('delCost').value)||0,
+    days:document.getElementById('delDays').value.trim()
+  };
+  localStorage.setItem('ns_delivery',JSON.stringify(d));
+  toast('✅ Налаштування доставки збережено');
+}
+
+/* ══════════════════════════════════════════════
+   MEDIA
+══════════════════════════════════════════════ */
+function renderMedia(){
+  var imgs=_products.filter(function(p){ return p.imageUrl||p.img; }).map(function(p){ return {name:p.name,url:p.imageUrl||p.img,id:p.id}; });
+  document.getElementById('mediaCount').textContent=imgs.length+' зображень';
+  document.getElementById('mediaGrid').innerHTML=imgs.map(function(m){
+    var url=m.url||'';
+    var isData=url.indexOf('data:')===0;
+    var thumb=isData?url:url;
+    return '<div class="media-item" onclick="copyMediaUrl(\''+esc(url.replace(/'/g,'\\\''))+'\',this)" title="Натисни щоб скопіювати URL">'+
+      '<img src="'+esc(thumb)+'" loading="lazy" onerror="this.style.display=\'none\'">'+
+      '<div class="media-name">'+esc(m.name)+'</div>'+
+    '</div>';
+  }).join('');
+}
+function copyMediaUrl(url, el){
+  if(!url) return;
+  navigator.clipboard.writeText(url).then(function(){ toast('✅ URL скопійовано'); }).catch(function(){ toast('URL: '+url.substring(0,40)+'...'); });
+}
+
+/* ══════════════════════════════════════════════
+   SETTINGS
+══════════════════════════════════════════════ */
+function getStoredSettings(){ try{ return JSON.parse(localStorage.getItem('ns_settings')||'null'); }catch(e){ return null; } }
+function loadSettingsForm(){
+  var s=getStoredSettings()||{};
+  document.getElementById('stName').value=s.storeName||CONFIG.storeName||'';
+  document.getElementById('stCurrency').value=s.currency||CONFIG.currency||'₴';
+  document.getElementById('stPhone').value=s.phone||CONFIG.phone||'';
+  document.getElementById('stPhoneName').value=s.phoneName||CONFIG.phoneName||'';
+  document.getElementById('stEmail').value=s.email||CONFIG.email||'';
+  document.getElementById('stTelegram').value=s.telegram||CONFIG.telegram||'';
+  document.getElementById('stInstagram').value=s.instagram||CONFIG.instagram||'';
+  document.getElementById('stTiktok').value=s.tiktok||CONFIG.tiktok||'';
+  document.getElementById('stBotToken').value=s.telegramBotToken||CONFIG.telegramBotToken||'';
+  document.getElementById('stChatId').value=s.telegramChatId||CONFIG.telegramChatId||'';
+}
+function saveSettings(){
+  var s={
+    storeName:document.getElementById('stName').value.trim(),
+    currency:document.getElementById('stCurrency').value.trim()||'₴',
+    phone:document.getElementById('stPhone').value.trim(),
+    phoneName:document.getElementById('stPhoneName').value.trim(),
+    email:document.getElementById('stEmail').value.trim(),
+    telegram:document.getElementById('stTelegram').value.trim(),
+    instagram:document.getElementById('stInstagram').value.trim(),
+    tiktok:document.getElementById('stTiktok').value.trim(),
+    telegramBotToken:document.getElementById('stBotToken').value.trim(),
+    telegramChatId:document.getElementById('stChatId').value.trim()
+  };
+  localStorage.setItem('ns_settings',JSON.stringify(s));
+  // Apply immediately
+  if(s.storeName) CONFIG.storeName=s.storeName;
+  if(s.currency) CONFIG.currency=s.currency;
+  if(s.phone) CONFIG.phone=s.phone;
+  if(s.telegram) CONFIG.telegram=s.telegram;
+  if(s.instagram) CONFIG.instagram=s.instagram;
+  toast('✅ Налаштування збережено');
+}
+function changePass(){
+  var old=document.getElementById('pwOld').value;
+  var n1=document.getElementById('pwNew').value;
+  var n2=document.getElementById('pwNew2').value;
+  var stored=localStorage.getItem('ns_admin_token');
+  if(old!==stored){ toast('❌ Поточний пароль невірний'); return; }
+  if(!n1||n1.length<4){ toast('❌ Новий пароль мінімум 4 символи'); return; }
+  if(n1!==n2){ toast('❌ Паролі не співпадають'); return; }
+  localStorage.setItem('ns_admin_token',n1);
+  document.getElementById('pwOld').value='';
+  document.getElementById('pwNew').value='';
+  document.getElementById('pwNew2').value='';
+  toast('✅ Пароль змінено');
+}
+// Apply stored settings on load
+(function applyStoredSettings(){
+  var s=getStoredSettings();
+  if(!s) return;
+  if(s.storeName) CONFIG.storeName=s.storeName;
+  if(s.currency) CONFIG.currency=s.currency;
+  if(s.phone) CONFIG.phone=s.phone;
+  if(s.telegram) CONFIG.telegram=s.telegram;
+  if(s.instagram) CONFIG.instagram=s.instagram;
+})();
 
 /* ── INIT ── */
 document.getElementById('loginPass').addEventListener('keydown',function(e){ if(e.key==='Enter') doLogin(); });
