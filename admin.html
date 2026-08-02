@@ -1325,6 +1325,7 @@ async function deleteOrder(id){
 }
 
 /* ── REVIEWS ── */
+var _editingReviewId=null;
 async function renderReviews(){
   var el=document.getElementById('revList');
   el.innerHTML='<div class="empty"><div class="empty-ico">⏳</div><p>Завантаження...</p></div>';
@@ -1339,6 +1340,23 @@ async function renderReviews(){
     var d=r.ts?new Date(r.ts).toLocaleDateString('uk-UA'):'';
     var liked=likedIds.has(String(r._id));
     var likes=r.likes||0;
+    if(String(r._id)===String(_editingReviewId)){
+      return '<div class="rcard">'+
+        '<div style="display:flex;flex-direction:column;gap:8px">'+
+          '<div style="display:flex;gap:8px">'+
+            '<input id="edit-name-'+r._id+'" class="linp" style="flex:1;font-size:.85rem" placeholder="Ім\'я" value="'+esc(r.name||'')+'">'+
+            '<select id="edit-rating-'+r._id+'" class="linp" style="width:80px;font-size:.85rem">'+
+              [1,2,3,4,5].map(function(n){ return '<option value="'+n+'"'+((r.rating||5)===n?' selected':'')+'>'+n+' ★</option>'; }).join('')+
+            '</select>'+
+          '</div>'+
+          '<textarea id="edit-text-'+r._id+'" class="linp" rows="3" style="font-size:.82rem;resize:vertical;min-height:60px">'+esc(r.text||'')+'</textarea>'+
+          '<div style="display:flex;gap:8px">'+
+            '<button onclick="saveEditReview('+r._id+')" class="btn-sm primary">✅ Зберегти</button>'+
+            '<button onclick="cancelEditReview()" class="btn-sm">✕ Скасувати</button>'+
+          '</div>'+
+        '</div>'+
+      '</div>';
+    }
     return '<div class="rcard">'+
       '<div class="rcard-hdr">'+
         '<div style="display:flex;align-items:center;gap:10px">'+
@@ -1349,6 +1367,7 @@ async function renderReviews(){
           '<button onclick="toggleLike('+r._id+','+likes+')" class="btn-sm'+(liked?' primary':'')+'" title="Лайк">'+
             (liked?'❤️':'🤍')+' '+likes+
           '</button>'+
+          '<button onclick="editReview('+r._id+')" class="btn-sm" title="Редагувати" style="font-size:.85rem">✏️</button>'+
           '<button class="btn-sm danger" onclick="deleteReview('+r._id+')" title="Видалити">🗑</button>'+
         '</div>'+
       '</div>'+
@@ -1361,6 +1380,23 @@ async function renderReviews(){
       '</div>'+
     '</div>';
   }).join('');
+}
+function editReview(id){ _editingReviewId=id; renderReviews(); }
+function cancelEditReview(){ _editingReviewId=null; renderReviews(); }
+async function saveEditReview(id){
+  var nameEl=document.getElementById('edit-name-'+id);
+  var textEl=document.getElementById('edit-text-'+id);
+  var ratingEl=document.getElementById('edit-rating-'+id);
+  var nameVal=(nameEl?nameEl.value:'').trim();
+  var textVal=(textEl?textEl.value:'').trim();
+  var ratingVal=parseInt(ratingEl?ratingEl.value:'5')||5;
+  if(!nameVal||!textVal){ toast('❌ Заповніть ім\'я та текст'); return; }
+  try{
+    await API.patchReview(id,{name:nameVal,text:textVal,rating:ratingVal});
+    _editingReviewId=null;
+    toast('✅ Відгук збережено');
+    renderReviews();
+  }catch(e){ toast('❌ Помилка: '+(e.message||e)); }
 }
 async function toggleLike(id, curLikes){
   var ids=JSON.parse(localStorage.getItem('ns_liked_reviews')||'[]').map(String);

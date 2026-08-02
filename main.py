@@ -913,6 +913,15 @@ async def patch_review(rid: int, req: Request, background_tasks: BackgroundTasks
             pass
     if "reply" in body:
         data["reply"] = str(body.get("reply") or "")[:500].strip()
+    if "name" in body:
+        data["name"] = str(body.get("name") or "")[:100].strip()
+    if "text" in body:
+        data["text"] = str(body.get("text") or "")[:1000].strip()
+    if "rating" in body:
+        try:
+            data["rating"] = max(1, min(5, int(body["rating"])))
+        except (ValueError, TypeError):
+            pass
     conn.execute("UPDATE reviews SET data=? WHERE id=?",
                  (json.dumps(data, ensure_ascii=False), rid))
     conn.commit(); conn.close()
