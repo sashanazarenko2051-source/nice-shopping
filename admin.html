@@ -18,7 +18,10 @@
 html,body{height:100%}
 body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);font-size:14px;line-height:1.5}
 button{cursor:pointer;font-family:inherit}
-input,select,textarea{font-family:inherit;font-size:14px}
+input,select,textarea{font-family:inherit;font-size:14px;color-scheme:dark}
+select{background:#0e0d1e;color:#eceaf8;border-color:rgba(139,92,246,.2)}
+option{background:#13122a;color:#eceaf8}
+option:hover,option:checked{background:#1e1a3a;color:#c4b5fd}
 a{text-decoration:none;color:inherit}
 
 /* ── LOGIN ── */
@@ -320,8 +323,9 @@ nav{flex:1;padding:8px 6px}
 .frow.c3{grid-template-columns:1fr 1fr 1fr}
 .ff{display:flex;flex-direction:column;gap:4px}
 .flbl{font-size:.68rem;color:var(--dim);text-transform:uppercase;letter-spacing:.05em}
-.finp,.fsel,.fta{width:100%;padding:10px 12px;background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:var(--r);color:var(--text);outline:none;transition:all .15s}
+.finp,.fsel,.fta{width:100%;padding:10px 12px;background:rgba(139,92,246,.06);border:1px solid var(--border);border-radius:var(--r);color:var(--text);outline:none;transition:all .15s}
 .finp:focus,.fsel:focus,.fta:focus{border-color:rgba(74,222,128,.5);box-shadow:0 0 0 3px rgba(74,222,128,.08)}
+select,select.fsel,select.iinp,.nt-inp[type!="text"][type!="number"][type!="email"][type!="password"]{color-scheme:dark}
 .fta{resize:vertical;min-height:72px}
 .fhint{font-size:.7rem;color:var(--dim)}
 .fhint.green{color:var(--green)}
