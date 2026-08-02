@@ -78,9 +78,18 @@
     .chip-sub{font-size:.68rem;color:var(--dim);display:block}
 
     /* Trust bar */
-    .trust{background:rgba(139,92,246,.05);border-bottom:1px solid rgba(139,92,246,.12);padding:13px 0}
-    .trust-in{display:flex;justify-content:center;gap:40px;flex-wrap:wrap;font-size:.83rem;color:var(--dim)}
-    .trust-in div{display:flex;align-items:center;gap:7px}
+    .trust{border-bottom:1px solid rgba(139,92,246,.1);padding:18px 0;background:rgba(8,7,18,.6)}
+    .trust-in{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+    .trust-item{
+      display:flex;align-items:center;gap:12px;
+      background:rgba(139,92,246,.06);
+      border:1px solid rgba(139,92,246,.14);
+      border-radius:12px;padding:12px 16px;
+      transition:all .2s;
+    }
+    .trust-item:hover{background:rgba(139,92,246,.12);border-color:rgba(139,92,246,.3);transform:translateY(-1px)}
+    .trust-ico{font-size:1.3rem;flex-shrink:0;line-height:1}
+    .trust-text{font-size:.78rem;color:var(--dim);font-weight:500;line-height:1.35}
 
     /* Section labels */
     .slabel{font-size:.7rem;letter-spacing:.13em;text-transform:uppercase;color:var(--violet);font-weight:600;margin-bottom:8px}
@@ -89,39 +98,96 @@
     /* Categories */
     .cats{padding:80px 0}
     .cats-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:14px}
-    .cat-card{background:var(--bg2);border:1px solid var(--gbd);border-radius:18px;padding:28px 16px 22px;display:flex;flex-direction:column;align-items:center;gap:10px;cursor:pointer;transition:all var(--tr);position:relative;overflow:hidden}
-    .cat-card::after{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(139,92,246,.09),transparent);opacity:0;transition:opacity var(--tr)}
-    .cat-card:hover{border-color:rgba(139,92,246,.38);box-shadow:0 8px 32px rgba(139,92,246,.15),0 2px 8px rgba(0,0,0,.4);transform:translateY(-5px)}
-    .cat-card:hover::after{opacity:1}
-    .cat-icon{font-size:1.9rem;width:66px;height:66px;border-radius:50%;display:flex;align-items:center;justify-content:center;position:relative;z-index:1}
-    .cats-grid .cat-card:nth-child(1) .cat-icon{background:rgba(244,114,182,.15)}
-    .cats-grid .cat-card:nth-child(2) .cat-icon{background:rgba(59,130,246,.15)}
-    .cats-grid .cat-card:nth-child(3) .cat-icon{background:rgba(139,92,246,.15)}
-    .cats-grid .cat-card:nth-child(4) .cat-icon{background:rgba(16,185,129,.15)}
-    .cats-grid .cat-card:nth-child(5) .cat-icon{background:rgba(244,63,94,.15)}
-    .cat-name{font-size:.875rem;font-weight:600;text-align:center;color:var(--text);position:relative;z-index:1}
-    .cat-go{font-size:.76rem;color:var(--violet);position:relative;z-index:1;opacity:0;transform:translateY(4px);transition:all var(--tr)}
-    .cat-card:hover .cat-go{opacity:1;transform:translateY(0)}
+    .cat-card{
+      background:rgba(var(--cc),0.06);
+      border:1.5px solid rgba(var(--cc),.18);
+      border-radius:20px;padding:30px 16px 22px;
+      display:flex;flex-direction:column;align-items:center;gap:10px;
+      cursor:pointer;transition:all .25s;position:relative;overflow:hidden;
+      --cc:139,92,246;
+    }
+    .cat-card::before{
+      content:'';position:absolute;inset:0;
+      background:radial-gradient(ellipse at 50% 0%,rgba(var(--cc),.12) 0%,transparent 70%);
+      opacity:0;transition:opacity .25s;
+    }
+    .cat-card:hover{
+      border-color:rgba(var(--cc),.5);
+      box-shadow:0 12px 40px rgba(var(--cc),.2),0 0 0 1px rgba(var(--cc),.1);
+      transform:translateY(-6px);
+    }
+    .cat-card:hover::before{opacity:1}
+    .cat-icon{
+      font-size:2rem;width:72px;height:72px;border-radius:50%;
+      display:flex;align-items:center;justify-content:center;
+      background:rgba(var(--cc),.14);
+      border:1.5px solid rgba(var(--cc),.25);
+      position:relative;z-index:1;transition:all .25s;
+    }
+    .cat-card:hover .cat-icon{
+      background:rgba(var(--cc),.22);
+      box-shadow:0 0 20px rgba(var(--cc),.3);
+      transform:scale(1.08);
+    }
+    .cat-name{font-size:.85rem;font-weight:600;text-align:center;color:var(--text);position:relative;z-index:1;line-height:1.35}
+    .cat-count{font-size:.72rem;color:rgba(var(--cc),1);opacity:.7;position:relative;z-index:1;transition:opacity .2s}
+    .cat-card:hover .cat-count{opacity:1}
+
+    /* Scroll reveal */
+    .reveal{opacity:0;transform:translateY(28px);transition:opacity .65s ease,transform .65s ease}
+    .reveal.visible{opacity:1;transform:translateY(0)}
+    .reveal-d1{transition-delay:.1s}
+    .reveal-d2{transition-delay:.18s}
+    .reveal-d3{transition-delay:.26s}
+    .reveal-d4{transition-delay:.34s}
+    .reveal-d5{transition-delay:.42s}
 
     /* Why us */
     .why{padding:72px 0;border-top:1px solid rgba(255,255,255,.04)}
     .why-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
-    .why-card{background:var(--bg2);border:1px solid var(--gbd);border-radius:20px;padding:32px;transition:all var(--tr)}
-    .why-card:hover{border-color:rgba(139,92,246,.3);box-shadow:0 8px 32px rgba(139,92,246,.1)}
-    .why-ico{font-size:2rem;margin-bottom:16px}
-    .why-t{font-size:1rem;font-weight:600;color:var(--text);margin-bottom:8px}
-    .why-p{font-size:.875rem;color:var(--dim);line-height:1.7}
+    .why-card{
+      background:var(--bg2);border:1px solid var(--gbd);border-radius:20px;
+      padding:32px;transition:all .25s;
+      position:relative;overflow:hidden;
+    }
+    .why-card::after{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--wc1,#8b5cf6),var(--wc2,#6d28d9));border-radius:20px 20px 0 0;opacity:0;transition:opacity .25s}
+    .why-card:hover{border-color:rgba(139,92,246,.3);box-shadow:0 12px 40px rgba(0,0,0,.3);transform:translateY(-3px)}
+    .why-card:hover::after{opacity:1}
+    .why-ico-wrap{width:52px;height:52px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:1.5rem;margin-bottom:18px;transition:all .25s}
+    .why-card:hover .why-ico-wrap{transform:scale(1.08)}
+    .why-t{font-size:1rem;font-weight:700;color:var(--text);margin-bottom:10px}
+    .why-p{font-size:.875rem;color:var(--dim);line-height:1.75}
+
+    /* New arrivals */
+    .new-arr{padding:80px 0}
+    .sec-head{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:32px;gap:12px;flex-wrap:wrap}
+    .btn-sm{padding:9px 20px;border-radius:10px;font-size:.8rem;font-weight:600;border:1.5px solid rgba(139,92,246,.3);color:rgba(196,181,253,.85);transition:all .2s;background:rgba(139,92,246,.07)}
+    .btn-sm:hover{border-color:rgba(139,92,246,.6);background:rgba(139,92,246,.15);color:#ddd6fe}
 
     /* Reviews */
     .reviews{padding:80px 0;border-top:1px solid rgba(255,255,255,.04)}
     .rev-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
-    .rev-card{background:var(--bg2);border:1px solid var(--gbd);border-radius:20px;padding:28px;transition:all var(--tr)}
-    .rev-card:hover{border-color:rgba(139,92,246,.3);box-shadow:0 8px 32px rgba(139,92,246,.1)}
-    .rev-top{display:flex;align-items:center;gap:14px;margin-bottom:18px}
-    .rev-avatar{width:46px;height:46px;border-radius:50%;background:rgba(139,92,246,.15);color:var(--violet);font-family:var(--serif);font-size:1.1rem;font-weight:600;display:flex;align-items:center;justify-content:center;flex-shrink:0}
-    .rev-name{font-weight:600;font-size:.9rem;color:var(--text);margin-bottom:4px}
-    .rev-stars{color:#fbbf24;font-size:.85rem;letter-spacing:1px}
-    .rev-text{font-size:.875rem;color:var(--dim);line-height:1.75;font-style:italic}
+    .rev-card{
+      background:var(--bg2);border:1px solid var(--gbd);border-radius:20px;
+      padding:28px;transition:all .25s;position:relative;overflow:hidden;
+    }
+    .rev-card::before{
+      content:'"';position:absolute;top:12px;right:20px;
+      font-family:var(--serif);font-size:5rem;line-height:1;
+      color:rgba(139,92,246,.1);font-weight:700;pointer-events:none;
+    }
+    .rev-card:hover{border-color:rgba(139,92,246,.3);box-shadow:0 12px 40px rgba(0,0,0,.3);transform:translateY(-3px)}
+    .rev-top{display:flex;align-items:center;gap:14px;margin-bottom:16px}
+    .rev-avatar{
+      width:46px;height:46px;border-radius:50%;
+      background:linear-gradient(135deg,rgba(139,92,246,.3),rgba(109,40,217,.2));
+      border:1.5px solid rgba(139,92,246,.3);
+      color:#c4b5fd;font-family:var(--serif);font-size:1.1rem;font-weight:600;
+      display:flex;align-items:center;justify-content:center;flex-shrink:0;
+    }
+    .rev-name{font-weight:600;font-size:.9rem;color:var(--text);margin-bottom:3px}
+    .rev-stars{color:#fbbf24;font-size:.82rem;letter-spacing:1px}
+    .rev-text{font-size:.875rem;color:var(--dim);line-height:1.8;font-style:italic;position:relative;z-index:1}
 
     /* CTA banner */
     .cta-band{background:linear-gradient(135deg,#0a0818 0%,#130d2e 50%,#0a0818 100%);border-top:1px solid rgba(139,92,246,.18);border-bottom:1px solid rgba(139,92,246,.18);padding:64px 0;text-align:center;position:relative;overflow:hidden}
@@ -290,10 +356,10 @@
 <!-- TRUST BAR -->
 <div class="trust">
   <div class="ctr trust-in">
-    <div data-i18n="trust.delivery">🚚 Доставка по всій Україні</div>
-    <div data-i18n="trust.quality">💎 Преміум якість</div>
-    <div data-i18n="trust.payment">💳 Накладений платіж</div>
-    <div data-i18n="trust.service">📞 Особистий підхід</div>
+    <div class="trust-item"><span class="trust-ico">🚚</span><span class="trust-text" data-i18n="trust.delivery">Доставка по всій Україні</span></div>
+    <div class="trust-item"><span class="trust-ico">💎</span><span class="trust-text" data-i18n="trust.quality">Преміум якість</span></div>
+    <div class="trust-item"><span class="trust-ico">💳</span><span class="trust-text" data-i18n="trust.payment">Накладений платіж</span></div>
+    <div class="trust-item"><span class="trust-ico">📞</span><span class="trust-text" data-i18n="trust.service">Особистий підхід</span></div>
   </div>
 </div>
 
@@ -312,30 +378,30 @@
     <div class="slabel" data-i18n="slabel.assort">АСОРТИМЕНТ</div>
     <div class="stitle" data-i18n="cats.title">Наші категорії</div>
     <div class="cats-grid">
-      <a href="catalog.html?cat=socks&gender=women" class="cat-card">
+      <a href="catalog.html?cat=socks&gender=women" class="cat-card reveal reveal-d1" style="--cc:244,114,182">
         <div class="cat-icon">🧦</div>
         <div class="cat-name" data-i18n="cat.ws">Жіночі шкарпетки</div>
-        <div class="cat-go" data-i18n="cat.go">Переглянути →</div>
+        <div class="cat-count">Переглянути →</div>
       </a>
-      <a href="catalog.html?cat=socks&gender=men" class="cat-card">
+      <a href="catalog.html?cat=socks&gender=men" class="cat-card reveal reveal-d2" style="--cc:96,165,250">
         <div class="cat-icon">🧦</div>
         <div class="cat-name" data-i18n="cat.ms">Чоловічі шкарпетки</div>
-        <div class="cat-go" data-i18n="cat.go">Переглянути →</div>
+        <div class="cat-count">Переглянути →</div>
       </a>
-      <a href="catalog.html?cat=lingerie&gender=women" class="cat-card">
+      <a href="catalog.html?cat=lingerie&gender=women" class="cat-card reveal reveal-d3" style="--cc:251,113,133">
         <div class="cat-icon">👙</div>
         <div class="cat-name" data-i18n="cat.wl">Жіноча нижня білизна</div>
-        <div class="cat-go" data-i18n="cat.go">Переглянути →</div>
+        <div class="cat-count">Переглянути →</div>
       </a>
-      <a href="catalog.html?cat=lingerie&gender=men" class="cat-card">
+      <a href="catalog.html?cat=lingerie&gender=men" class="cat-card reveal reveal-d4" style="--cc:99,102,241">
         <div class="cat-icon">🩲</div>
         <div class="cat-name" data-i18n="cat.ml">Чоловіча нижня білизна</div>
-        <div class="cat-go" data-i18n="cat.go">Переглянути →</div>
+        <div class="cat-count">Переглянути →</div>
       </a>
-      <a href="catalog.html?cat=bras" class="cat-card">
+      <a href="catalog.html?cat=bras" class="cat-card reveal reveal-d5" style="--cc:167,139,250">
         <div class="cat-icon">✨</div>
         <div class="cat-name" data-i18n="cat.br">Бюстгальтери</div>
-        <div class="cat-go" data-i18n="cat.go">Переглянути →</div>
+        <div class="cat-count">Переглянути →</div>
       </a>
     </div>
   </div>
@@ -347,22 +413,34 @@
     <div class="slabel" data-i18n="slabel.why">ПЕРЕВАГИ</div>
     <div class="stitle" data-i18n="why.title">Чому обирають нас</div>
     <div class="why-grid">
-      <div class="why-card">
-        <div class="why-ico">🚚</div>
+      <div class="why-card reveal reveal-d1" style="--wc1:#22d3ee;--wc2:#0891b2">
+        <div class="why-ico-wrap" style="background:rgba(34,211,238,.12);border:1px solid rgba(34,211,238,.2)">🚚</div>
         <div class="why-t" data-i18n="why.1t">Швидка доставка</div>
         <div class="why-p" data-i18n="why.1p">Відправляємо Новою Поштою та Укрпоштою. Замовлення сьогодні — у вас завтра.</div>
       </div>
-      <div class="why-card">
-        <div class="why-ico">💎</div>
+      <div class="why-card reveal reveal-d2" style="--wc1:#a78bfa;--wc2:#7c3aed">
+        <div class="why-ico-wrap" style="background:rgba(167,139,250,.12);border:1px solid rgba(167,139,250,.2)">💎</div>
         <div class="why-t" data-i18n="why.2t">Висока якість</div>
         <div class="why-p" data-i18n="why.2p">Тільки перевірені матеріали та виробники. Кожен товар проходить контроль якості.</div>
       </div>
-      <div class="why-card">
-        <div class="why-ico">📞</div>
+      <div class="why-card reveal reveal-d3" style="--wc1:#fb923c;--wc2:#ea580c">
+        <div class="why-ico-wrap" style="background:rgba(251,146,60,.12);border:1px solid rgba(251,146,60,.2)">💬</div>
         <div class="why-t" data-i18n="why.3t">Особистий підхід</div>
         <div class="why-p" data-i18n="why.3p">Тетяна завжди на зв'язку та допоможе підібрати ідеальний варіант саме для вас.</div>
       </div>
     </div>
+  </div>
+</section>
+
+<!-- NEW ARRIVALS -->
+<section class="new-arr" style="border-top:1px solid rgba(255,255,255,.04)">
+  <div class="ctr">
+    <div class="slabel">НОВИНКИ</div>
+    <div class="sec-head">
+      <div class="stitle" style="margin-bottom:0">Нові надходження</div>
+      <a href="catalog.html" class="btn-sm">Всі товари →</a>
+    </div>
+    <div class="products__grid" id="homeNewGrid" style="grid-template-columns:repeat(4,1fr)"></div>
   </div>
 </section>
 
@@ -426,6 +504,11 @@
         </div>
       </div>
     </div>
+    <div style="display:flex;gap:10px;margin-bottom:28px;padding-bottom:28px;border-bottom:1px solid rgba(255,255,255,.06)">
+      <a href="https://t.me/NazarT85" target="_blank" style="width:40px;height:40px;border-radius:10px;background:rgba(139,92,246,.1);border:1px solid rgba(139,92,246,.2);display:flex;align-items:center;justify-content:center;font-size:1.15rem;transition:all .2s;text-decoration:none" onmouseover="this.style.background='rgba(139,92,246,.22)'" onmouseout="this.style.background='rgba(139,92,246,.1)'">✈️</a>
+      <a href="mailto:ornazartatyana@gmail.com" style="width:40px;height:40px;border-radius:10px;background:rgba(139,92,246,.1);border:1px solid rgba(139,92,246,.2);display:flex;align-items:center;justify-content:center;font-size:1.15rem;transition:all .2s;text-decoration:none" onmouseover="this.style.background='rgba(139,92,246,.22)'" onmouseout="this.style.background='rgba(139,92,246,.1)'">✉️</a>
+      <a href="tel:+380954141820" style="width:40px;height:40px;border-radius:10px;background:rgba(139,92,246,.1);border:1px solid rgba(139,92,246,.2);display:flex;align-items:center;justify-content:center;font-size:1.15rem;transition:all .2s;text-decoration:none" onmouseover="this.style.background='rgba(139,92,246,.22)'" onmouseout="this.style.background='rgba(139,92,246,.1)'">📞</a>
+    </div>
     <div class="footer-bottom">
       <span data-i18n="footer.copy">© 2025 Nice Shopping</span>
       <span data-i18n="footer.rights">Усі права захищені</span>
@@ -445,9 +528,30 @@
 document.getElementById('menuToggle').addEventListener('click', function() {
   document.getElementById('nav').classList.toggle('open');
 });
+
+/* Scroll reveal */
+var revObs = new IntersectionObserver(function(entries) {
+  entries.forEach(function(e) {
+    if (e.isIntersecting) { e.target.classList.add('visible'); revObs.unobserve(e.target); }
+  });
+}, { threshold: 0.08 });
+document.querySelectorAll('.reveal').forEach(function(el) { revObs.observe(el); });
+
 onProductsReady(function() {
   var el = document.getElementById('productCount');
   if (el) { el.textContent = PRODUCTS.length + '+'; el.style.visibility = ''; }
+
+  /* New arrivals grid */
+  var grid = document.getElementById('homeNewGrid');
+  if (grid && window.renderProductCard) {
+    var newest = PRODUCTS.slice(0, 4);
+    grid.innerHTML = newest.map(renderProductCard).join('');
+    grid.querySelectorAll('.product-card').forEach(function(c, i) {
+      c.classList.add('reveal');
+      c.style.transitionDelay = (i * 0.08) + 's';
+      revObs.observe(c);
+    });
+  }
 });
 applyLang();
 </script>
