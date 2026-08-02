@@ -11,17 +11,17 @@
   <link rel="icon" type="image/svg+xml" href="favicon.svg">
   <style>
     .track-wrap { max-width: 640px; margin: 0 auto; padding: 40px 16px 80px; }
-    .track-form { background: rgba(255,255,255,.03); border: 1px solid rgba(74,222,128,.12); border-radius: 16px; padding: 32px 28px; margin-bottom: 32px; }
+    .track-form { background: rgba(139,92,246,.04); border: 1px solid rgba(139,92,246,.15); border-radius: 16px; padding: 32px 28px; margin-bottom: 32px; }
     .track-title { font-family: var(--serif); font-size: 1.7rem; margin-bottom: 6px; }
     .track-sub { color: var(--gray); font-size: .88rem; margin-bottom: 24px; }
     .track-row { display: flex; gap: 10px; }
-    .track-inp { flex: 1; padding: 12px 16px; background: rgba(255,255,255,.04); border: 1px solid rgba(74,222,128,.15); border-radius: 10px; color: var(--text); font-size: .95rem; outline: none; }
-    .track-inp:focus { border-color: #4ade80; }
-    .track-btn { padding: 12px 22px; background: #2ecc71; color: #020d04; border: none; border-radius: 10px; font-weight: 700; font-size: .9rem; cursor: pointer; white-space: nowrap; }
-    .track-btn:hover { opacity: .88; }
-    .track-btn:disabled { opacity: .5; cursor: default; }
+    .track-inp { flex: 1; padding: 12px 16px; background: rgba(139,92,246,.04); border: 1px solid rgba(139,92,246,.18); border-radius: 10px; color: var(--text); font-size: .95rem; outline: none; transition: border-color .2s; }
+    .track-inp:focus { border-color: rgba(139,92,246,.5); box-shadow: 0 0 0 3px rgba(139,92,246,.08); }
+    .track-btn { padding: 12px 22px; background: linear-gradient(135deg,#8b5cf6,#6d28d9); color: #fff; border: none; border-radius: 10px; font-weight: 700; font-size: .9rem; cursor: pointer; white-space: nowrap; box-shadow: 0 4px 16px rgba(139,92,246,.35); transition: all .2s; }
+    .track-btn:hover { background: linear-gradient(135deg,#7c3aed,#5b21b6); box-shadow: 0 8px 24px rgba(139,92,246,.5); }
+    .track-btn:disabled { opacity: .5; cursor: default; box-shadow: none; }
 
-    .order-card { background: rgba(255,255,255,.03); border: 1px solid rgba(74,222,128,.1); border-radius: 14px; padding: 22px 24px; margin-bottom: 16px; }
+    .order-card { background: rgba(139,92,246,.04); border: 1px solid rgba(139,92,246,.12); border-radius: 14px; padding: 22px 24px; margin-bottom: 16px; }
     .order-card__head { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 14px; gap: 12px; flex-wrap: wrap; }
     .order-card__date { font-size: .78rem; color: var(--gray); }
     .order-card__total { font-size: 1.05rem; font-weight: 700; color: #4ade80; }
@@ -30,18 +30,18 @@
     .status-steps { display: flex; align-items: center; margin-bottom: 16px; }
     .step { display: flex; flex-direction: column; align-items: center; gap: 4px; flex: 1; }
     .step-dot { width: 28px; height: 28px; border-radius: 50%; border: 2px solid rgba(255,255,255,.12); background: rgba(255,255,255,.05); display: flex; align-items: center; justify-content: center; font-size: .85rem; transition: all .2s; }
-    .step-dot.active { border-color: #4ade80; background: rgba(74,222,128,.15); }
-    .step-dot.done { border-color: #4ade80; background: #4ade80; color: #020d04; }
+    .step-dot.active { border-color: #8b5cf6; background: rgba(139,92,246,.18); }
+    .step-dot.done { border-color: #8b5cf6; background: linear-gradient(135deg,#8b5cf6,#6d28d9); color: #fff; }
     .step-label { font-size: .68rem; color: var(--gray); text-align: center; white-space: nowrap; }
-    .step-label.active, .step-label.done { color: #4ade80; }
+    .step-label.active, .step-label.done { color: #a78bfa; }
     .step-line { flex: 1; height: 2px; background: rgba(255,255,255,.08); margin: 0 4px; margin-bottom: 18px; }
-    .step-line.done { background: #4ade80; }
+    .step-line.done { background: linear-gradient(90deg,#8b5cf6,#6d28d9); }
 
-    .order-items { font-size: .82rem; color: rgba(224,224,224,.65); line-height: 1.8; }
-    .ttn-block { margin-top: 12px; padding: 10px 14px; background: rgba(74,222,128,.06); border: 1px solid rgba(74,222,128,.15); border-radius: 10px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
-    .ttn-label { font-size: .72rem; color: #4ade80; font-weight: 600; }
+    .order-items { font-size: .82rem; color: rgba(236,234,248,.65); line-height: 1.8; }
+    .ttn-block { margin-top: 12px; padding: 10px 14px; background: rgba(139,92,246,.07); border: 1px solid rgba(139,92,246,.18); border-radius: 10px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+    .ttn-label { font-size: .72rem; color: #a78bfa; font-weight: 600; }
     .ttn-num { font-size: .9rem; font-weight: 600; letter-spacing: .04em; }
-    .ttn-link { padding: 5px 14px; border-radius: 8px; background: #4ade80; color: #020d04; font-size: .78rem; font-weight: 700; text-decoration: none; white-space: nowrap; }
+    .ttn-link { padding: 5px 14px; border-radius: 8px; background: linear-gradient(135deg,#8b5cf6,#6d28d9); color: #fff; font-size: .78rem; font-weight: 700; text-decoration: none; white-space: nowrap; }
     .ttn-link:hover { opacity: .85; }
     .empty-msg { text-align: center; padding: 40px 0; color: var(--gray); }
     .empty-msg .ico { font-size: 2.5rem; margin-bottom: 10px; }
@@ -57,7 +57,7 @@
       <a href="catalog.html">Каталог</a>
       <a href="reviews.html">Відгуки</a>
       <a href="contacts.html">Контакти</a>
-      <a href="track.html" style="color:#4ade80;font-weight:500">📦 Замовлення</a>
+      <a href="track.html" style="color:#a78bfa;font-weight:500">📦 Замовлення</a>
     </nav>
     <div style="display:flex;align-items:center;gap:4px">
       <button class="lang-btn" id="langBtn" onclick="toggleLang()">EN</button>

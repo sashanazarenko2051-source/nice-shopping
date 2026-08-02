@@ -19,38 +19,38 @@
     .rev-form-wrap p { font-size: .875rem; color: rgba(224,224,224,.55); margin-bottom: 28px; }
     .form-group { margin-bottom: 18px; }
     .form-group label { display: block; font-size: .8125rem; font-weight: 500; margin-bottom: 6px; color: rgba(224,224,224,.8); }
-    .form-control { width: 100%; padding: 12px 16px; border: 1.5px solid #1f3522; border-radius: 10px; font-size: .9375rem; font-family: inherit; background: #061008; color: #E0E0E0; transition: border-color .2s; }
-    .form-control:focus { outline: none; border-color: #4ade80; }
+    .form-control { width: 100%; padding: 12px 16px; border: 1.5px solid rgba(139,92,246,.18); border-radius: 10px; font-size: .9375rem; font-family: inherit; background: rgba(139,92,246,.04); color: #eceaf8; transition: border-color .2s; }
+    .form-control:focus { outline: none; border-color: rgba(139,92,246,.5); box-shadow:0 0 0 3px rgba(139,92,246,.08); }
     textarea.form-control { resize: vertical; min-height: 110px; }
 
     /* Star rating */
     .star-row { display: flex; gap: 6px; flex-direction: row-reverse; justify-content: flex-end; }
     .star-row input { display: none; }
-    .star-row label { font-size: 1.8rem; color: #2a3d2c; cursor: pointer; transition: color .15s; line-height: 1; }
+    .star-row label { font-size: 1.8rem; color: rgba(255,255,255,.12); cursor: pointer; transition: color .15s; line-height: 1; }
     .star-row input:checked ~ label,
     .star-row label:hover,
     .star-row label:hover ~ label { color: #fbbf24; }
 
-    .submit-btn { width: 100%; padding: 14px; background: #4ade80; color: #020d04; border-radius: 10px; font-size: .9375rem; font-weight: 700; transition: all .2s; margin-top: 4px; cursor: pointer; border: none; font-family: inherit; }
-    .submit-btn:hover { background: #86efac; transform: translateY(-1px); }
+    .submit-btn { width: 100%; padding: 14px; background: linear-gradient(135deg,#8b5cf6,#6d28d9); color: #fff; border-radius: 10px; font-size: .9375rem; font-weight: 700; transition: all .2s; margin-top: 4px; cursor: pointer; border: none; font-family: inherit; box-shadow:0 4px 18px rgba(139,92,246,.35); }
+    .submit-btn:hover { background: linear-gradient(135deg,#7c3aed,#5b21b6); transform: translateY(-1px); box-shadow:0 8px 28px rgba(139,92,246,.5); }
     .submit-btn:disabled { opacity: .6; cursor: not-allowed; transform: none; }
 
     /* Reviews list */
     .rev-list-wrap h3 { font-family: var(--serif); font-size: 1.5rem; font-weight: 400; margin-bottom: 24px; color: #E0E0E0; }
-    .rev-empty { background: #0a1a0c; border: 1px solid rgba(74,222,128,.1); border-radius: 20px; padding: 48px 32px; text-align: center; color: rgba(224,224,224,.4); }
+    .rev-empty { background: rgba(139,92,246,.04); border: 1px solid rgba(139,92,246,.12); border-radius: 20px; padding: 48px 32px; text-align: center; color: rgba(236,234,248,.4); }
     .rev-empty__icon { font-size: 3rem; margin-bottom: 12px; }
     .rev-empty__text { font-size: .9rem; }
     .rev-list { display: flex; flex-direction: column; gap: 16px; }
-    .rev-card { background: #0a1a0c; border: 1px solid rgba(74,222,128,.12); border-radius: 16px; padding: 22px 24px; }
+    .rev-card { background: #0e0d1e; border: 1px solid rgba(139,92,246,.12); border-radius: 16px; padding: 22px 24px; }
     .rev-head { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
-    .rev-avatar { width: 42px; height: 42px; border-radius: 50%; background: rgba(74,222,128,.15); color: #4ade80; font-family: var(--serif); font-size: 1rem; font-weight: 600; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .rev-avatar { width: 42px; height: 42px; border-radius: 50%; background: rgba(139,92,246,.15); color: #a78bfa; font-family: var(--serif); font-size: 1rem; font-weight: 600; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
     .rev-meta { flex: 1; }
     .rev-name { font-weight: 600; font-size: .9rem; color: #E0E0E0; }
     .rev-stars { color: #fbbf24; font-size: .85rem; letter-spacing: 1px; margin-top: 2px; }
     .rev-date { font-size: .75rem; color: rgba(224,224,224,.35); margin-left: auto; }
     .rev-text { font-size: .875rem; color: rgba(224,224,224,.65); line-height: 1.75; font-style: italic; }
-    .rev-reply { margin-top: 10px; padding: 8px 12px; background: rgba(74,222,128,.06); border-left: 2px solid #4ade80; border-radius: 0 6px 6px 0; font-size: .8rem; color: rgba(224,224,224,.75); }
-    .rev-reply-label { font-size: .7rem; color: #4ade80; font-weight: 600; margin-bottom: 2px; }
+    .rev-reply { margin-top: 10px; padding: 8px 12px; background: rgba(139,92,246,.06); border-left: 2px solid #8b5cf6; border-radius: 0 6px 6px 0; font-size: .8rem; color: rgba(236,234,248,.75); }
+    .rev-reply-label { font-size: .7rem; color: #a78bfa; font-weight: 600; margin-bottom: 2px; }
     .rev-likes { font-size: .75rem; color: rgba(224,224,224,.4); margin-top: 6px; }
     .rev-my-btns { display: flex; gap: 8px; margin-top: 10px; }
     .rev-my-btn { padding: 4px 12px; border-radius: 6px; font-size: .75rem; border: 1px solid rgba(255,255,255,.15); background: rgba(255,255,255,.05); color: rgba(224,224,224,.6); cursor: pointer; }
@@ -58,17 +58,17 @@
     .rev-my-btn.del { border-color: rgba(248,113,113,.25); color: #f87171; }
     .rev-my-btn.del:hover { background: rgba(248,113,113,.1); }
     .rev-edit-form { margin-top: 12px; display: flex; flex-direction: column; gap: 8px; }
-    .rev-edit-form input, .rev-edit-form textarea { background: rgba(74,222,128,.05); border: 1px solid rgba(74,222,128,.15); border-radius: 8px; color: #e0e0e0; padding: 8px 12px; font-size: .85rem; width: 100%; outline: none; }
+    .rev-edit-form input, .rev-edit-form textarea { background: rgba(139,92,246,.05); border: 1px solid rgba(139,92,246,.18); border-radius: 8px; color: #eceaf8; padding: 8px 12px; font-size: .85rem; width: 100%; outline: none; }
     .rev-edit-form textarea { resize: vertical; min-height: 80px; }
-    .rev-edit-form input:focus, .rev-edit-form textarea:focus { border-color: #4ade80; }
+    .rev-edit-form input:focus, .rev-edit-form textarea:focus { border-color: rgba(139,92,246,.5); }
 
     /* Success */
     .form-success { display: none; text-align: center; padding: 40px 20px; }
     .form-success__icon { font-size: 3rem; margin-bottom: 12px; }
     .form-success h3 { font-family: var(--serif); font-size: 1.4rem; margin-bottom: 8px; color: #E0E0E0; }
     .form-success p { color: rgba(224,224,224,.55); font-size: .9rem; }
-    .form-success .btn-again { margin-top: 20px; display: inline-block; background: rgba(74,222,128,.1); border: 1px solid rgba(74,222,128,.25); color: #4ade80; padding: 10px 24px; border-radius: 10px; font-size: .875rem; font-weight: 500; cursor: pointer; transition: all .2s; }
-    .form-success .btn-again:hover { background: rgba(74,222,128,.2); }
+    .form-success .btn-again { margin-top: 20px; display: inline-block; background: rgba(139,92,246,.1); border: 1px solid rgba(139,92,246,.3); color: #a78bfa; padding: 10px 24px; border-radius: 10px; font-size: .875rem; font-weight: 500; cursor: pointer; transition: all .2s; }
+    .form-success .btn-again:hover { background: rgba(139,92,246,.2); }
 
     @media(max-width:768px) {
       .reviews-layout { grid-template-columns: 1fr; gap: 24px; }
@@ -101,7 +101,7 @@
     <nav class="nav" id="nav">
       <a href="index.html" data-i18n="nav.home">Головна</a>
       <a href="catalog.html" data-i18n="nav.catalog">Каталог</a>
-      <a href="reviews.html" style="color:#4ade80;font-weight:500" data-i18n="nav.reviews">Відгуки</a>
+      <a href="reviews.html" style="color:#a78bfa;font-weight:500" data-i18n="nav.reviews">Відгуки</a>
       <a href="contacts.html" data-i18n="nav.contacts">Контакти</a>
       <a href="track.html">📦 Замовлення</a>
     </nav>
@@ -234,7 +234,7 @@ function renderList(list) {
         '</div>' +
         '<textarea id="et-' + r._id + '">' + esc(r.text) + '</textarea>' +
         '<div style="display:flex;gap:8px">' +
-          '<button onclick="saveEditReview(' + r._id + ')" class="rev-my-btn" style="background:rgba(74,222,128,.1);color:#4ade80;border-color:rgba(74,222,128,.3)">✅ Зберегти</button>' +
+          '<button onclick="saveEditReview(' + r._id + ')" class="rev-my-btn" style="background:rgba(139,92,246,.1);color:#a78bfa;border-color:rgba(139,92,246,.3)">✅ Зберегти</button>' +
           '<button onclick="cancelEditReview(' + r._id + ')" class="rev-my-btn">Скасувати</button>' +
         '</div>' +
       '</div>';

@@ -285,9 +285,20 @@ nav{flex:1;padding:8px 6px}
 .ord-tabs{display:flex;gap:2px;padding:12px 22px 0;border-bottom:1px solid var(--border);margin-bottom:14px}
 .ord-tab{background:none;border:1px solid transparent;border-bottom:none;color:var(--dim);font-size:.79rem;font-weight:600;padding:7px 16px;border-radius:9px 9px 0 0;cursor:pointer;transition:all .18s;position:relative;bottom:-1px}
 .ord-tab:hover{color:var(--text);background:rgba(139,92,246,.06)}
-.ord-tab.active{background:var(--card2);border-color:var(--border);color:var(--text)}
+.ord-tab.active{background:var(--card2);border-color:var(--border)}
+/* Нові — синій */
+#ordTabNew:hover{background:rgba(59,130,246,.08)}
+#ordTabNew.active{color:rgba(147,197,253,.95);border-color:rgba(59,130,246,.3);box-shadow:inset 0 2px 0 rgba(59,130,246,.5)}
+/* В обробці — жовтий */
+#ordTabProcessing:hover{background:rgba(251,191,36,.07)}
+#ordTabProcessing.active{color:rgba(253,224,71,.95);border-color:rgba(251,191,36,.3);box-shadow:inset 0 2px 0 rgba(251,191,36,.5)}
+/* Готові — зелений */
+#ordTabDone:hover{background:rgba(74,222,128,.07)}
+#ordTabDone.active{color:rgba(134,239,172,.95);border-color:rgba(74,222,128,.3);box-shadow:inset 0 2px 0 rgba(74,222,128,.5)}
 .ord-tab .ord-tab-badge{display:inline-flex;align-items:center;justify-content:center;min-width:18px;height:18px;border-radius:9px;font-size:.67rem;font-weight:700;padding:0 5px;margin-left:6px;background:rgba(139,92,246,.25);color:rgba(200,185,255,.9)}
-.ord-tab.active .ord-tab-badge{background:rgba(139,92,246,.4)}
+#ordTabNew.active .ord-tab-badge{background:rgba(59,130,246,.35)}
+#ordTabProcessing.active .ord-tab-badge{background:rgba(251,191,36,.25)}
+#ordTabDone.active .ord-tab-badge{background:rgba(74,222,128,.25)}
 .ord-tab-badge.red{background:rgba(248,113,113,.25);color:#f87171}
 .ord-tab-badge.yellow{background:rgba(251,191,36,.18);color:#fbbf24}
 .ord-tab-badge.green{background:rgba(74,222,128,.2);color:#4ade80}
