@@ -432,17 +432,6 @@
   </div>
 </section>
 
-<!-- NEW ARRIVALS -->
-<section class="new-arr" style="border-top:1px solid rgba(255,255,255,.04)">
-  <div class="ctr">
-    <div class="slabel">НОВИНКИ</div>
-    <div class="sec-head">
-      <div class="stitle" style="margin-bottom:0">Нові надходження</div>
-      <a href="catalog.html" class="btn-sm">Всі товари →</a>
-    </div>
-    <div class="products__grid" id="homeNewGrid" style="grid-template-columns:repeat(4,1fr)"></div>
-  </div>
-</section>
 
 <!-- HOW TO ORDER -->
 <section class="how">
@@ -541,17 +530,6 @@ onProductsReady(function() {
   var el = document.getElementById('productCount');
   if (el) { el.textContent = PRODUCTS.length + '+'; el.style.visibility = ''; }
 
-  /* New arrivals grid */
-  var grid = document.getElementById('homeNewGrid');
-  if (grid && window.renderProductCard) {
-    var newest = PRODUCTS.slice(0, 4);
-    grid.innerHTML = newest.map(renderProductCard).join('');
-    grid.querySelectorAll('.product-card').forEach(function(c, i) {
-      c.classList.add('reveal');
-      c.style.transitionDelay = (i * 0.08) + 's';
-      revObs.observe(c);
-    });
-  }
 });
 applyLang();
 </script>
