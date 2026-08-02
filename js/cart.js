@@ -108,34 +108,49 @@ function renderProductCard(product) {
   var selColor = _cardColors[product.id] || (product.colors && product.colors.length ? product.colors[0].name : '');
   if (selColor) productUrl += '&color=' + encodeURIComponent(selColor);
 
-  var wishBtn = '<button class="wishlist-btn' + (liked ? ' active' : '') + '" onclick="event.preventDefault();toggleWishlist(' + product.id + ',this)" title="' + (liked ? 'В вибраних' : 'Додати до вибраних') + '">' + (liked ? '♥' : '♡') + '</button>';
+  var wishBtn = '<button class="wishlist-btn' + (liked ? ' active' : '') + '" onclick="event.preventDefault();toggleWishlist(' + product.id + ',this)" title="' + (liked ? 'В вибраних' : 'Додати до вибраних') + '" aria-label="wishlist">' + (liked ? '♥' : '♡') + '</button>';
 
   var stockHtml = '';
   if (product.stock != null) {
     var s = product.stock;
     var cls = s === 0 ? ' out' : s <= 3 ? ' limited' : '';
-    var lbl = s === 0 ? ('❌ ' + (window.i18n('stock.out') || 'Немає в наявності')) : s <= 3 ? '⚡ Обмежена кількість' : ('✅ ' + (window.i18n('stock.in') || 'В наявності'));
+    var lbl = s === 0 ? '❌ Немає в наявності' : s <= 3 ? '⚡ Обмежена кількість' : '✓ В наявності';
     stockHtml = '<div class="product-card__stock' + cls + '">' + lbl + '</div>';
-    if (s === 0) stockHtml += '<button class="oos-notify" onclick="showToast(\'🔔 Ми сповістимо вас як тільки товар з\'явиться!\')">Сповістити про наявність</button>';
   }
+
+  var ratingRow = '<div class="product-card__rating">' +
+    '<span class="stars">' + stars + '</span>' +
+    (product.reviews ? '<span class="reviews">' + product.reviews + ' відг.</span>' : '') +
+    '</div>';
+
+  var priceRow = '<div class="product-card__prices">' +
+    '<span class="price">' + CONFIG.currency + product.price + '</span>' +
+    (product.oldPrice ? '<span class="price-old">' + CONFIG.currency + product.oldPrice + '</span>' : '') +
+    (discount ? '<span class="badge-sale-inline">-' + discount + '%</span>' : '') +
+    '</div>';
+
+  var bottomAction = isOos
+    ? '<button class="oos-notify" onclick="showToast(\'🔔 Ми сповістимо вас як тільки товар з\'явиться!\')">🔔 Сповістити про наявність</button>'
+    : '';
 
   return '<div class="product-card' + (isOos ? ' product-card--oos' : '') + '">' +
     '<div class="product-card__img-wrap">' +
       wishBtn +
       '<a href="' + productUrl + '">' + imgHtml + '</a>' +
-      (discount ? '<span class="badge-sale">-' + discount + '%</span>' : '') +
-      (!isOos ? '<div class="product-card__quick" onclick="quickAdd(' + product.id + ')">' + quickLabel + '</div>' : '') +
+      (discount ? '<span class="badge-sale">−' + discount + '%</span>' : '') +
+      '<button class="product-card__quick" onclick="quickAdd(' + product.id + ')" style="' + (isOos ? 'display:none' : '') + '">' +
+        '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:middle;margin-right:5px"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>' +
+        quickLabel +
+      '</button>' +
     '</div>' +
     '<div class="product-card__body">' +
       '<div class="product-card__name"><a href="' + productUrl + '">' + displayName + '</a></div>' +
       colorsHtml +
-      '<div class="product-card__prices">' +
-        '<span class="price">' + CONFIG.currency + product.price + '</span>' +
-        (product.oldPrice ? '<span class="price-old">' + CONFIG.currency + product.oldPrice + '</span>' : '') +
-      '</div>' +
-      '<div class="product-card__rating"><span class="stars">' + stars + '</span><span class="reviews">(' + product.reviews + ')</span></div>' +
+      priceRow +
+      ratingRow +
       stockHtml +
     '</div>' +
+    bottomAction +
   '</div>';
 }
 
