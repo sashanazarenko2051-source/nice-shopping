@@ -57,11 +57,16 @@ nav{flex:1;padding:8px 0}
 .sb-ico{font-size:1.1rem;width:24px;height:24px;display:flex;align-items:center;justify-content:center;flex-shrink:0;border-radius:7px;transition:background .18s}
 .sb-btn.active .sb-ico{background:rgba(74,222,128,.15)}
 .sb-badge{margin-left:auto;background:var(--green);color:#020d04;font-size:.65rem;font-weight:800;padding:2px 8px;border-radius:20px;line-height:1.5;display:none}
-.sb-bottom{padding:10px 8px 14px;border-top:1px solid var(--border);display:flex;flex-direction:column;gap:2px}
-.sb-link{display:flex;align-items:center;gap:8px;padding:8px 14px;border-radius:var(--r);color:rgba(160,200,170,.45);font-size:.78rem;border:none;background:none;width:100%;text-align:left;transition:all .15s}
-.sb-link:hover{background:rgba(255,255,255,.04);color:rgba(220,240,225,.8)}
-.sb-logout{display:flex;align-items:center;gap:8px;padding:9px 14px;border-radius:var(--r);border:1px solid rgba(248,113,113,.2);background:rgba(248,113,113,.04);color:rgba(248,113,113,.7);font-size:.78rem;cursor:pointer;width:100%;font-family:inherit;transition:all .15s;margin-top:4px}
-.sb-logout:hover{background:rgba(248,113,113,.1);color:var(--danger);border-color:rgba(248,113,113,.4)}
+.sb-bottom{padding:10px 8px 14px;border-top:1px solid var(--border);display:flex;flex-direction:column;gap:3px}
+.sb-link{display:flex;align-items:center;gap:9px;padding:9px 14px;border-radius:var(--r);font-size:.79rem;font-weight:600;border:1px solid transparent;background:none;width:100%;text-align:left;text-decoration:none;cursor:pointer;font-family:inherit;transition:all .18s}
+.sb-link.green{color:#4ade80;border-color:rgba(74,222,128,.18);background:rgba(74,222,128,.05)}
+.sb-link.green:hover{background:rgba(74,222,128,.14);border-color:rgba(74,222,128,.4);color:#fff}
+.sb-link.yellow{color:#fbbf24;border-color:rgba(251,191,36,.18);background:rgba(251,191,36,.05)}
+.sb-link.yellow:hover{background:rgba(251,191,36,.14);border-color:rgba(251,191,36,.4);color:#fff}
+.sb-link.blue{color:#60a5fa;border-color:rgba(96,165,250,.18);background:rgba(96,165,250,.05)}
+.sb-link.blue:hover{background:rgba(96,165,250,.14);border-color:rgba(96,165,250,.4);color:#fff}
+.sb-logout{display:flex;align-items:center;gap:9px;padding:9px 14px;border-radius:var(--r);border:1px solid rgba(248,113,113,.35);background:rgba(248,113,113,.1);color:#f87171;font-size:.79rem;font-weight:600;cursor:pointer;width:100%;font-family:inherit;transition:all .18s;margin-top:4px}
+.sb-logout:hover{background:rgba(248,113,113,.22);color:#fff;border-color:rgba(248,113,113,.6)}
 
 /* ── MAIN ── */
 #main{flex:1;overflow:hidden;display:flex;flex-direction:column}
@@ -176,14 +181,30 @@ nav{flex:1;padding:8px 0}
 .blbl{font-size:.62rem;color:var(--dim)}
 
 /* ── CATALOG CARDS ── */
-.catgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(155px,1fr));gap:10px;padding:16px 22px}
-.catcard{background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:16px 12px;text-align:center;cursor:pointer;position:relative;transition:border-color .15s}
-.catcard:hover{border-color:rgba(74,222,128,.3)}
-.catcard-ico{font-size:1.7rem;margin-bottom:6px}
-.catcard-name{font-size:.8rem;font-weight:600;margin-bottom:2px}
-.catcard-count{font-size:.7rem;color:var(--dim);margin-bottom:10px}
-.catcard-del{position:absolute;top:7px;right:7px;background:none;border:none;color:var(--dim);font-size:.72rem;padding:2px 5px;border-radius:4px}
-.catcard-del:hover{color:var(--danger)}
+.catgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:14px;padding:18px 22px}
+.catcard{background:var(--card2);border:1px solid var(--border);border-radius:18px;padding:22px 16px 16px;text-align:center;cursor:pointer;position:relative;transition:all .22s;overflow:hidden}
+.catcard::after{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(139,92,246,.07),rgba(74,222,128,.04));opacity:0;transition:opacity .22s;pointer-events:none}
+.catcard:hover{border-color:rgba(139,92,246,.4);transform:translateY(-2px);box-shadow:0 10px 30px rgba(0,0,0,.35)}
+.catcard:hover::after{opacity:1}
+.catcard-ico-wrap{width:60px;height:60px;border-radius:16px;background:linear-gradient(135deg,rgba(139,92,246,.18),rgba(74,222,128,.1));border:1px solid rgba(139,92,246,.22);display:flex;align-items:center;justify-content:center;font-size:1.8rem;margin:0 auto 12px;transition:transform .22s}
+.catcard:hover .catcard-ico-wrap{transform:scale(1.06)}
+.catcard-name{font-size:.88rem;font-weight:700;margin-bottom:8px;line-height:1.35}
+.catcard-count{display:inline-flex;align-items:center;padding:3px 11px;border-radius:20px;font-size:.7rem;font-weight:600;background:rgba(139,92,246,.1);border:1px solid rgba(139,92,246,.18);color:rgba(200,185,255,.75);margin-bottom:14px}
+.catcard-actions{display:flex;gap:6px;justify-content:center}
+.catcard-del{position:absolute;top:9px;right:9px;background:rgba(248,113,113,.08);border:1px solid rgba(248,113,113,.2);color:var(--danger);font-size:.7rem;padding:3px 8px;border-radius:7px;opacity:0;transition:all .18s;cursor:pointer}
+.catcard:hover .catcard-del{opacity:1}
+.catcard-del:hover{background:rgba(248,113,113,.2);border-color:rgba(248,113,113,.45)}
+
+/* ── ORDER FILTER TABS ── */
+.ord-tabs{display:flex;gap:2px;padding:12px 22px 0;border-bottom:1px solid var(--border);margin-bottom:14px}
+.ord-tab{background:none;border:1px solid transparent;border-bottom:none;color:var(--dim);font-size:.79rem;font-weight:600;padding:7px 16px;border-radius:9px 9px 0 0;cursor:pointer;transition:all .18s;position:relative;bottom:-1px}
+.ord-tab:hover{color:var(--text);background:rgba(139,92,246,.06)}
+.ord-tab.active{background:var(--card2);border-color:var(--border);color:var(--text)}
+.ord-tab .ord-tab-badge{display:inline-flex;align-items:center;justify-content:center;min-width:18px;height:18px;border-radius:9px;font-size:.67rem;font-weight:700;padding:0 5px;margin-left:6px;background:rgba(139,92,246,.25);color:rgba(200,185,255,.9)}
+.ord-tab.active .ord-tab-badge{background:rgba(139,92,246,.4)}
+.ord-tab-badge.red{background:rgba(248,113,113,.25);color:#f87171}
+.ord-tab-badge.yellow{background:rgba(251,191,36,.18);color:#fbbf24}
+.ord-tab-badge.green{background:rgba(74,222,128,.2);color:#4ade80}
 
 /* ── ORDER ROWS ── */
 .ord-detail{display:none;background:#080e0a;border-top:1px solid var(--border)}
@@ -349,9 +370,9 @@ nav{flex:1;padding:8px 0}
   </nav>
   <div class="sb-sep"></div>
   <div class="sb-bottom">
-    <a href="index.html" target="_blank" class="sb-link">↗ Відкрити сайт</a>
-    <button class="sb-link" onclick="doRefresh()">↻ Оновити сторінку</button>
-    <button class="sb-link" onclick="doDebug()">🔍 Стан системи</button>
+    <a href="index.html" target="_blank" class="sb-link green">↗ Відкрити сайт</a>
+    <button class="sb-link yellow" onclick="doRefresh()">↻ Оновити сторінку</button>
+    <button class="sb-link blue" onclick="doDebug()">🔍 Стан системи</button>
     <button class="sb-logout" onclick="doLogout()">← Вийти з панелі</button>
   </div>
 </aside>
@@ -438,7 +459,7 @@ nav{flex:1;padding:8px 0}
     <!-- LOW STOCK ALERT -->
     <div class="stat-sec" id="lowStockSection" style="display:none">
       <div class="ls-card">
-        <div class="ls-title">⚠️ Немає на складі (0 шт)</div>
+        <div class="ls-title">⚠️ Мало на складі (0–1 шт)</div>
         <div id="lowStockList"></div>
       </div>
     </div>
@@ -494,6 +515,11 @@ nav{flex:1;padding:8px 0}
   <div class="phdr">
     <div class="phdr-title">Замовлення</div>
     <div id="ordUpdated" style="font-size:.72rem;color:var(--dim)"></div>
+  </div>
+  <div class="ord-tabs">
+    <button class="ord-tab active" id="ordTabNew" onclick="setOrdFilter('new',this)">🆕 Нові<span class="ord-tab-badge red" id="ordBadgeNew">0</span></button>
+    <button class="ord-tab" id="ordTabProcessing" onclick="setOrdFilter('processing',this)">📋 В обробці<span class="ord-tab-badge yellow" id="ordBadgeProcessing">0</span></button>
+    <button class="ord-tab" id="ordTabDone" onclick="setOrdFilter('done',this)">✅ Готові<span class="ord-tab-badge green" id="ordBadgeDone">0</span></button>
   </div>
   <div class="tab-scroll">
     <div style="padding:14px 22px 22px" id="ordList"></div>
@@ -677,7 +703,12 @@ var COLOR_PRESETS = [
   {name:'Зелений',hex:'#66bb6a'},
 ];
 
-function getCats(){  return DEF_CATS.concat(getCustomCats()); }
+function getHiddenCats(){ try{ return JSON.parse(localStorage.getItem('ns_hidden_cats'))||[]; }catch(e){ return []; } }
+function setHiddenCats(a){ localStorage.setItem('ns_hidden_cats',JSON.stringify(a)); }
+function getCats(){
+  var hidden=getHiddenCats();
+  return DEF_CATS.filter(function(c){ return hidden.indexOf(c.id)===-1; }).concat(getCustomCats());
+}
 function getCustomCats(){ try{ return JSON.parse(localStorage.getItem('ns_cats'))||[]; }catch(e){ return []; } }
 function setCustomCats(a){ localStorage.setItem('ns_cats',JSON.stringify(a)); }
 function catById(id){ return getCats().find(function(c){ return c.id===id; }); }
@@ -845,7 +876,7 @@ async function loadStats(){
   var convRate=totalV>0?((orders.length/totalV)*100).toFixed(1):'0.0';
   var stCounts={processing:0,transit:0,done:0};
   orders.forEach(function(o){ var s=o.status||'processing'; if(stCounts[s]!==undefined) stCounts[s]++; });
-  var lowStock=_products.filter(function(p){ return (p.stock||0)===0; });
+  var lowStock=_products.filter(function(p){ return (p.stock||0)<=1; });
 
   document.getElementById('sVisits').textContent=totalV||0;
   document.getElementById('sProducts').textContent=_products.length;
@@ -1267,22 +1298,31 @@ async function moveProduct(catId){
 function renderCats(){
   var prods=_products, counts={};
   prods.forEach(function(p){ var id=productCatId(p); counts[id]=(counts[id]||0)+1; });
-  var all=getCats(), custom=getCustomCats();
+  var all=getCats();
   document.getElementById('catGrid').innerHTML=all.map(function(c){
-    var isCustom=!!custom.find(function(x){return x.id===c.id;});
-    var del=isCustom?'<button class="catcard-del" onclick="event.stopPropagation();deleteCat(\''+c.id+'\')">✕</button>':'';
-    return '<div class="catcard" onclick="goCat(\''+c.id+'\')">'+del+
-      '<div class="catcard-ico">'+(c.icon||'📦')+'</div>'+
+    var cnt=counts[c.id]||0;
+    var cntLabel=cnt===1?'1 товар':cnt<5&&cnt>1?cnt+' товари':cnt+' товарів';
+    return '<div class="catcard" onclick="goCat(\''+c.id+'\')">'+
+      '<button class="catcard-del" onclick="event.stopPropagation();deleteCat(\''+c.id+'\')" title="Видалити категорію">✕</button>'+
+      '<div class="catcard-ico-wrap">'+(c.icon||'📦')+'</div>'+
       '<div class="catcard-name">'+esc(c.label)+'</div>'+
-      '<div class="catcard-count">'+(counts[c.id]||0)+' товарів</div>'+
-      '<button class="btn-sm" style="font-size:.72rem" onclick="event.stopPropagation();goCat(\''+c.id+'\')">Переглянути →</button>'+
+      '<div class="catcard-count">'+cntLabel+'</div>'+
+      '<div class="catcard-actions">'+
+        '<button class="btn-sm" style="font-size:.72rem;flex:1" onclick="event.stopPropagation();goCat(\''+c.id+'\')">Переглянути →</button>'+
+      '</div>'+
     '</div>';
   }).join('');
 }
 function goCat(id){ S.filter=id; showTab('products'); }
 function deleteCat(id){
-  if(!confirm('Видалити каталог? Товари залишаться.')) return;
-  setCustomCats(getCustomCats().filter(function(c){return c.id!==id;}));
+  var c=catById(id); if(!c) return;
+  var cnt=(_products||[]).filter(function(p){ return productCatId(p)===id; }).length;
+  if(!confirm('Видалити категорію «'+c.label+'»?')) return;
+  if(!confirm('У цій категорії '+cnt+' '+( cnt===1?'товар':cnt<5&&cnt>1?'товари':'товарів')+'. Товари залишаться без категорії. Продовжити?')) return;
+  var custom=getCustomCats();
+  var isCustom=!!custom.find(function(x){return x.id===id;});
+  if(isCustom){ setCustomCats(custom.filter(function(x){return x.id!==id;})); }
+  else{ var h=getHiddenCats(); if(h.indexOf(id)===-1){ h.push(id); setHiddenCats(h); } }
   renderCats(); toast('Каталог видалено');
 }
 
@@ -1326,9 +1366,15 @@ function saveCat(){
 }
 
 /* ── ORDERS ── */
-var _ordCache=null, _ordTimer=null;
+var _ordCache=null, _ordTimer=null, _ordFilter='new';
 function startOrderPoll(){ stopOrderPoll(); _ordTimer=setInterval(function(){ renderOrders(true); },8000); }
 function stopOrderPoll(){ if(_ordTimer){ clearInterval(_ordTimer); _ordTimer=null; } }
+function setOrdFilter(f,btn){
+  _ordFilter=f;
+  document.querySelectorAll('.ord-tab').forEach(function(t){ t.classList.remove('active'); });
+  if(btn) btn.classList.add('active');
+  if(_ordCache) displayOrders(_ordCache,document.getElementById('ordList'));
+}
 
 async function renderOrders(silent){
   var el=document.getElementById('ordList');
@@ -1345,21 +1391,40 @@ function displayOrders(orders, el){
   // Save which orders are open before re-render
   var openIds=[];
   el.querySelectorAll('.ord-detail.open').forEach(function(d){ openIds.push(d.id); });
-  var doneSecOpen=document.getElementById('doneSec')&&document.getElementById('doneSec').style.display!=='none';
   // Save TTN input values being currently typed and active element id
   var ttnSaved={};
   el.querySelectorAll('[id^="ttn-"]').forEach(function(inp){ ttnSaved[inp.id]=inp.value; });
   var activeElId=(document.activeElement&&document.activeElement.id)||'';
   var doneIds=new Set(JSON.parse(localStorage.getItem('ns_done_orders')||'[]').map(String));
-  var active=orders.filter(function(o){ return !doneIds.has(String(o._id)); });
-  var done=orders.filter(function(o){ return doneIds.has(String(o._id)); });
-  var ob=document.getElementById('sbOrd');
-  ob.textContent=active.length; ob.style.display=active.length?'inline-block':'none';
-  if(!orders.length){ el.innerHTML='<div class="empty"><div class="empty-ico">📋</div><p>Замовлень ще немає</p></div>'; return; }
-  var todayStr=new Date().toLocaleDateString('uk-UA');
-  var payN={cod:'Накладений платіж',prepay:'Передоплата'};
 
-  function buildRows(list, isDone){
+  // Split by status
+  var newOrds=orders.filter(function(o){ return !doneIds.has(String(o._id)) && (!o.status||o.status==='processing'); });
+  var procOrds=orders.filter(function(o){ return !doneIds.has(String(o._id)) && o.status==='transit'; });
+  var doneOrds=orders.filter(function(o){ return doneIds.has(String(o._id))||o.status==='done'; });
+
+  // Update tab badges
+  var bn=document.getElementById('ordBadgeNew'), bp=document.getElementById('ordBadgeProcessing'), bd=document.getElementById('ordBadgeDone');
+  if(bn) bn.textContent=newOrds.length;
+  if(bp) bp.textContent=procOrds.length;
+  if(bd) bd.textContent=doneOrds.length;
+
+  // Sidebar badge = new + processing
+  var ob=document.getElementById('sbOrd');
+  var activeCount=newOrds.length+procOrds.length;
+  ob.textContent=activeCount; ob.style.display=activeCount?'inline-block':'none';
+
+  var curList = _ordFilter==='processing' ? procOrds : _ordFilter==='done' ? doneOrds : newOrds;
+  var isDone = _ordFilter==='done';
+  var payN={cod:'Накладений платіж',prepay:'Передоплата'};
+  var todayStr=new Date().toLocaleDateString('uk-UA');
+
+  var emptyMsgs={new:'🆕 Нових замовлень немає',processing:'📋 Немає замовлень в обробці',done:'✅ Виконаних замовлень ще немає'};
+  if(!curList.length){
+    el.innerHTML='<div class="empty" style="padding:32px 0"><div class="empty-ico">📋</div><p>'+emptyMsgs[_ordFilter||'new']+'</p></div>';
+    return;
+  }
+
+  function buildRows(list){
     return list.map(function(o){
       var uid='ord-'+o._id;
       var items=(o.items||[]).map(function(it){return esc(it.name)+' ×'+(it.qty||1);}).join(', ');
@@ -1377,8 +1442,9 @@ function displayOrders(orders, el){
         '</ul></div>'+
         '<div style="padding:8px 20px 4px;display:flex;gap:6px;flex-wrap:wrap;align-items:center">'+
           '<span style="font-size:.72rem;color:var(--dim)">Статус:</span>'+
-          '<button onclick="setOrderStatus('+o._id+',\'processing\')" class="btn-sm'+((!o.status||o.status==='processing')?' primary':'')+'" style="font-size:.72rem">📋 В обробці</button>'+
-          '<button onclick="setOrderStatus('+o._id+',\'transit\')" class="btn-sm'+(o.status==='transit'?' primary':'')+'" style="font-size:.72rem">🚚 В дорозі</button>'+
+          '<button onclick="setOrderStatus('+o._id+',\'processing\')" class="btn-sm'+((!o.status||o.status==='processing')?' primary':'')+'" style="font-size:.72rem">📋 Нове</button>'+
+          '<button onclick="setOrderStatus('+o._id+',\'transit\')" class="btn-sm'+(o.status==='transit'?' primary':'')+'" style="font-size:.72rem">🚚 В обробці</button>'+
+          (isDone?'<button onclick="unmarkDone('+o._id+')" class="btn-sm" style="font-size:.72rem">↩ Відновити</button>':'<button onclick="markDone('+o._id+')" class="btn-sm primary" style="font-size:.72rem">✅ Готово</button>')+
         '</div>'+
         '<div style="padding:4px 20px 8px;display:flex;gap:8px;align-items:center">'+
           '<span style="font-size:.72rem;color:var(--dim);white-space:nowrap">ТТН пошти:</span>'+
@@ -1387,15 +1453,12 @@ function displayOrders(orders, el){
           (o.ttn?'<a href="'+(o.deliveryType==='ukr'?'https://track.ukrposhta.ua/tracking_UA.html?barcode=':'https://novaposhta.ua/tracking/?cargo_number=')+esc(o.ttn)+'" target="_blank" class="btn-sm" style="font-size:.72rem">🔗 Трекінг</a>':'')+
         '</div>'+
         '<div class="ord-footer">'+
-          (isDone
-            ? '<button onclick="unmarkDone('+o._id+')" class="btn-sm primary">↩ Відновити</button>'
-            : '<button onclick="markDone('+o._id+')" class="btn-sm primary">✅ Виконано</button>')+
-          '<button onclick="deleteOrder('+o._id+')" class="btn-sm danger" style="margin-left:6px">🗑 Видалити</button>'+
+          '<button onclick="deleteOrder('+o._id+')" class="btn-sm danger">🗑 Видалити</button>'+
           '<span style="font-size:1rem;font-weight:700;color:var(--green)">₴'+(o.total||0)+'</span>'+
         '</div>'+
       '</div>';
-      var stLabel={'processing':'📋','transit':'🚚','done':'✅'}[o.status||'processing']||'📋';
-      var row='<tr style="cursor:pointer'+(isDone?';opacity:.45':'') +'" onclick="toggleOrd(\''+uid+'\')">'+
+      var stLabel={'processing':'🆕','transit':'🚚','done':'✅'}[o.status||'processing']||'🆕';
+      var row='<tr style="cursor:pointer'+(isDone?';opacity:.5':'')+'" onclick="toggleOrd(\''+uid+'\')">'+
         '<td style="white-space:nowrap">'+esc(o.date||'—')+'<br><span style="font-size:.68rem;color:var(--dim)">'+stLabel+'</span></td>'+
         '<td style="font-weight:500">'+esc((o.firstName||'')+' '+(o.lastName||''))+'</td>'+
         '<td>'+esc(o.phone||'—')+'</td>'+
@@ -1409,29 +1472,13 @@ function displayOrders(orders, el){
     }).join('');
   }
 
-  var todayActive=active.filter(function(o){return o.date===todayStr;});
-  var prevActive=active.filter(function(o){return o.date!==todayStr;});
+  var todayCur=curList.filter(function(o){return o.date===todayStr;});
   var html='';
-  if(!active.length){
-    html+='<div class="empty" style="padding:32px 0"><div class="empty-ico">✅</div><p>Всі замовлення виконані!</p></div>';
-  } else {
-    if(todayActive.length) html+='<div style="font-size:.8rem;font-weight:700;color:var(--green);margin-bottom:8px">📅 Сьогодні — '+todayActive.length+' замовл.</div>';
-    html+='<div class="box" style="margin-bottom:14px"><div class="tbl-wrap"><table class="dtbl"><thead><tr><th>Дата</th><th>Клієнт</th><th>Телефон</th><th>Місто</th><th>Оплата</th><th>Товари</th><th>Сума</th><th></th></tr></thead><tbody>'+
-      buildRows(todayActive,false)+buildRows(prevActive,false)+
-    '</tbody></table></div></div>';
-  }
-  if(done.length){
-    html+='<div style="margin-top:6px">'+
-      '<button onclick="var s=document.getElementById(\'doneSec\');s.style.display=s.style.display===\'none\'?\'block\':\'none\'" class="btn-out" style="font-size:.78rem;width:100%;justify-content:center">'+
-        '✅ Виконані замовлення ('+done.length+')'+
-      '</button>'+
-      '<div id="doneSec" style="display:none;margin-top:10px">'+
-        '<div class="box"><div class="tbl-wrap"><table class="dtbl"><thead><tr><th>Дата</th><th>Клієнт</th><th>Телефон</th><th>Місто</th><th>Оплата</th><th>Товари</th><th>Сума</th><th></th></tr></thead><tbody>'+
-        buildRows(done,true)+
-        '</tbody></table></div></div>'+
-      '</div>'+
-    '</div>';
-  }
+  if(todayCur.length&&!isDone) html+='<div style="font-size:.8rem;font-weight:700;color:var(--green);margin-bottom:8px">📅 Сьогодні — '+todayCur.length+' замовл.</div>';
+  html+='<div class="box"><div class="tbl-wrap"><table class="dtbl"><thead><tr><th>Дата</th><th>Клієнт</th><th>Телефон</th><th>Місто</th><th>Оплата</th><th>Товари</th><th>Сума</th><th></th></tr></thead><tbody>'+
+    buildRows(curList)+
+  '</tbody></table></div></div>';
+
   el.innerHTML=html;
   // Restore open states after re-render
   openIds.forEach(function(eid){
@@ -1439,7 +1486,6 @@ function displayOrders(orders, el){
     var ar=document.getElementById('oa-'+eid.replace(/^od-/,''));
     if(d){ d.classList.add('open'); if(ar) ar.textContent='▲'; }
   });
-  if(doneSecOpen){ var ds=document.getElementById('doneSec'); if(ds) ds.style.display='block'; }
   // Restore TTN input values (prevents auto-poll from erasing what user is typing)
   Object.keys(ttnSaved).forEach(function(tid){
     var tinp=document.getElementById(tid);
