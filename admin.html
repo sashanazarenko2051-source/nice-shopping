@@ -157,6 +157,8 @@ nav{flex:1;padding:8px 6px}
 .iinp:focus{outline:none;border-color:var(--green);box-shadow:0 0 0 2px rgba(74,222,128,.12)}
 .stk-cell{display:flex;align-items:center;gap:6px}
 .stk-tog{padding:3px 9px;border-radius:6px;font-size:.68rem;font-weight:600;border:1px solid;cursor:pointer;background:none;transition:all .15s}
+.cat-pill{display:inline-block;padding:3px 9px;border-radius:6px;font-size:.74rem;border:1px solid var(--border);cursor:pointer;white-space:nowrap;transition:all .15s}
+.cat-pill:hover{border-color:rgba(139,92,246,.45);color:var(--accent)}
 .stk-tog.avail{border-color:rgba(74,222,128,.35);color:var(--green)}
 .stk-tog.limited{border-color:rgba(251,191,36,.35);color:#fbbf24}
 .stk-tog.out{border-color:rgba(248,113,113,.35);color:var(--danger)}
@@ -873,6 +875,12 @@ select,select.fsel,select.iinp,.nt-inp[type!="text"][type!="number"][type!="emai
 /* ── STATE ── */
 var _products = [];
 var S = { tab:'stats', view:'list', filter:'all', editingId:null, movingId:null };
+var _statsCache = null, _statsCacheAt = 0;
+var _clientsCache = null;
+var _mediaCache = null;
+var _lastProductsFetch = 0;
+var _catsCache = null;
+var _catOptsCache = null;
 
 /* ── CATEGORIES ── */
 var DEF_CATS = [
@@ -914,13 +922,15 @@ var COLOR_PRESETS = [
 ];
 
 function getHiddenCats(){ try{ return JSON.parse(localStorage.getItem('ns_hidden_cats'))||[]; }catch(e){ return []; } }
-function setHiddenCats(a){ localStorage.setItem('ns_hidden_cats',JSON.stringify(a)); }
+function setHiddenCats(a){ localStorage.setItem('ns_hidden_cats',JSON.stringify(a)); _catsCache=null; _catOptsCache=null; }
 function getCats(){
+  if(_catsCache) return _catsCache;
   var hidden=getHiddenCats();
-  return DEF_CATS.filter(function(c){ return hidden.indexOf(c.id)===-1; }).concat(getCustomCats());
+  _catsCache=DEF_CATS.filter(function(c){ return hidden.indexOf(c.id)===-1; }).concat(getCustomCats());
+  return _catsCache;
 }
 function getCustomCats(){ try{ return JSON.parse(localStorage.getItem('ns_cats'))||[]; }catch(e){ return []; } }
-function setCustomCats(a){ localStorage.setItem('ns_cats',JSON.stringify(a)); }
+function setCustomCats(a){ localStorage.setItem('ns_cats',JSON.stringify(a)); _catsCache=null; _catOptsCache=null; }
 function catById(id){ return getCats().find(function(c){ return c.id===id; }); }
 function productCatId(p){
   var all=getCats();
@@ -1031,7 +1041,14 @@ function showTab(name){
   if(name==='stats')    loadStats();
   if(name==='products'){
     buildFilterBar(); renderProducts();
-    API.getProducts().then(function(list){ _products=list; updateBadges(); buildFilterBar(); renderProducts(); }).catch(function(){});
+    var now=Date.now();
+    if(now-_lastProductsFetch>15000){
+      _lastProductsFetch=now;
+      API.getProducts().then(function(list){
+        _products=list; _mediaCache=null;
+        updateBadges(); buildFilterBar(); renderProducts();
+      }).catch(function(){});
+    }
   }
   if(name==='cats')     renderCats();
   if(name==='orders')   { startOrderPoll(); renderOrders(false); }
@@ -1054,9 +1071,15 @@ function updateBadges(){
 /* ── STATS ── */
 function fmt(n){ return '₴'+Math.round(n).toLocaleString('uk-UA'); }
 async function loadStats(){
+  var now=Date.now();
   var visits=getVisits();
   var totalV=Object.values(visits).reduce(function(a,b){return a+b;},0);
-  var orders=[]; try{ orders=await API.getOrders(); }catch(e){}
+  var orders=[];
+  if(_ordCache&&now-_statsCacheAt<30000){
+    orders=_ordCache;
+  } else {
+    try{ orders=await API.getOrders(); _ordCache=orders; _statsCacheAt=now; }catch(e){}
+  }
 
   var revenue=orders.reduce(function(s,o){return s+(o.total||0);},0);
   var stockQty=_products.reduce(function(s,p){return s+(p.stock||0);},0);
@@ -1230,29 +1253,42 @@ function toggleSort(field){
 }
 function sortArrow(field){ return _sortField===field?(_sortDir===1?' ↑':' ↓'):''; }
 
+/* catOpts cached per render — not rebuilt per row */
+var _catOptsCache=null;
+function getCatOpts(){
+  if(_catOptsCache) return _catOptsCache;
+  _catOptsCache=getCats().map(function(c){ return {id:c.id,label:c.icon+' '+c.label}; });
+  return _catOptsCache;
+}
+function invalidateCatOpts(){ _catOptsCache=null; _catsCache=null; }
+
 function renderList(list, el){
   var sorted=list.slice();
   if(_sortField==='price') sorted.sort(function(a,b){return ((a.price||0)-(b.price||0))*_sortDir;});
   else if(_sortField==='stock') sorted.sort(function(a,b){return ((a.stock||0)-(b.stock||0))*_sortDir;});
 
-  var catOpts=getCats().map(function(c){ return {id:c.id,label:c.icon+' '+c.label,key:c.key,gender:c.gender}; });
+  var catOpts=getCatOpts();
+  /* Build the options string ONCE — reuse for all rows */
+  var optsHtml=catOpts.map(function(c){ return '<option value="'+c.id+'">'+c.label+'</option>'; }).join('');
 
   var rows=sorted.map(function(p){
     var curCatId=productCatId(p);
+    var curCat=catOpts.find(function(c){return c.id===curCatId;});
     var stock=p.stock!=null?p.stock:0;
     var stkCls=stock===0?'out':stock<=3?'limited':'avail';
     var stkLbl=stock===0?'❌ Нема':stock<=3?'⚡ Мало':'✅ Є';
     var stkClick=stock===0?'quickStock('+p.id+',1,true)':'quickStock('+p.id+',0,true)';
-    var catSelect='<select class="iinp" style="max-width:155px;font-size:.74rem;padding:3px 6px" onchange="quickCat('+p.id+',this.value)">'+
-      catOpts.map(function(c){ return '<option value="'+c.id+'"'+(curCatId===c.id?' selected':'')+'>'+c.label+'</option>'; }).join('')+
-    '</select>';
+    /* Lightweight cat cell: click opens native select inline */
+    var catCell='<span class="cat-pill" onclick="openCatSel(this,'+p.id+')" title="Клікни щоб змінити категорію">'+(curCat?curCat.label:'📦 —')+'</span>'+
+      '<select class="iinp cat-sel-hidden" data-pid="'+p.id+'" style="display:none;max-width:150px;font-size:.74rem;padding:3px 6px" onchange="quickCatSel(this)" onblur="closeCatSel(this)">'+
+      optsHtml+'</select>';
     return '<tr id="prow-'+p.id+'">'+
       '<td style="width:44px">'+thumbHtml(p)+'</td>'+
       '<td style="max-width:200px">'+
         '<div style="font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-bottom:3px">'+esc(p.name)+'</div>'+
         '<input class="iinp" type="text" style="width:100%;font-size:.72rem;color:var(--dim)" placeholder="Опис..." value="'+esc(p.description||'')+'" onblur="quickDesc('+p.id+',this)">'+
       '</td>'+
-      '<td>'+catSelect+'</td>'+
+      '<td style="white-space:nowrap">'+catCell+'</td>'+
       '<td><input class="iinp" type="number" value="'+p.price+'" onchange="quickPrice('+p.id+',this.value)"></td>'+
       '<td><div class="stk-cell"><input class="iinp" type="number" min="0" value="'+stock+'" onchange="quickStock('+p.id+',this.value)"><button class="stk-tog '+stkCls+'" onclick="'+stkClick+'">'+stkLbl+'</button></div></td>'+
       '<td style="white-space:nowrap"><button class="btn-sm primary" onclick="openForm('+p.id+')" style="margin-right:4px">✏️ Редагувати</button><button class="btn-sm danger" onclick="delProduct('+p.id+')">🗑</button></td>'+
@@ -1262,6 +1298,33 @@ function renderList(list, el){
   var thPrice='<th style="cursor:pointer;user-select:none" onclick="toggleSort(\'price\')">Ціна ₴'+sortArrow('price')+'</th>';
   var thStock='<th style="cursor:pointer;user-select:none" onclick="toggleSort(\'stock\')">Залишок'+sortArrow('stock')+'</th>';
   el.innerHTML='<div class="box"><div class="tbl-wrap"><table class="dtbl"><thead><tr><th>Фото</th><th>Назва / Опис</th><th>Категорія</th>'+thPrice+thStock+'<th>Дії</th></tr></thead><tbody>'+rows+'</tbody></table></div></div>';
+  /* Set selected option after render (faster than building per row) */
+  el.querySelectorAll('.cat-sel-hidden').forEach(function(sel){
+    var pid=parseInt(sel.dataset.pid);
+    var p=_products.find(function(x){return x.id===pid;});
+    if(p){ var cid=productCatId(p); if(cid) sel.value=cid; }
+  });
+}
+function openCatSel(span,pid){
+  var sel=span.nextElementSibling;
+  span.style.display='none'; sel.style.display='';
+  setTimeout(function(){ sel.focus(); sel.click(); },0);
+}
+function closeCatSel(sel){
+  setTimeout(function(){
+    sel.style.display='none';
+    var span=sel.previousElementSibling;
+    if(span) span.style.display='';
+  },150);
+}
+async function quickCatSel(sel){
+  var pid=parseInt(sel.dataset.pid);
+  var catId=sel.value;
+  await quickCat(pid,catId);
+  /* Update span label */
+  var span=sel.previousElementSibling;
+  if(span){ var c=getCatOpts().find(function(x){return x.id===catId;}); if(c) span.textContent=c.label; }
+  closeCatSel(sel);
 }
 
 function renderGrid(list, el){
@@ -1905,9 +1968,12 @@ async function deleteReview(id){
 ══════════════════════════════════════════════ */
 async function renderClients(){
   var el=document.getElementById('cliList');
-  el.innerHTML='<div class="empty"><div class="empty-ico">⏳</div><p>Завантаження...</p></div>';
   var orders=[];
-  try{ orders=await API.getOrders(); }catch(e){ el.innerHTML='<div class="empty"><div class="empty-ico">❌</div><p>Помилка завантаження</p></div>'; return; }
+  if(_ordCache){ orders=_ordCache; }
+  else {
+    el.innerHTML='<div class="empty"><div class="empty-ico">⏳</div><p>Завантаження...</p></div>';
+    try{ orders=await API.getOrders(); _ordCache=orders; _statsCacheAt=Date.now(); }catch(e){ el.innerHTML='<div class="empty"><div class="empty-ico">❌</div><p>Помилка завантаження</p></div>'; return; }
+  }
   // group by phone
   var map={};
   orders.forEach(function(o){
@@ -2047,8 +2113,10 @@ function saveDelivery(){
    MEDIA
 ══════════════════════════════════════════════ */
 function renderMedia(){
+  if(_mediaCache){ return; }
   var imgs=_products.filter(function(p){ return p.imageUrl||p.img; }).map(function(p){ return {name:p.name,url:p.imageUrl||p.img,id:p.id}; });
   document.getElementById('mediaCount').textContent=imgs.length+' зображень';
+  _mediaCache=true;
   document.getElementById('mediaGrid').innerHTML=imgs.map(function(m){
     var url=m.url||'';
     var isData=url.indexOf('data:')===0;
