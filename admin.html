@@ -49,14 +49,33 @@ a{text-decoration:none;color:inherit}
 .sb-logo-name{font-size:1rem;font-weight:800;color:var(--green);letter-spacing:-.01em}
 .sb-logo-sub{font-size:.62rem;color:var(--dim);letter-spacing:.09em;text-transform:uppercase;margin-top:1px}
 .sb-sep{height:1px;background:var(--border);margin:4px 0}
-nav{flex:1;padding:8px 0}
-.sb-section-label{font-size:.6rem;font-weight:700;color:var(--dim);text-transform:uppercase;letter-spacing:.1em;padding:10px 18px 4px}
-.sb-btn{display:flex;align-items:center;gap:10px;width:100%;padding:10px 16px;background:none;border:none;border-left:3px solid transparent;border-radius:0 10px 10px 0;color:rgba(160,200,170,.5);font-size:.86rem;font-weight:500;transition:all .18s;text-align:left;position:relative;margin-bottom:1px}
-.sb-btn:hover{background:rgba(74,222,128,.07);color:rgba(220,240,225,.85);border-left-color:rgba(74,222,128,.3)}
-.sb-btn.active{background:rgba(74,222,128,.12);color:var(--green);border-left-color:var(--green);font-weight:600}
-.sb-ico{font-size:1.1rem;width:24px;height:24px;display:flex;align-items:center;justify-content:center;flex-shrink:0;border-radius:7px;transition:background .18s}
-.sb-btn.active .sb-ico{background:rgba(74,222,128,.15)}
-.sb-badge{margin-left:auto;background:var(--green);color:#020d04;font-size:.65rem;font-weight:800;padding:2px 8px;border-radius:20px;line-height:1.5;display:none}
+nav{flex:1;padding:8px 6px}
+.sb-section-label{font-size:.58rem;font-weight:800;color:rgba(139,92,246,.5);text-transform:uppercase;letter-spacing:.14em;padding:10px 12px 6px}
+.sb-btn{display:flex;align-items:center;gap:11px;width:100%;padding:9px 12px;background:none;border:none;border-radius:11px;color:var(--dim);font-size:.84rem;font-weight:500;transition:all .2s;text-align:left;position:relative;cursor:pointer;margin-bottom:2px}
+.sb-btn:hover{background:rgba(255,255,255,.05);color:var(--text)}
+.sb-ico{font-size:1.05rem;width:34px;height:34px;display:flex;align-items:center;justify-content:center;flex-shrink:0;border-radius:10px;transition:all .22s;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.06)}
+.sb-btn:hover .sb-ico{background:rgba(255,255,255,.08);transform:scale(1.05)}
+/* per-tab active colors */
+#btn-stats.active{background:rgba(139,92,246,.12);color:rgba(196,181,253,.95)}
+#btn-stats.active .sb-ico{background:rgba(139,92,246,.22);border-color:rgba(139,92,246,.35);box-shadow:0 0 14px rgba(139,92,246,.25)}
+#btn-products.active{background:rgba(59,130,246,.12);color:rgba(147,197,253,.95)}
+#btn-products.active .sb-ico{background:rgba(59,130,246,.22);border-color:rgba(59,130,246,.35);box-shadow:0 0 14px rgba(59,130,246,.22)}
+#btn-cats.active{background:rgba(251,146,60,.1);color:rgba(253,186,116,.95)}
+#btn-cats.active .sb-ico{background:rgba(251,146,60,.2);border-color:rgba(251,146,60,.3);box-shadow:0 0 14px rgba(251,146,60,.2)}
+#btn-orders.active{background:rgba(20,184,166,.1);color:rgba(94,234,212,.95)}
+#btn-orders.active .sb-ico{background:rgba(20,184,166,.2);border-color:rgba(20,184,166,.3);box-shadow:0 0 14px rgba(20,184,166,.2)}
+#btn-reviews.active{background:rgba(251,191,36,.1);color:rgba(253,224,71,.95)}
+#btn-reviews.active .sb-ico{background:rgba(251,191,36,.2);border-color:rgba(251,191,36,.3);box-shadow:0 0 14px rgba(251,191,36,.2)}
+/* hover icon tints */
+#btn-stats:hover .sb-ico{background:rgba(139,92,246,.12)}
+#btn-products:hover .sb-ico{background:rgba(59,130,246,.12)}
+#btn-cats:hover .sb-ico{background:rgba(251,146,60,.1)}
+#btn-orders:hover .sb-ico{background:rgba(20,184,166,.1)}
+#btn-reviews:hover .sb-ico{background:rgba(251,191,36,.1)}
+.sb-badge{margin-left:auto;font-size:.63rem;font-weight:800;padding:2px 8px;border-radius:20px;line-height:1.6;display:none}
+#btn-products .sb-badge{background:rgba(59,130,246,.25);color:#93c5fd;border:1px solid rgba(59,130,246,.3)}
+#btn-orders .sb-badge{background:rgba(248,113,113,.25);color:#fca5a5;border:1px solid rgba(248,113,113,.3)}
+#btn-reviews .sb-badge{background:rgba(251,191,36,.22);color:#fde047;border:1px solid rgba(251,191,36,.28)}
 .sb-bottom{padding:10px 8px 14px;border-top:1px solid var(--border);display:flex;flex-direction:column;gap:3px}
 .sb-link{display:flex;align-items:center;gap:9px;padding:9px 14px;border-radius:var(--r);font-size:.79rem;font-weight:600;border:1px solid transparent;background:none;width:100%;text-align:left;text-decoration:none;cursor:pointer;font-family:inherit;transition:all .18s}
 .sb-link.green{color:#4ade80;border-color:rgba(74,222,128,.18);background:rgba(74,222,128,.05)}
@@ -169,8 +188,11 @@ nav{flex:1;padding:8px 0}
 /* ── LOW STOCK ── */
 .ls-card{background:rgba(248,113,113,.05);border:1px solid rgba(248,113,113,.2);border-radius:12px;padding:14px 16px}
 .ls-title{font-size:.7rem;font-weight:700;color:var(--danger);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px}
-.ls-item{display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid rgba(248,113,113,.08);font-size:.8rem}
+.ls-item{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid rgba(248,113,113,.08);font-size:.8rem;gap:8px}
 .ls-item:last-child{border-bottom:none}
+.ls-item-name{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ls-item-actions{display:flex;align-items:center;gap:5px;flex-shrink:0}
+.ls-stk-inp{width:52px;font-size:.75rem;padding:3px 5px;border-radius:6px;border:1px solid var(--border);background:var(--card);color:var(--text);text-align:center}
 
 /* ── CHART ── */
 .chart-wrap{display:flex;align-items:flex-end;gap:6px;height:110px}
@@ -900,7 +922,16 @@ async function loadStats(){
   if(lowStock.length>0){
     lsSection.style.display='';
     document.getElementById('lowStockList').innerHTML=lowStock.sort(function(a,b){return (a.stock||0)-(b.stock||0);}).map(function(p){
-      return '<div class="ls-item"><span>'+esc(p.name)+'</span><span style="color:var(--warn);font-weight:700">'+p.stock+' шт</span></div>';
+      var stkClr=p.stock===0?'color:#f87171':'color:var(--warn)';
+      return '<div class="ls-item">'+
+        '<span class="ls-item-name">'+esc(p.name)+'</span>'+
+        '<div class="ls-item-actions">'+
+          '<input type="number" class="ls-stk-inp" min="0" value="'+p.stock+'" title="Змінити кількість" onchange="lsSetStock('+p.id+',this.value)">'+
+          '<span style="'+stkClr+';font-weight:700;min-width:28px;text-align:right">'+p.stock+' шт</span>'+
+          '<button class="btn-sm" style="padding:3px 8px;font-size:.72rem" onclick="lsGoProduct('+p.id+')" title="Перейти до товару">↗</button>'+
+          '<button class="btn-sm danger" style="padding:3px 8px;font-size:.72rem" onclick="lsDelete('+p.id+')" title="Видалити товар">🗑</button>'+
+        '</div>'+
+      '</div>';
     }).join('');
   } else { lsSection.style.display='none'; }
 
@@ -1021,7 +1052,7 @@ function renderList(list, el){
     var catSelect='<select class="iinp" style="max-width:155px;font-size:.74rem;padding:3px 6px" onchange="quickCat('+p.id+',this.value)">'+
       catOpts.map(function(c){ return '<option value="'+c.id+'"'+(curCatId===c.id?' selected':'')+'>'+c.label+'</option>'; }).join('')+
     '</select>';
-    return '<tr>'+
+    return '<tr id="prow-'+p.id+'">'+
       '<td style="width:44px">'+thumbHtml(p)+'</td>'+
       '<td style="max-width:200px">'+
         '<div style="font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-bottom:3px">'+esc(p.name)+'</div>'+
@@ -1058,6 +1089,26 @@ async function quickStock(id, val, rerender){
   var p=_products.find(function(x){return x.id===id;}); if(!p) return;
   p.stock=Math.max(0,parseInt(val)||0);
   try{ await API.updateProduct(id,p); toast(p.stock===0?'Позначено: немає':'Залишок: '+p.stock+' шт'); if(rerender) renderProducts(); }catch(e){ toast('❌ Помилка'); }
+}
+function lsGoProduct(id){
+  S.filter='all'; showTab('products');
+  setTimeout(function(){
+    var row=document.getElementById('prow-'+id);
+    if(row){ row.scrollIntoView({behavior:'smooth',block:'center'}); row.style.outline='2px solid rgba(251,191,36,.6)'; row.style.borderRadius='6px'; setTimeout(function(){row.style.outline='';row.style.borderRadius='';},2200); }
+  },120);
+}
+async function lsSetStock(id, val){
+  await quickStock(id, val, false);
+  loadStats();
+}
+async function lsDelete(id){
+  var p=_products.find(function(x){return x.id===id;});
+  if(!confirm('Видалити товар «'+(p?p.name:id)+'»? Це незворотньо.')) return;
+  try{
+    await API.deleteProduct(id);
+    _products=_products.filter(function(x){return x.id!==id;});
+    renderProducts(); loadStats(); toast('Товар видалено');
+  }catch(e){ toast('❌ Помилка видалення'); }
 }
 async function quickCat(id, catId){
   var p=_products.find(function(x){return x.id===id;}); if(!p) return;
