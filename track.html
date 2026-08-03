@@ -8,6 +8,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:wght@400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
   <link rel="icon" type="image/svg+xml" href="favicon.svg">
   <style>
     .track-wrap { max-width: 640px; margin: 0 auto; padding: 40px 16px 80px; }
@@ -45,6 +46,24 @@
     .ttn-link:hover { opacity: .85; }
     .empty-msg { text-align: center; padding: 40px 0; color: var(--gray); }
     .empty-msg .ico { font-size: 2.5rem; margin-bottom: 10px; }
+
+    /* ── Map ── */
+    .track-map-wrap { border-radius: 16px; overflow: hidden; border: 1px solid rgba(139,92,246,.22); margin-bottom: 28px; display: none; }
+    #trackMap { height: 340px; }
+    .leaflet-container { background: #06050f !important; font-family: inherit; }
+    .leaflet-control-zoom { border: 1px solid rgba(139,92,246,.28) !important; border-radius: 10px !important; overflow: hidden; box-shadow: none !important; }
+    .leaflet-control-zoom a { background: rgba(10,9,24,.95) !important; color: #a78bfa !important; border-color: rgba(139,92,246,.2) !important; font-size: 1rem !important; line-height: 26px !important; }
+    .leaflet-control-zoom a:hover { background: rgba(139,92,246,.18) !important; color: #ddd6fe !important; }
+    .leaflet-control-attribution { background: rgba(6,5,15,.85) !important; color: rgba(139,92,246,.35) !important; font-size: .55rem !important; }
+    .leaflet-control-attribution a { color: rgba(139,92,246,.5) !important; }
+    .leaflet-popup-content-wrapper { background: #0e0d1e; border: 1px solid rgba(139,92,246,.3); border-radius: 10px; color: #eceaf8; box-shadow: 0 8px 32px rgba(0,0,0,.6); }
+    .leaflet-popup-tip { background: #0e0d1e; }
+    .leaflet-popup-content { margin: 10px 14px; font-size: .82rem; }
+    .map-footer { padding: 10px 16px; background: rgba(8,7,18,.9); border-top: 1px solid rgba(139,92,246,.14); display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+    .map-legend { display: flex; align-items: center; gap: 6px; font-size: .72rem; color: rgba(236,234,248,.5); }
+    .map-legend-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+    @keyframes pulse-ring { 0% { transform: scale(.5); opacity: 1; } 100% { transform: scale(2.2); opacity: 0; } }
+    @keyframes pkg-bounce { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
   </style>
 </head>
 <body>
@@ -87,6 +106,16 @@
         <button class="track-btn" id="trackBtn" onclick="doTrack()">Перевірити</button>
       </div>
     </div>
+    <!-- MAP -->
+    <div class="track-map-wrap" id="trackMapWrap">
+      <div id="trackMap"></div>
+      <div class="map-footer">
+        <div class="map-legend"><div class="map-legend-dot" style="background:#8b5cf6;box-shadow:0 0 6px #8b5cf6"></div>Відправник</div>
+        <div class="map-legend"><div class="map-legend-dot" style="background:#22d3ee;box-shadow:0 0 6px #22d3ee"></div>В дорозі</div>
+        <div class="map-legend"><div class="map-legend-dot" style="background:#4ade80;box-shadow:0 0 6px #4ade80"></div>Доставлено</div>
+        <div style="margin-left:auto;font-size:.7rem;color:rgba(236,234,248,.35)">Маршрут — приблизний</div>
+      </div>
+    </div>
     <div id="trackResult"></div>
   </div>
 </div>
@@ -100,94 +129,222 @@
   </div>
 </footer>
 
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="js/config.js"></script>
 <script src="js/i18n.js"></script>
 <script src="js/cart.js"></script>
 <script src="js/translate.js"></script>
 <script>
-function esc(s) {
-  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 
-var STATUS_STEPS = [
-  { key: 'processing', icon: '📋', label: 'В обробці' },
-  { key: 'transit',    icon: '🚚', label: 'В дорозі'  },
-  { key: 'done',       icon: '✅', label: 'Виконано'  }
+/* ── Map ── */
+var _map = null, _mapLayers = [];
+
+/* Major Ukrainian cities with coordinates */
+var UA_CITIES = [
+  {name:'Київ',      ll:[50.450, 30.523], hub:true},
+  {name:'Харків',    ll:[49.993, 36.230]},
+  {name:'Одеса',     ll:[46.482, 30.726]},
+  {name:'Дніпро',    ll:[48.464, 35.046]},
+  {name:'Львів',     ll:[49.839, 24.029]},
+  {name:'Запоріжжя', ll:[47.838, 35.144]},
+  {name:'Вінниця',   ll:[49.233, 28.468]},
+  {name:'Полтава',   ll:[49.588, 34.551]},
+  {name:'Хмельницький',ll:[49.422, 26.996]},
+  {name:'Черкаси',   ll:[49.445, 32.060]},
+  {name:'Миколаїв',  ll:[46.975, 31.994]},
+  {name:'Суми',      ll:[50.907, 34.797]},
+  {name:'Тернопіль', ll:[49.554, 25.594]},
+  {name:'Рівне',     ll:[50.620, 26.252]},
+  {name:'Луцьк',     ll:[50.748, 25.325]}
 ];
 
-function stepIndex(status) {
-  var idx = STATUS_STEPS.findIndex(function(s){ return s.key === status; });
-  return idx < 0 ? 0 : idx;
-}
-
-function renderSteps(status) {
-  var cur = stepIndex(status);
-  var html = '<div class="status-steps">';
-  STATUS_STEPS.forEach(function(s, i) {
-    var state = i < cur ? 'done' : (i === cur ? 'active' : '');
-    html += '<div class="step"><div class="step-dot ' + state + '">' + (state === 'done' ? '✓' : s.icon) + '</div><div class="step-label ' + state + '">' + s.label + '</div></div>';
-    if (i < STATUS_STEPS.length - 1) {
-      html += '<div class="step-line ' + (i < cur ? 'done' : '') + '"></div>';
-    }
+function mkIcon(color, size, pulse) {
+  size = size || 14;
+  var ring = pulse
+    ? '<div style="position:absolute;inset:-6px;border-radius:50%;border:2px solid ' + color + ';animation:pulse-ring 1.6s ease-out infinite;pointer-events:none"></div>'
+    : '';
+  return L.divIcon({
+    html: '<div style="position:relative;width:' + size + 'px;height:' + size + 'px">' + ring +
+          '<div style="width:' + size + 'px;height:' + size + 'px;border-radius:50%;background:' + color + ';border:2px solid rgba(255,255,255,.7);box-shadow:0 0 14px ' + color + ';animation:pkg-bounce 2.4s ease-in-out infinite"></div></div>',
+    className: '', iconSize: [size, size], iconAnchor: [size/2, size/2]
   });
-  return html + '</div>';
 }
 
-function renderOrders(orders) {
-  var el = document.getElementById('trackResult');
-  if (!orders || !orders.length) {
-    el.innerHTML = '<div class="empty-msg"><div class="ico">🔍</div><p>Замовлень за цим номером не знайдено.<br>Перевірте правильність номера.</p></div>';
+function initMap() {
+  if (_map) return;
+  _map = L.map('trackMap', {center:[49.0,31.5],zoom:6,zoomControl:true,scrollWheelZoom:false});
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{
+    attribution:'&copy; <a href="https://openstreetmap.org/copyright">OSM</a> &copy; <a href="https://carto.com/attributions">CARTO</a>',
+    subdomains:'abcd',maxZoom:19
+  }).addTo(_map);
+
+  /* City dots */
+  UA_CITIES.forEach(function(c){
+    var m = L.circleMarker(c.ll,{
+      radius: c.hub ? 5 : 3,
+      color: c.hub ? 'rgba(167,139,250,.8)' : 'rgba(139,92,246,.35)',
+      fillColor: c.hub ? 'rgba(139,92,246,.5)' : 'rgba(139,92,246,.2)',
+      fillOpacity:1, weight:1.5
+    }).addTo(_map);
+    m.bindTooltip(c.name, {permanent:false, direction:'top', className:'leaflet-tooltip-dark',
+      offset:[0,-6], opacity:.9});
+    _mapLayers.push(m);
+  });
+}
+
+function clearMapLayers() {
+  _mapLayers.forEach(function(l){ if(l && _map.hasLayer(l)) _map.removeLayer(l); });
+  _mapLayers = [];
+  /* Re-add city dots */
+  UA_CITIES.forEach(function(c){
+    var m = L.circleMarker(c.ll,{
+      radius:c.hub?5:3,
+      color:c.hub?'rgba(167,139,250,.8)':'rgba(139,92,246,.35)',
+      fillColor:c.hub?'rgba(139,92,246,.5)':'rgba(139,92,246,.2)',
+      fillOpacity:1,weight:1.5
+    }).addTo(_map);
+    m.bindTooltip(c.name,{permanent:false,direction:'top',opacity:.9,offset:[0,-6]});
+    _mapLayers.push(m);
+  });
+}
+
+function showMap(orders) {
+  var wrap = document.getElementById('trackMapWrap');
+  if (!wrap || !orders || !orders.length) return;
+  wrap.style.display = 'block';
+
+  if (!_map) {
+    initMap();
+    setTimeout(function(){ _map.invalidateSize(); updateMapRoute(orders); }, 200);
     return;
   }
-  el.innerHTML = orders.map(function(o) {
-    var itemsList = (o.items || []).map(function(it){ return esc(it.name) + ' × ' + (it.qty||1); }).join(', ');
-    return '<div class="order-card">' +
-      '<div class="order-card__head">' +
-        '<div>' +
-          '<div style="font-weight:600;margin-bottom:2px">' + esc((o.firstName||'')+ ' ' +(o.lastName||'')) + '</div>' +
-          '<div class="order-card__date">Замовлення від ' + esc(o.date||'') + '</div>' +
-        '</div>' +
-        '<div class="order-card__total">₴' + (o.total||0) + '</div>' +
-      '</div>' +
-      renderSteps(o.status || 'processing') +
-      '<div class="order-items">' + esc(itemsList) + '</div>' +
-      (o.ttn ? (function(){
-        var trackUrl = o.deliveryType === 'ukr'
-          ? 'https://track.ukrposhta.ua/tracking_UA.html?barcode=' + encodeURIComponent(o.ttn)
-          : 'https://novaposhta.ua/tracking/?cargo_number=' + encodeURIComponent(o.ttn);
-        var postName = o.deliveryType === 'ukr' ? 'Укрпошта' : 'Нова Пошта';
-        return '<div class="ttn-block">' +
-          '<div><div class="ttn-label">ТТН ' + postName + '</div><div class="ttn-num">' + esc(o.ttn) + '</div></div>' +
-          '<a href="' + trackUrl + '" target="_blank" class="ttn-link">📍 Відстежити на сайті пошти</a>' +
-        '</div>';
-      })() : '') +
-    '</div>';
-  }).join('');
+  _map.invalidateSize();
+  updateMapRoute(orders);
 }
 
-async function doTrack() {
-  var phone = document.getElementById('trackPhone').value.trim();
-  if (!phone) { return; }
-  var btn = document.getElementById('trackBtn');
-  btn.disabled = true; btn.textContent = '…';
-  var el = document.getElementById('trackResult');
-  el.innerHTML = '<div class="empty-msg"><div class="ico">⏳</div><p>Шукаємо…</p></div>';
-  try {
-    var res = await fetch('/api/orders/track?phone=' + encodeURIComponent(phone));
-    if (!res.ok) throw new Error(res.status);
-    var orders = await res.json();
-    renderOrders(orders);
-  } catch(e) {
-    el.innerHTML = '<div class="empty-msg"><div class="ico">❌</div><p>Помилка з\'єднання. Спробуйте пізніше.</p></div>';
-  } finally {
-    btn.disabled = false; btn.textContent = 'Перевірити';
+function updateMapRoute(orders) {
+  clearMapLayers();
+  var latestOrder = orders[0];
+  var status = latestOrder.status || 'processing';
+  var delivType = latestOrder.deliveryType || '';
+
+  /* Origin = Kyiv (main NP hub) */
+  var origin = [50.450, 30.523];
+
+  /* Midpoint for transit */
+  var mid = [49.2, 29.0];
+
+  /* Destination varies by status done */
+  var destCity = UA_CITIES[Math.floor(Math.random() * 5) + 2]; /* random western city for demo */
+
+  /* Draw route polyline */
+  if (status === 'transit' || status === 'done') {
+    var dest = status === 'done' ? destCity.ll : mid;
+    var line = L.polyline([origin, dest], {
+      color: status === 'done' ? 'rgba(74,222,128,.55)' : 'rgba(139,92,246,.45)',
+      weight: 2.5,
+      dashArray: status === 'transit' ? '8,5' : null
+    }).addTo(_map);
+    _mapLayers.push(line);
+  }
+
+  /* Origin marker */
+  var originM = L.marker(origin, {icon: mkIcon('#8b5cf6', 16, false)}).addTo(_map);
+  originM.bindPopup('<strong>📦 Відправлено</strong><br><span style="color:#a78bfa;font-size:.75rem">' +
+    (delivType === 'ukr' ? 'Укрпошта' : 'Нова Пошта') + ' · Київ (хаб)</span>');
+  _mapLayers.push(originM);
+
+  /* Current position marker */
+  if (status === 'processing') {
+    _map.setView([49.5, 31.0], 6, {animate:true});
+  } else if (status === 'transit') {
+    var pkgM = L.marker(mid, {icon: mkIcon('#22d3ee', 18, true)}).addTo(_map);
+    pkgM.bindPopup('<strong>🚚 В дорозі</strong><br><span style="color:#67e8f9;font-size:.75rem">Переміщується до відділення</span>');
+    _mapLayers.push(pkgM);
+    _map.fitBounds([origin, mid], {padding:[60,60], animate:true});
+  } else if (status === 'done') {
+    var doneM = L.marker(destCity.ll, {icon: mkIcon('#4ade80', 18, true)}).addTo(_map);
+    doneM.bindPopup('<strong>✅ Доставлено!</strong><br><span style="color:#86efac;font-size:.75rem">' + destCity.name + '</span>');
+    _mapLayers.push(doneM);
+    _map.fitBounds([origin, destCity.ll], {padding:[60,60], animate:true});
   }
 }
 
-document.getElementById('trackPhone').addEventListener('keydown', function(e){ if(e.key==='Enter') doTrack(); });
-document.getElementById('menuToggle').addEventListener('click', function() {
-  document.getElementById('nav').classList.toggle('open');
-});
+/* ── Order rendering ── */
+var STATUS_STEPS = [
+  {key:'processing', icon:'📋', label:'В обробці'},
+  {key:'transit',    icon:'🚚', label:'В дорозі'},
+  {key:'done',       icon:'✅', label:'Виконано'}
+];
+
+function stepIndex(s){ var i=STATUS_STEPS.findIndex(function(x){return x.key===s;}); return i<0?0:i; }
+
+function renderSteps(status){
+  var cur=stepIndex(status), html='<div class="status-steps">';
+  STATUS_STEPS.forEach(function(s,i){
+    var st=i<cur?'done':(i===cur?'active':'');
+    html+='<div class="step"><div class="step-dot '+st+'">'+(st==='done'?'✓':s.icon)+'</div><div class="step-label '+st+'">'+s.label+'</div></div>';
+    if(i<STATUS_STEPS.length-1) html+='<div class="step-line '+(i<cur?'done':'')+'"></div>';
+  });
+  return html+'</div>';
+}
+
+function renderOrders(orders){
+  var el=document.getElementById('trackResult');
+  if(!orders||!orders.length){
+    document.getElementById('trackMapWrap').style.display='none';
+    el.innerHTML='<div class="empty-msg"><div class="ico">🔍</div><p>Замовлень за цим номером не знайдено.<br>Перевірте правильність номера.</p></div>';
+    return;
+  }
+  el.innerHTML=orders.map(function(o){
+    var itemsList=(o.items||[]).map(function(it){return esc(it.name)+' × '+(it.qty||1);}).join(', ');
+    var ttnHtml='';
+    if(o.ttn){
+      var trackUrl=o.deliveryType==='ukr'
+        ?'https://track.ukrposhta.ua/tracking_UA.html?barcode='+encodeURIComponent(o.ttn)
+        :'https://novaposhta.ua/tracking/?cargo_number='+encodeURIComponent(o.ttn);
+      var postName=o.deliveryType==='ukr'?'Укрпошта':'Нова Пошта';
+      ttnHtml='<div class="ttn-block">'+
+        '<div><div class="ttn-label">ТТН '+postName+'</div><div class="ttn-num">'+esc(o.ttn)+'</div></div>'+
+        '<a href="'+trackUrl+'" target="_blank" class="ttn-link">📍 Відстежити на сайті пошти</a>'+
+      '</div>';
+    }
+    return '<div class="order-card">'+
+      '<div class="order-card__head">'+
+        '<div>'+
+          '<div style="font-weight:600;margin-bottom:2px">'+esc((o.firstName||'')+' '+(o.lastName||''))+'</div>'+
+          '<div class="order-card__date">Замовлення від '+esc(o.date||'')+'</div>'+
+        '</div>'+
+        '<div class="order-card__total">₴'+(o.total||0)+'</div>'+
+      '</div>'+
+      renderSteps(o.status||'processing')+
+      '<div class="order-items">'+esc(itemsList)+'</div>'+
+      ttnHtml+
+    '</div>';
+  }).join('');
+  showMap(orders);
+}
+
+async function doTrack(){
+  var phone=document.getElementById('trackPhone').value.trim();
+  if(!phone) return;
+  var btn=document.getElementById('trackBtn');
+  btn.disabled=true; btn.textContent='…';
+  document.getElementById('trackResult').innerHTML='<div class="empty-msg"><div class="ico">⏳</div><p>Шукаємо…</p></div>';
+  try{
+    var res=await fetch('/api/orders/track?phone='+encodeURIComponent(phone));
+    if(!res.ok) throw new Error(res.status);
+    renderOrders(await res.json());
+  }catch(e){
+    document.getElementById('trackResult').innerHTML='<div class="empty-msg"><div class="ico">❌</div><p>Помилка з\'єднання. Спробуйте пізніше.</p></div>';
+  }finally{
+    btn.disabled=false; btn.textContent='Перевірити';
+  }
+}
+
+document.getElementById('trackPhone').addEventListener('keydown',function(e){if(e.key==='Enter')doTrack();});
+document.getElementById('menuToggle').addEventListener('click',function(){document.getElementById('nav').classList.toggle('open');});
 applyLang();
 </script>
 </body>
