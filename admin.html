@@ -1771,11 +1771,40 @@ function displayOrders(orders, el){
           '<button onclick="setOrderStatus('+o._id+',\'transit\')" class="btn-sm'+(o.status==='transit'?' primary':'')+'" style="font-size:.72rem">🚚 В обробці</button>'+
           (isDone?'<button onclick="unmarkDone('+o._id+')" class="btn-sm" style="font-size:.72rem">↩ Відновити</button>':'<button onclick="markDone('+o._id+')" class="btn-sm primary" style="font-size:.72rem">✅ Готово</button>')+
         '</div>'+
-        '<div style="padding:4px 20px 8px;display:flex;gap:8px;align-items:center">'+
-          '<span style="font-size:.72rem;color:var(--dim);white-space:nowrap">ТТН пошти:</span>'+
+        /* ── Delivery quick-links block ── */
+        '<div style="padding:6px 20px 4px;display:flex;gap:6px;flex-wrap:wrap;align-items:center;border-top:1px solid rgba(139,92,246,.1)">'+
+          '<span style="font-size:.68rem;color:var(--dim);flex-shrink:0">📬 Створити ТТН:</span>'+
+          '<a href="https://my.novaposhta.ua/orders/create" target="_blank" style="'+
+            'display:inline-flex;align-items:center;gap:5px;padding:5px 12px;border-radius:8px;font-size:.72rem;font-weight:600;text-decoration:none;white-space:nowrap;transition:all .15s;'+
+            (o.deliveryType!=='ukr'
+              ? 'background:rgba(252,196,0,.14);border:1px solid rgba(252,196,0,.4);color:#fcd34d'
+              : 'background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);color:var(--dim)')+'">'+
+            '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="1" y="3" width="15" height="13" rx="2"/><path d="M16 8h4l3 5v3h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>'+
+            'Нова Пошта'+
+          '</a>'+
+          '<a href="https://ukrposhta.ua/ua/poshta/viddylennya-ta-posluhy/internet-magazyny" target="_blank" style="'+
+            'display:inline-flex;align-items:center;gap:5px;padding:5px 12px;border-radius:8px;font-size:.72rem;font-weight:600;text-decoration:none;white-space:nowrap;transition:all .15s;'+
+            (o.deliveryType==='ukr'
+              ? 'background:rgba(30,120,230,.14);border:1px solid rgba(30,120,230,.4);color:#93c5fd'
+              : 'background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);color:var(--dim)')+'">'+
+            '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>'+
+            'Укрпошта'+
+          '</a>'+
+          '<button onclick="copyRecipient('+o._id+')" style="'+
+            'display:inline-flex;align-items:center;gap:5px;padding:5px 12px;border-radius:8px;font-size:.72rem;font-weight:600;white-space:nowrap;transition:all .15s;'+
+            'background:rgba(139,92,246,.1);border:1px solid rgba(139,92,246,.22);color:#c4b5fd;cursor:pointer">'+
+            '📋 Дані отримувача'+
+          '</button>'+
+        '</div>'+
+        '<div style="padding:4px 20px 10px;display:flex;gap:8px;align-items:center;flex-wrap:wrap">'+
+          '<span style="font-size:.72rem;color:var(--dim);white-space:nowrap">ТТН:</span>'+
           '<input id="ttn-'+o._id+'" class="iinp" style="width:160px;font-size:.8rem" placeholder="20450000000000" value="'+esc(o.ttn||'')+'">'+
           '<button onclick="saveTTN('+o._id+')" class="btn-sm primary" style="font-size:.72rem">Зберегти</button>'+
-          (o.ttn?'<a href="'+(o.deliveryType==='ukr'?'https://track.ukrposhta.ua/tracking_UA.html?barcode=':'https://novaposhta.ua/tracking/?cargo_number=')+esc(o.ttn)+'" target="_blank" class="btn-sm" style="font-size:.72rem">🔗 Трекінг</a>':'')+
+          (o.ttn
+            ? '<a href="'+(o.deliveryType==='ukr'
+                ?'https://track.ukrposhta.ua/tracking_UA.html?barcode='
+                :'https://novaposhta.ua/tracking/?cargo_number=')+esc(o.ttn)+'" target="_blank" class="btn-sm" style="font-size:.72rem">🔗 Відстежити</a>'
+            : '')+
         '</div>'+
         '<div class="ord-footer">'+
           '<button onclick="deleteOrder('+o._id+')" class="btn-sm danger">🗑 Видалити</button>'+
@@ -1849,6 +1878,28 @@ async function saveTTN(id){
     toast(ttn?'✅ ТТН збережено':'ТТН видалено');
     if(_ordCache) displayOrders(_ordCache,document.getElementById('ordList'));
   }catch(e){ toast('❌ Помилка збереження ТТН'); }
+}
+
+function copyRecipient(id){
+  var o=_ordCache&&_ordCache.find(function(x){return String(x._id)===String(id);});
+  if(!o){ toast('❌ Замовлення не знайдено'); return; }
+  var lines=[
+    'ПІБ: '+(o.firstName||'')+' '+(o.lastName||''),
+    'Телефон: '+(o.phone||''),
+    'Місто: '+(o.city||''),
+    'Відділення: '+(o.branch||''),
+    'Сума накладеного: ₴'+(o.total||0),
+    'Товари: '+((o.items||[]).map(function(it){return (it.name||'')+' × '+(it.qty||1);}).join(', '))
+  ].filter(function(l){return l.split(': ')[1];}).join('\n');
+  navigator.clipboard.writeText(lines).then(function(){
+    toast('📋 Дані скопійовано — вставте у форму пошти (Ctrl+V)');
+  }).catch(function(){
+    /* fallback */
+    var ta=document.createElement('textarea');
+    ta.value=lines; document.body.appendChild(ta); ta.select();
+    document.execCommand('copy'); document.body.removeChild(ta);
+    toast('📋 Дані скопійовано');
+  });
 }
 async function setOrderStatus(id,status){
   try{
