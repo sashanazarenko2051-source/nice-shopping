@@ -7,7 +7,7 @@ function onProductsReady(cb) {
 }
 
 (function() {
-  var delays = [0, 4000, 8000]; // retry after 4s and 8s (helps with Render cold start)
+  var delays = [0, 4000, 8000, 15000, 30000]; // free Render wakes up in up to ~50 s
   var attempt = 0;
 
   function load() {

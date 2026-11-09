@@ -318,7 +318,7 @@
         <a href="contacts.html" class="btn-g" data-i18n="hero.btn2">Зв'язатись з нами</a>
       </div>
       <div class="hero-pills">
-        <div class="hero-pill"><span class="hero-pill__num" id="productCount" style="visibility:hidden">0+</span><span class="hero-pill__lbl" data-i18n="hero.products">товарів</span></div>
+        <div class="hero-pill"><span class="hero-pill__num" id="productCount">…</span><span class="hero-pill__lbl" data-i18n="hero.products">товарів</span></div>
         <div class="hero-pill__div"></div>
         <div class="hero-pill"><span class="hero-pill__num">5</span><span class="hero-pill__lbl" data-i18n="hero.sections">розділів</span></div>
         <div class="hero-pill__div"></div>
@@ -529,7 +529,7 @@ document.querySelectorAll('.reveal').forEach(function(el) { revObs.observe(el); 
 
 onProductsReady(function() {
   var el = document.getElementById('productCount');
-  if (el) { el.textContent = PRODUCTS.length + '+'; el.style.visibility = ''; }
+  if (el) el.textContent = PRODUCTS.length ? PRODUCTS.length + '+' : '…';
 
 });
 applyLang();
