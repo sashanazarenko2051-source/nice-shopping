@@ -427,3 +427,16 @@ html.dark .card-swatch.active{border-color:#8b5cf6}
   .page-hero__title{font-size:1.3rem}
   .filter-group__title{font-size:.8rem}
 }
+/* Телефон: ничего не шире экрана (2026-11-09) */
+@media(max-width:768px){
+  html,body{max-width:100%;overflow-x:hidden}
+  .catalog-grid>*,.filters,.filters *{min-width:0;max-width:100%;box-sizing:border-box}
+  .catalog{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+  .info-row{min-width:0}.info-row>*{min-width:0;overflow-wrap:anywhere}
+  .track-row{flex-wrap:wrap}.track-row>*{min-width:0;flex:1 1 140px}
+  .track-form{padding:20px 16px!important}
+  .filter-tags{flex-wrap:wrap!important}
+  .contacts-grid *{max-width:100%;box-sizing:border-box}.contacts-grid a{overflow-wrap:anywhere}.contacts-grid [class*=btn],.contacts-grid [class*=messeng]{flex-wrap:wrap}
+  .info-row{max-width:100%;box-sizing:border-box;flex-wrap:wrap}
+  [class*=grid]>*,[class*=wrap]>*,.container>*{min-width:0}
+}

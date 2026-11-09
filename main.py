@@ -19,7 +19,8 @@ app.add_middleware(
     allow_headers=["Authorization", "Content-Type"],
 )
 
-ADMIN_PASS   = os.getenv("ADMIN_PASS", "admin2025")
+ADMIN_PASS   = os.getenv("ADMIN_PASS", "")  # only from the host env; no default in the public code
+ADMIN_READY  = len(ADMIN_PASS) >= 8         # admin is closed until a real password is set
 GITHUB_TOKEN = os.getenv("GITHUB_TOKEN", "")
 GIST_ID      = os.getenv("GIST_ID", "")
 GITHUB_REPO  = os.getenv("GITHUB_REPO", "sashanazarenko2051-source/nice-shopping")
@@ -51,9 +52,8 @@ def _rate_check(key: str, max_count: int, window_sec: int) -> bool:
     _rate_store[key] = (count + 1, start)
     return True
 
-if ADMIN_PASS == "admin2025":
-    print("[SECURITY] WARNING: ADMIN_PASS is still the default 'admin2025'. "
-          "Set a strong ADMIN_PASS env var in the Render dashboard.")
+if not ADMIN_READY:
+    print("[SECURITY] Admin is DISABLED: set ADMIN_PASS (8+ characters) in the Render dashboard.")
 
 
 @app.middleware("http")
@@ -417,16 +417,25 @@ def _on_shutdown():
 
 # ── Auth ──────────────────────────────────────────────────
 def require_admin(creds: HTTPAuthorizationCredentials = Depends(security)):
+    if not ADMIN_READY:  # the token of an empty password is computable from the public code
+        raise HTTPException(status_code=503, detail="Admin password is not set")
     if not creds or not hmac.compare_digest(creds.credentials, _ADMIN_TOKEN):
         raise HTTPException(status_code=401, detail="Unauthorized")
     return creds.credentials
 
 
 def _client_ip(req: Request) -> str:
-    fwd = req.headers.get("x-forwarded-for", "")
-    if fwd:
-        return fwd.split(",")[0].strip()
-    return req.client.host if req.client else "unknown"
+    """IP for rate limits: the right-most public X-Forwarded-For hop (added by the host's proxy);
+    the left part is whatever the client sent."""
+    import ipaddress
+    hops = [h.strip() for h in req.headers.get("x-forwarded-for", "").split(",") if h.strip()]
+    for h in reversed(hops):
+        try:
+            if ipaddress.ip_address(h).is_global:
+                return h
+        except ValueError:
+            continue
+    return (req.client.host if req.client else "") or (hops[-1] if hops else "unknown")
 
 
 def _login_allowed(ip: str) -> bool:
@@ -456,6 +465,8 @@ async def admin_login(req: Request):
     except Exception:
         raise HTTPException(status_code=400, detail="Invalid request")
     password = str(body.get("password") or "")
+    if not ADMIN_READY:
+        raise HTTPException(status_code=503, detail="Admin password is not set: add ADMIN_PASS (8+ characters) in the hosting settings")
     if secrets.compare_digest(password, ADMIN_PASS):
         _login_attempts.pop(ip, None)
         # Return stateless HMAC token — same token every time, survives server restarts
@@ -598,7 +609,7 @@ async def create_order(req: Request, background_tasks: BackgroundTasks):
     if not isinstance(body, dict):
         raise HTTPException(status_code=400, detail="Invalid order")
     # Sanitise string fields to prevent oversized payloads slipping past content-length check
-    for field in ("firstName", "lastName", "phone", "city", "branch", "comment", "payment", "delivery"):
+    for field in ("firstName", "lastName", "phone", "email", "city", "branch", "comment", "payment", "delivery", "deliveryType", "date"):
         if field in body:
             body[field] = str(body[field] or "")[:200]
     items = body.get("items", [])
@@ -606,8 +617,37 @@ async def create_order(req: Request, background_tasks: BackgroundTasks):
         raise HTTPException(status_code=400, detail="Empty order")
     if len(items) > 200:
         raise HTTPException(status_code=400, detail="Too many items")
-    body.setdefault("status", "processing")
+    # Prices, totals and status come from the server, never from the browser
     conn = get_db()
+    prods = {}
+    for r in conn.execute("SELECT data FROM products").fetchall():
+        p = json.loads(r["data"])
+        prods[str(p.get("name"))] = p
+    clean, total = [], 0.0
+    for it in items:
+        p = prods.get(str(it.get("name", ""))) if isinstance(it, dict) else None
+        if not p:
+            conn.close()
+            raise HTTPException(status_code=400, detail="Unknown item in the order — refresh the page")
+        try:
+            qty = min(99, max(1, int(it.get("qty", 1))))
+        except (ValueError, TypeError):
+            qty = 1
+        try:
+            price = float(p.get("price") or 0)
+        except (ValueError, TypeError):
+            price = 0.0
+        price = int(price) if price == int(price) else round(price, 2)
+        clean.append({"name": p.get("name"), "size": str(it.get("size") or "")[:40],
+                      "color": str(it.get("color") or "")[:40], "qty": qty, "price": price})
+        total += price * qty
+    total = int(total) if total == int(total) else round(total, 2)
+    items = body["items"] = clean
+    body["subtotal"] = body["total"] = total
+    body["delivery"] = 0
+    body["status"] = "processing"
+    for k in ("ttn", "_id", "id"):
+        body.pop(k, None)
     conn.execute("INSERT INTO orders (data) VALUES (?)", (json.dumps(body, ensure_ascii=False),))
 
     # Decrement stock for each ordered item
@@ -712,7 +752,9 @@ async def patch_order(oid: int, req: Request, background_tasks: BackgroundTasks,
     return {"ok": True}
 
 @app.get("/api/orders/track")
-def track_order(phone: str = ""):
+def track_order(req: Request, phone: str = ""):
+    if not _rate_check(f"track:{_client_ip(req)}", 15, 3600):  # no guessing of other people's phone numbers
+        raise HTTPException(status_code=429, detail="Too many requests. Try again later.")
     if not phone or len(phone.strip()) < 5:
         raise HTTPException(status_code=400, detail="Phone required")
     ph = phone.strip().replace(" ", "").replace("-", "")
@@ -732,7 +774,7 @@ def track_order(phone: str = ""):
                 "items": [{"name": i.get("name", ""), "qty": i.get("qty", 1)} for i in d.get("items", [])[:10]],
                 "total": d.get("total", 0),
                 "firstName": d.get("firstName", ""),
-                "lastName": d.get("lastName", ""),
+                "lastName": (d.get("lastName", "") or "")[:1] + ("." if d.get("lastName") else ""),
             })
     return result
 
