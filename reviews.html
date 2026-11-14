@@ -190,6 +190,7 @@
 <script src="js/cart.js"></script>
 <script src="js/translate.js"></script>
 <script>
+function _myRevs() { try { var v = JSON.parse(localStorage.getItem('ns_my_reviews') || '[]'); return Array.isArray(v) ? v : []; } catch (e) { return []; } }
 function esc(s) {
   return String(s == null ? '' : s)
     .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
@@ -214,7 +215,7 @@ function renderList(list) {
     el.innerHTML = '<div class="rev-empty"><div class="rev-empty__icon">💬</div><div class="rev-empty__text">' + window.i18n('rev.empty') + '</div></div>';
     return;
   }
-  var myRevs = JSON.parse(localStorage.getItem('ns_my_reviews') || '[]');
+  var myRevs = _myRevs();
   el.innerHTML = '<div class="rev-list">' + list.map(function(r) {
     var nm = (r.name || '').trim() || '—';
     var myRev = myRevs.find(function(m) { return String(m.id) === String(r._id); });
@@ -266,7 +267,7 @@ function cancelEditReview(id) {
   document.getElementById('re-' + id).style.display = 'none';
 }
 async function saveEditReview(id) {
-  var myRevs = JSON.parse(localStorage.getItem('ns_my_reviews') || '[]');
+  var myRevs = _myRevs();
   var myRev = myRevs.find(function(m) { return String(m.id) === String(id); });
   if (!myRev) return;
   var name = (document.getElementById('en-' + id) || {}).value || '';
@@ -282,7 +283,7 @@ async function saveEditReview(id) {
 }
 async function deleteMyReview(id) {
   if (!confirm('Видалити свій відгук?')) return;
-  var myRevs = JSON.parse(localStorage.getItem('ns_my_reviews') || '[]');
+  var myRevs = _myRevs();
   var myRev = myRevs.find(function(m) { return String(m.id) === String(id); });
   if (!myRev) return;
   try {
@@ -326,7 +327,7 @@ document.getElementById('revForm').addEventListener('submit', function(e) {
   API.createReview(review)
     .then(function(res) {
       if (res && res.id && res.edit_token) {
-        var myRevs = JSON.parse(localStorage.getItem('ns_my_reviews') || '[]');
+        var myRevs = _myRevs();
         myRevs.push({ id: res.id, token: res.edit_token });
         localStorage.setItem('ns_my_reviews', JSON.stringify(myRevs));
       }

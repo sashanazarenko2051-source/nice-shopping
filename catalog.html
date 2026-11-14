@@ -310,6 +310,12 @@ function fmtCount(n) {
   return n + (n===1?' товар':n<5?' товари':' товарів');
 }
 
+function esc(s) {
+  return String(s == null ? '' : s).replace(/[&<>"']/g, function(c) {
+    return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+  });
+}
+
 function renderActiveChips() {
   var chips = [];
   var catBtn = document.querySelector('[data-cat].active');
@@ -322,7 +328,7 @@ function renderActiveChips() {
   }
   var el = document.getElementById('activeChips');
   el.innerHTML = chips.map(function(c, i) {
-    return '<span class="active-chip">' + c.label + '<button class="active-chip-x" data-chi="' + i + '" title="Прибрати">×</button></span>';
+    return '<span class="active-chip">' + esc(c.label) + '<button class="active-chip-x" data-chi="' + i + '" title="Прибрати">×</button></span>';
   }).join('');
   el.querySelectorAll('.active-chip-x').forEach(function(btn) {
     btn.addEventListener('click', function() { chips[+btn.dataset.chi].clear(); });

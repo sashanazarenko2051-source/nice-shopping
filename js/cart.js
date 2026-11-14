@@ -1,5 +1,5 @@
 function getCart() {
-  return JSON.parse(localStorage.getItem('fp_cart') || '[]');
+  try { var c = JSON.parse(localStorage.getItem('fp_cart') || '[]'); return Array.isArray(c) ? c : []; } catch (e) { return []; }
 }
 
 function saveCart(cart) {
@@ -79,6 +79,12 @@ function toggleWishlist(pid, el) {
   localStorage.setItem('ns_wishlist', JSON.stringify(list));
 }
 
+function _escC(v) {
+  return String(v == null ? '' : v).replace(/[&<>"']/g, function(c) {
+    return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+  });
+}
+
 function renderProductCard(product) {
   var isOos = product.stock != null && product.stock === 0;
   var liked = getWishlist().indexOf(product.id) !== -1;
@@ -89,7 +95,7 @@ function renderProductCard(product) {
   var displayName = (window.LANG === 'en' && product.nameEn) ? product.nameEn : product.name;
   var isData = imgSrc && imgSrc.indexOf('data:') === 0;
   var imgHtml = imgSrc
-    ? '<img src="' + imgSrc + '" alt="' + displayName + '"' + (isData ? '' : ' loading="lazy"') + ' onerror="this.onerror=null;this.style.display=\'none\'">'
+    ? '<img src="' + _escC(imgSrc) + '" alt="' + _escC(displayName) + '"' + (isData ? '' : ' loading="lazy"') + ' onerror="this.onerror=null;this.style.display=\'none\'">'
     : '<div style="width:100%;height:100%;background:linear-gradient(135deg,var(--card2),var(--card))"></div>';
   var quickLabel = (window.i18n && window.i18n('quick.add')) || 'Швидко додати';
 
@@ -144,7 +150,7 @@ function renderProductCard(product) {
       '</button>' +
     '</div>' +
     '<div class="product-card__body">' +
-      '<div class="product-card__name"><a href="' + productUrl + '">' + displayName + '</a></div>' +
+      '<div class="product-card__name"><a href="' + productUrl + '">' + _escC(displayName) + '</a></div>' +
       colorsHtml +
       priceRow +
       ratingRow +

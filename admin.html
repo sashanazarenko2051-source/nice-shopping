@@ -886,6 +886,7 @@ select,select.fsel,select.iinp,.nt-inp[type!="text"][type!="number"][type!="emai
 
 <script src="js/api.js?v=5"></script>
 <script>
+function _lsArr(k){ try{ var v=JSON.parse(localStorage.getItem(k)||'[]'); return Array.isArray(v)?v:[]; }catch(e){ return []; } }
 /* ── STATE ── */
 var _products = [];
 var S = { tab:'stats', view:'list', filter:'all', editingId:null, movingId:null };
@@ -1721,7 +1722,7 @@ function displayOrders(orders, el){
   var ttnSaved={};
   el.querySelectorAll('[id^="ttn-"]').forEach(function(inp){ ttnSaved[inp.id]=inp.value; });
   var activeElId=(document.activeElement&&document.activeElement.id)||'';
-  var doneIds=new Set(JSON.parse(localStorage.getItem('ns_done_orders')||'[]').map(String));
+  var doneIds=new Set(_lsArr('ns_done_orders').map(String));
 
   // Split by status
   var newOrds=orders.filter(function(o){ return !doneIds.has(String(o._id)) && (!o.status||o.status==='processing'); });
@@ -1859,7 +1860,7 @@ function toggleOrd(uid){
   if(ar) ar.textContent=open?'▲':'▼';
 }
 function markDone(id){
-  var ids=JSON.parse(localStorage.getItem('ns_done_orders')||'[]').map(String);
+  var ids=_lsArr('ns_done_orders').map(String);
   if(ids.indexOf(String(id))===-1) ids.push(String(id));
   localStorage.setItem('ns_done_orders',JSON.stringify(ids));
   API.patchOrder(id,{status:'done'}).catch(function(){});
@@ -1915,7 +1916,7 @@ async function setOrderStatus(id,status){
   }catch(e){ toast('❌ Помилка'); }
 }
 function unmarkDone(id){
-  var ids=JSON.parse(localStorage.getItem('ns_done_orders')||'[]').map(String);
+  var ids=_lsArr('ns_done_orders').map(String);
   ids=ids.filter(function(x){return x!==String(id);});
   localStorage.setItem('ns_done_orders',JSON.stringify(ids));
   API.patchOrder(id,{status:'processing'}).catch(function(){});
@@ -1942,7 +1943,7 @@ async function renderReviews(){
   if(rb){ rb.textContent=reviews.length; rb.style.display=reviews.length?'inline-block':'none'; }
   if(!reviews.length){ el.innerHTML='<div class="empty"><div class="empty-ico">⭐</div><p>Відгуків ще немає</p></div>'; return; }
   var stars=function(n){ return '★'.repeat(n)+'☆'.repeat(5-n); };
-  var likedIds=new Set(JSON.parse(localStorage.getItem('ns_liked_reviews')||'[]').map(String));
+  var likedIds=new Set(_lsArr('ns_liked_reviews').map(String));
   el.innerHTML=reviews.map(function(r){
     var d=r.ts?new Date(r.ts).toLocaleDateString('uk-UA'):'';
     var liked=likedIds.has(String(r._id));
@@ -2006,7 +2007,7 @@ async function saveEditReview(id){
   }catch(e){ toast('❌ Помилка: '+(e.message||e)); }
 }
 async function toggleLike(id, curLikes){
-  var ids=JSON.parse(localStorage.getItem('ns_liked_reviews')||'[]').map(String);
+  var ids=_lsArr('ns_liked_reviews').map(String);
   var liked=ids.indexOf(String(id))!==-1;
   var newLikes=liked?Math.max(0,curLikes-1):curLikes+1;
   if(liked) ids=ids.filter(function(x){return x!==String(id);});
@@ -2241,18 +2242,12 @@ function saveSettings(){
   toast('✅ Налаштування збережено');
 }
 function changePass(){
-  var old=document.getElementById('pwOld').value;
-  var n1=document.getElementById('pwNew').value;
-  var n2=document.getElementById('pwNew2').value;
-  var stored=localStorage.getItem('ns_admin_token');
-  if(old!==stored){ toast('❌ Поточний пароль невірний'); return; }
-  if(!n1||n1.length<4){ toast('❌ Новий пароль мінімум 4 символи'); return; }
-  if(n1!==n2){ toast('❌ Паролі не співпадають'); return; }
-  localStorage.setItem('ns_admin_token',n1);
+  /* Пароль адміна живе тільки на сервері (ADMIN_PASS у налаштуваннях хостингу).
+     Раніше тут новий пароль писався відкритим текстом на місце токена входу — і вхід ламався. */
   document.getElementById('pwOld').value='';
   document.getElementById('pwNew').value='';
   document.getElementById('pwNew2').value='';
-  toast('✅ Пароль змінено');
+  toast('ℹ️ Пароль змінюється на сервері: Render → Environment → ADMIN_PASS (від 8 символів), потім перезапуск');
 }
 // Apply stored settings on load
 (function applyStoredSettings(){
